@@ -44,11 +44,8 @@ jobs:
         if: matrix.cross
         run: cargo install cross
 
-      - name: Download model weights
-        run: |
-          mkdir -p models
-          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
-          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+      - name: Download models
+        run: bash scripts/download-models.sh
 
       - name: Build (native)
         if: ${{ !matrix.cross }}

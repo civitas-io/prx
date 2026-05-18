@@ -23,11 +23,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Download model weights
-        run: |
-          mkdir -p models
-          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
-          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+      - name: Download models
+        run: bash scripts/download-models.sh
 
       - name: Format check
         run: cargo fmt --check
@@ -52,11 +49,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Download model weights
-        run: |
-          mkdir -p models
-          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
-          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+      - name: Download models
+        run: bash scripts/download-models.sh
 
       - name: Unit tests
         run: cargo test --no-default-features --lib
@@ -86,11 +80,8 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Download model weights
-        run: |
-          mkdir -p models
-          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
-          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+      - name: Download models
+        run: bash scripts/download-models.sh
 
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }}

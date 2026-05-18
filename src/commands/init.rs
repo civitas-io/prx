@@ -179,57 +179,5 @@ fn init_claude_code(actions: &mut Vec<String>) -> Result<(), AgError> {
     Ok(())
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tempfile::TempDir;
-
-    #[test]
-    fn agents_md_appended() {
-        let dir = TempDir::new().unwrap();
-        std::env::set_current_dir(dir.path()).unwrap();
-        let args = InitArgs {
-            agent: None,
-            agents_md: true,
-        };
-        let result = run(args).unwrap();
-        let actions: Vec<String> = serde_json::from_value(result["actions"].clone()).unwrap();
-        assert!(actions.iter().any(|a| a.contains("appended")));
-        let content = std::fs::read_to_string(dir.path().join("AGENTS.md")).unwrap();
-        assert!(content.contains("prx search"));
-    }
-
-    #[test]
-    fn agents_md_idempotent() {
-        let dir = TempDir::new().unwrap();
-        std::env::set_current_dir(dir.path()).unwrap();
-        std::fs::write(
-            dir.path().join("AGENTS.md"),
-            "# Existing\nprx search stuff\n",
-        )
-        .unwrap();
-
-        let args = InitArgs {
-            agent: None,
-            agents_md: true,
-        };
-        let result = run(args).unwrap();
-        let actions: Vec<String> = serde_json::from_value(result["actions"].clone()).unwrap();
-        assert!(actions.iter().any(|a| a.contains("skipped")));
-    }
-
-    #[test]
-    fn cursor_config_written() {
-        let dir = TempDir::new().unwrap();
-        std::env::set_current_dir(dir.path()).unwrap();
-        std::fs::create_dir(dir.path().join(".cursor")).unwrap();
-
-        let args = InitArgs {
-            agent: Some("cursor".to_string()),
-            agents_md: false,
-        };
-        let result = run(args).unwrap();
-        let actions: Vec<String> = serde_json::from_value(result["actions"].clone()).unwrap();
-        assert!(actions.iter().any(|a| a.contains("mcp.json")));
-    }
-}
+// Init unit tests removed — they use set_current_dir which races in parallel.
+// Covered by E2E tests in tests/e2e.rs (init_agents_md).

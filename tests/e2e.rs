@@ -643,10 +643,9 @@ fn stats_with_env_override() {
 #[test]
 fn batch_multiple_commands() {
     let dir = test_dir();
+    let path = dir.path().to_str().unwrap().replace('\\', "/");
     let input = format!(
-        "{{\"id\":\"1\",\"cmd\":\"find\",\"path\":\"{}\"}}\n{{\"id\":\"2\",\"cmd\":\"exists\",\"pattern\":\"fn main\",\"path\":\"{}\"}}\n",
-        dir.path().to_str().unwrap(),
-        dir.path().to_str().unwrap()
+        "{{\"id\":\"1\",\"cmd\":\"find\",\"path\":\"{path}\"}}\n{{\"id\":\"2\",\"cmd\":\"exists\",\"pattern\":\"fn main\",\"path\":\"{path}\"}}\n",
     );
     let out = ag().args(["batch"]).write_stdin(input).output().unwrap();
     assert!(out.status.success());

@@ -1,10 +1,15 @@
 use ndarray::{Array1, Array2};
 use std::collections::HashMap;
+use std::sync::OnceLock;
+
+static MODEL2VEC_TOKENIZER: OnceLock<Option<tokenizers::Tokenizer>> = OnceLock::new();
+static MODEL2VEC_TOKENIZER_BYTES: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
 
 pub struct DenseIndex {
     vocab: HashMap<String, usize>,
     weights: Array2<f32>,
     chunk_embeddings: Array2<f32>,
+    use_hf_tokenizer: bool,
 }
 
 impl DenseIndex {
@@ -14,6 +19,17 @@ impl DenseIndex {
             vocab,
             weights,
             chunk_embeddings: Array2::zeros((0, dim)),
+            use_hf_tokenizer: true,
+        }
+    }
+
+    pub fn without_hf_tokenizer(vocab: HashMap<String, usize>, weights: Array2<f32>) -> Self {
+        let dim = weights.ncols();
+        Self {
+            vocab,
+            weights,
+            chunk_embeddings: Array2::zeros((0, dim)),
+            use_hf_tokenizer: false,
         }
     }
 
@@ -31,16 +47,14 @@ impl DenseIndex {
 
     pub fn embed_text(&self, text: &str) -> Array1<f32> {
         let dim = self.dim();
-        let tokens = tokenize_for_embedding(text);
+        let token_ids = tokenize_for_embedding(text, &self.vocab, self.use_hf_tokenizer);
         let mut sum = Array1::zeros(dim);
         let mut count = 0usize;
 
-        for token in &tokens {
-            if let Some(&idx) = self.vocab.get(token.as_str()) {
-                if idx < self.weights.nrows() {
-                    sum += &self.weights.row(idx);
-                    count += 1;
-                }
+        for idx in &token_ids {
+            if *idx < self.weights.nrows() {
+                sum += &self.weights.row(*idx);
+                count += 1;
             }
         }
 
@@ -81,12 +95,32 @@ impl DenseIndex {
     }
 }
 
-fn tokenize_for_embedding(text: &str) -> Vec<String> {
+fn tokenize_for_embedding(text: &str, vocab: &HashMap<String, usize>, use_hf: bool) -> Vec<usize> {
+    if use_hf {
+        let tokenizer = MODEL2VEC_TOKENIZER.get_or_init(|| {
+            if MODEL2VEC_TOKENIZER_BYTES.is_empty() {
+                return None;
+            }
+            tokenizers::Tokenizer::from_bytes(MODEL2VEC_TOKENIZER_BYTES).ok()
+        });
+
+        if let Some(tok) = tokenizer {
+            if let Ok(encoding) = tok.encode(text, false) {
+                return encoding
+                    .get_ids()
+                    .iter()
+                    .map(|&id| id as usize)
+                    .filter(|id| *id < vocab.len())
+                    .collect();
+            }
+        }
+    }
+
     text.split_whitespace()
         .flat_map(|word| {
             word.split(|c: char| !c.is_alphanumeric() && c != '_')
                 .filter(|s| !s.is_empty())
-                .map(|s| s.to_lowercase())
+                .filter_map(|s| vocab.get(&s.to_lowercase()).copied())
         })
         .collect()
 }
@@ -125,7 +159,7 @@ mod tests {
         )
         .unwrap();
 
-        DenseIndex::new(vocab, weights)
+        DenseIndex::without_hf_tokenizer(vocab, weights)
     }
 
     #[test]
@@ -186,10 +220,13 @@ mod tests {
     }
 
     #[test]
-    fn tokenize_splits_correctly() {
-        let tokens = tokenize_for_embedding("getHTTPResponse foo_bar");
-        assert!(tokens.contains(&"gethttpresponse".to_string()));
-        assert!(tokens.contains(&"foo_bar".to_string()));
+    fn tokenize_returns_valid_ids() {
+        let idx = test_index();
+        let ids = tokenize_for_embedding("hello world", &idx.vocab, false);
+        assert!(!ids.is_empty());
+        for id in &ids {
+            assert!(*id < idx.weights.nrows());
+        }
     }
 
     #[test]

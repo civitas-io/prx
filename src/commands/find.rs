@@ -262,8 +262,10 @@ fn score_file_relevance(entries: &mut [FileEntry], root: &Path, query: &str) {
         None => return,
     };
 
-    let vocab: HashMap<String, usize> =
-        (0..vocab_size).map(|i| (format!("token_{i}"), i)).collect();
+    let vocab = load_model2vec_vocab(vocab_size).unwrap_or_default();
+    if vocab.is_empty() {
+        return;
+    }
 
     let index = DenseIndex::new(vocab, weights);
 
@@ -288,6 +290,22 @@ fn score_file_relevance(entries: &mut [FileEntry], root: &Path, query: &str) {
             entry.relevance = Some(*score);
         }
     }
+}
+
+fn load_model2vec_vocab(_expected_size: usize) -> Option<HashMap<String, usize>> {
+    let tokenizer_bytes: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
+    if tokenizer_bytes.is_empty() {
+        return None;
+    }
+    let tokenizer_json: serde_json::Value = serde_json::from_slice(tokenizer_bytes).ok()?;
+    let vocab_obj = tokenizer_json.get("model")?.get("vocab")?.as_object()?;
+    let mut vocab = HashMap::with_capacity(vocab_obj.len());
+    for (token, id_val) in vocab_obj {
+        if let Some(id) = id_val.as_u64() {
+            vocab.insert(token.clone(), id as usize);
+        }
+    }
+    Some(vocab)
 }
 
 fn get_changed_files(root: &Path, git_ref: &str) -> Option<Vec<String>> {

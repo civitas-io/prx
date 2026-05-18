@@ -397,8 +397,7 @@ fn build_dense_index(chunk_texts: &[String]) -> Option<DenseIndex> {
         _ => return None,
     };
 
-    let vocab: HashMap<String, usize> =
-        (0..vocab_size).map(|i| (format!("token_{i}"), i)).collect();
+    let vocab = load_model2vec_vocab(vocab_size)?;
 
     let mut index = DenseIndex::new(vocab, weights);
     let refs: Vec<&str> = chunk_texts.iter().map(|s| s.as_str()).collect();
@@ -482,6 +481,29 @@ fn structural_search_cmd(
 
     matches.truncate(top_k);
     to_search_output(matches, total_matches, false, 0)
+}
+
+fn load_model2vec_vocab(expected_size: usize) -> Option<HashMap<String, usize>> {
+    let tokenizer_bytes: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
+    if tokenizer_bytes.is_empty() {
+        return Some(
+            (0..expected_size)
+                .map(|i| (format!("token_{i}"), i))
+                .collect(),
+        );
+    }
+
+    let tokenizer_json: serde_json::Value = serde_json::from_slice(tokenizer_bytes).ok()?;
+    let vocab_obj = tokenizer_json.get("model")?.get("vocab")?.as_object()?;
+
+    let mut vocab = HashMap::with_capacity(vocab_obj.len());
+    for (token, id_val) in vocab_obj {
+        if let Some(id) = id_val.as_u64() {
+            vocab.insert(token.clone(), id as usize);
+        }
+    }
+
+    Some(vocab)
 }
 
 fn build_snippet(content: &str, match_line: usize, context_lines: usize) -> String {

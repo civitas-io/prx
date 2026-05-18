@@ -177,7 +177,7 @@ fn literal_search(
             .strip_prefix(root)
             .unwrap_or(&entry.path)
             .to_string_lossy()
-            .to_string();
+            .replace('\\', "/");
 
         for (line_idx, line) in content.lines().enumerate() {
             if let Some(m) = re.find(line) {
@@ -328,7 +328,7 @@ fn build_index_in_memory(root: &Path) -> Result<InMemoryIndex, AgError> {
             .strip_prefix(root)
             .unwrap_or(&entry.path)
             .to_string_lossy()
-            .to_string();
+            .replace('\\', "/");
 
         let ext = parsing::extension_from_path(&entry.path);
         let chunks = chunking::chunk_file(&content, &rel_path, ext);

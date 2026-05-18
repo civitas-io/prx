@@ -96,7 +96,7 @@ pub fn run(args: FindArgs) -> Result<serde_json::Value, AgError> {
             .strip_prefix(root)
             .unwrap_or(&entry.path)
             .to_string_lossy()
-            .to_string();
+            .replace('\\', "/");
 
         if let Some(ref pattern) = args.pattern {
             if !glob_matches(pattern, &rel_path) {
@@ -511,7 +511,10 @@ mod tests {
         let result = run(args).unwrap();
         let out: FindOutput = serde_json::from_value(result).unwrap();
         let flat = out.flat.unwrap();
-        let rs = flat.iter().find(|f| f.path == "src/main.rs").unwrap();
+        let rs = flat
+            .iter()
+            .find(|f| f.path.replace('\\', "/") == "src/main.rs")
+            .expect("should find src/main.rs");
         assert!(rs.symbols.is_some());
         assert!(rs.symbols.unwrap() >= 2);
     }
@@ -528,7 +531,8 @@ mod tests {
         let result = run(find_args(dir.path().to_str().unwrap())).unwrap();
         let out: FindOutput = serde_json::from_value(result).unwrap();
         let tree = out.tree.unwrap();
-        assert!(tree.get("src/").is_some(), "tree should have src/ dir");
+        let has_src = tree.get("src/").is_some() || tree.get("src\\").is_some();
+        assert!(has_src, "tree should have src dir: {tree}");
     }
 
     #[test]

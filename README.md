@@ -147,13 +147,55 @@ jest/vitest, tsc, eslint, plus a fallback for unknown commands.
 
 ## Install
 
-```bash
-# Prebuilt binaries (Linux, macOS, Windows)
-curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-$(uname -s)-$(uname -m).tar.gz | tar xz
-chmod +x prx
+### Prebuilt Binaries
 
-# Via cargo
-cargo install prx
+Download from [GitHub Releases](https://github.com/civitas-io/prx/releases):
+
+```bash
+# Linux / macOS
+curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-$(uname -s)-$(uname -m).tar.gz | tar xz
+sudo mv prx /usr/local/bin/
+
+# Verify
+prx --version
+```
+
+### Build from Source
+
+Requires Rust >= 1.85 and a C compiler (for tree-sitter grammars).
+
+```bash
+git clone https://github.com/civitas-io/prx.git
+cd prx
+make setup    # downloads models (~35MB), converts to float16, builds, tests
+```
+
+This takes about 2 minutes on first run. After setup:
+
+```bash
+make build    # debug build
+make release  # optimized release build (~48MB)
+make check    # fmt + clippy + all tests
+```
+
+The `make setup` step downloads embedding model weights from HuggingFace and
+converts them to float16. These files are embedded into the binary at compile
+time — no downloads happen at runtime. See [CONTRIBUTING](docs/CONTRIBUTING.md)
+for the full developer guide.
+
+### Available Make Targets
+
+```
+make setup      - First-time setup: download models, verify build
+make check      - Run fmt, clippy, and all tests
+make build      - Debug build
+make release    - Release build (optimized, ~48MB)
+make test       - Run all tests (unit + E2E)
+make test-unit  - Run unit tests only
+make test-e2e   - Run E2E integration tests only
+make models     - Download and convert model files
+make coverage   - Generate HTML coverage report
+make clean      - Remove build artifacts
 ```
 
 ## Platform Support
@@ -166,24 +208,26 @@ cargo install prx
 | macOS Intel | Supported |
 | Windows x86_64 | Supported |
 
-Single static binary. No runtime dependencies. No internet required.
+Single static binary. No runtime dependencies. No internet required after build.
 
 ## Current Status
 
 | Metric | Value |
 |---|---|
+| Version | 0.1.0 |
 | Commands | 13 |
 | Tests | 300 (256 unit + 44 E2E) |
 | Coverage | 84% |
 | Languages | 14 (tree-sitter grammars) |
-| Release binary | ~77 MB (includes 61 MB embedded model) |
+| Release binary | ~48 MB (float16 model embedded) |
 | CI | GitHub Actions (Linux, macOS, Windows) |
 
 See [ROADMAP](docs/vision/ROADMAP.md) for what's next.
 
 ## Contributing
 
-See [CONTRIBUTING](docs/CONTRIBUTING.md) for setup instructions and development workflow.
+See [CONTRIBUTING](docs/CONTRIBUTING.md) for setup instructions, development
+workflow, and how to add new commands, languages, and run parsers.
 
 ## License
 

@@ -1,95 +1,88 @@
-# ag Roadmap
+# prx Roadmap
 
-A phased delivery plan from zero to v0.1.0 public release.
+## v0.1.0 — RELEASED
 
----
+All phases complete. Released at https://github.com/civitas-io/prx/releases/tag/v0.1.0
 
-## Phase 0 — Foundation (Weeks 1-2)
+### Phase 0 — Foundation [DONE]
 
-| Deliverable | Notes |
+| Deliverable | Status |
 |---|---|
-| Project scaffold | Cargo workspace, CI, clippy/fmt configs |
-| Tree-sitter integration | Chunking, AST parsing, 15 language grammars |
-| Model2Vec inference | Pure Rust, safetensors + ndarray |
-| BM25 implementation | Compound identifier tokenization, sparse matrix scoring |
-| JSON/JSONL output framework | Shared output layer for all tools |
-| Token counting | tokenizers crate |
+| Project scaffold (Cargo, CI, clippy/fmt) | Done |
+| Tree-sitter integration (14 grammars, chunking, AST parsing) | Done |
+| Model2Vec inference (pure Rust, safetensors + ndarray, float16) | Done |
+| BM25 implementation (compound identifier tokenization, CSC sparse matrix) | Done |
+| JSON/JSONL output framework | Done |
+| Token counting (cl100k_base, fast + exact modes) | Done |
+| Content hashing (xxh3) | Done |
+| File walking (ignore crate, .prxignore) | Done |
 
-**Milestone:** `prx search --literal "pattern" src/` works end-to-end.
+### Phase 1 — Core Tools [DONE]
 
----
-
-## Phase 1 — Core Tools (Weeks 3-5)
-
-### `prx search`
-- Literal, semantic, and structural modes
-- RRF fusion across modes
-- Full reranking pipeline: definition boost 3x, stem matching, file coherence 0.2x, noise penalties, saturation decay 0.5^n
-- `--budget` and `--context function|class|block`
-
-### `prx read`
-- `--lines`, `--snap function|class`, `--skeleton`, `--outline`, `--hash`, `--budget`
-- Inline metadata in output
-
-### `prx find`
-- Dual tree + flat output
-- `--pattern`, `--depth`, `--related-to`, `--changed-since`, `--outline`
-- .gitignore-aware
-
-### `prx exists`
-- Bloom filter O(1) presence check
-
-### `prx outline`
-- Standalone symbol outline
-
-**Milestone:** Search, Read, and Find work end-to-end with full JSON output.
-
----
-
-## Phase 2 — Edit, Diff, Integration (Weeks 6-8)
-
-### `prx edit`
-- Literal match by default, `--regex` opt-in
-- `--dry-run` default, `--apply` to commit
-- `--in-function` scoping, syntax validation, multi-edit batching
-
-### `prx diff`
-- Semantic summary, function-level attribution
-- `--stat-only`, `--budget`, move detection
-- No ANSI codes in output
-
-### `prx mcp`
-- MCP server over stdio exposing all tools (rmcp crate)
-
-### `prx index`
-- Optional persistent index with `--watch` mode (notify crate)
-
-### `prx batch`
-- JSONL batch execution
-
-### `prx stats`
-- Token savings dashboard
-
-**Milestone:** Full tool suite works. MCP integration tested with Claude Code, Cursor, and OpenCode.
-
----
-
-## Phase 3 — Polish, Benchmark, Release (Weeks 9-12)
-
-| Area | Details |
+| Command | Status |
 |---|---|
-| Benchmarks | NDCG@10 vs Semble/ripgrep/CodeRankEmbed, token savings, latency profiling |
-| Cross-platform CI | Linux x86_64 + aarch64, macOS x86_64 + aarch64, Windows x86_64 |
-| Binary optimization | LTO, strip, float16 model |
-| Documentation | Man pages, --help text, usage examples |
-| Agent integration guides | AGENTS.md for Claude Code, Cursor, Codex, OpenCode |
-| Distribution | Homebrew formula, cargo install, GitHub releases with prebuilt binaries |
+| `prx search` (literal + semantic + structural, RRF fusion, 5-stage reranking) | Done |
+| `prx read` (--lines, --snap, --skeleton, --outline, --hash, --budget) | Done |
+| `prx find` (tree+flat, --pattern, --depth, --changed-since, --related-to) | Done |
+| `prx exists` (bloom filter O(1)) | Done |
+| `prx outline` (file + directory mode) | Done |
+| Search auto-detection (literal vs semantic vs structural) | Done |
+| Continuation tokens for pagination | Done |
+| Budget enforcement | Done |
 
-**Milestone:** v0.1.0 public release.
+### Phase 2 — Edit, Diff, Integration [DONE]
+
+| Command | Status |
+|---|---|
+| `prx edit` (literal/regex, dry-run, --apply, --in-function, syntax validation) | Done |
+| `prx diff` (git diff, function attribution, semantic notes, --stat-only) | Done |
+| `prx run` (9 parsers: cargo test/build/clippy, pytest, go test, jest/vitest, tsc, eslint) | Done |
+| `prx index` (persistent to .prx/index/, --rebuild, --stats, --watch) | Done |
+| `prx batch` (JSONL stdin dispatch) | Done |
+| `prx stats` (token savings dashboard, PRX_STATS_FILE env) | Done |
+| `prx init` (AGENTS.md snippet, cursor/codex/opencode/claude-code configs) | Done |
+| `prx mcp` (MCP server over stdio, 6 tools) | Done |
+
+### Phase 3 — Polish, Benchmark, Release [DONE]
+
+| Area | Status |
+|---|---|
+| Cross-platform CI (Linux, macOS, Windows) | Done |
+| Float16 model conversion (77MB -> 48MB binary) | Done |
+| Model2Vec vocabulary loading (real tokenizer, 61,826 tokens) | Done |
+| GitHub Actions release pipeline (5 targets) | Done |
+| Apache 2.0 license | Done |
+| Documentation (21 docs, ~5,000 lines) | Done |
+| 300 tests (256 unit + 44 E2E), 84% coverage | Done |
 
 ---
 
-## Future (post v0.1.0)
+## v0.1.0 Stats
+
+| Metric | Value |
+|---|---|
+| Commands | 13 |
+| Tests | 300 |
+| Coverage | 84% |
+| Languages | 14 (tree-sitter grammars) |
+| Release binary | ~48 MB |
+| Tool parsers (prx run) | 9 |
+| Repository | https://github.com/civitas-io/prx |
+
+---
+
+## v0.2.0 — Next
+
+| Item | Priority | Description |
+|---|---|---|
+| Benchmarks | High | NDCG@10 measurement, token efficiency curves, latency profiling |
+| `cargo publish` | High | Publish to crates.io for `cargo install prx` |
+| Homebrew formula | High | `brew install civitas-io/tap/prx` |
+| More run parsers | Medium | bun test, deno test, dotnet test, ruff |
+| Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
+| Float16 native inference | Low | f16 math without f32 conversion |
+
+## Future (post v0.2.0)
 
 | Tool | Purpose |
 |---|---|
@@ -98,12 +91,12 @@ A phased delivery plan from zero to v0.1.0 public release.
 | `prx deps` | Import and dependency graph |
 | `prx blame` | Structured git blame per function |
 | `prx test` | Test discovery related to functions and files |
-| Additional grammars | Expand language coverage beyond initial 15 |
-| Custom embeddings | Support for custom or fine-tuned embedding models |
-| Incremental indexing | Index persistence and incremental updates |
+| Custom embeddings | Support for user-provided or fine-tuned models |
 
 ---
 
 ## Version Compatibility
 
-As tools evolve between versions, CLI flags and JSON output schemas may change. All breaking changes will be documented in CHANGELOG.md with migration guides. JSON output includes a `version` field for programmatic detection.
+CLI flags and JSON output schemas may change between minor versions. All breaking
+changes are documented in CHANGELOG.md with migration guides. JSON output includes
+a `version` field for programmatic detection.

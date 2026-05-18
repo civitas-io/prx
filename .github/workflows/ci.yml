@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -Dwarnings
+
+jobs:
+  check:
+    name: Check & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Download model weights
+        run: |
+          mkdir -p models
+          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
+          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+
+      - name: Format check
+        run: cargo fmt --check
+
+      - name: Clippy (no features)
+        run: cargo clippy --no-default-features -- -D warnings
+
+      - name: Clippy (all features)
+        run: cargo clippy --features mcp,watch -- -D warnings
+
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Download model weights
+        run: |
+          mkdir -p models
+          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
+          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+
+      - name: Unit tests
+        run: cargo test --no-default-features --lib
+
+      - name: Integration tests
+        run: cargo test --no-default-features --test e2e
+
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Download model weights
+        run: |
+          mkdir -p models
+          curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
+          curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json -o models/cl100k_base.json
+
+      - name: Build release
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: prx-${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release/prx
+            target/${{ matrix.target }}/release/prx.exe

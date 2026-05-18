@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 680" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#555"/>
+    </marker>
+  </defs>
+
+  <!-- Background -->
+  <rect width="900" height="680" fill="#fafafa" rx="8"/>
+
+  <!-- Title -->
+  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a1a1a">ag System Architecture</text>
+  <text x="450" y="50" text-anchor="middle" font-size="11" fill="#888">Single binary, busybox-style, structured JSON output</text>
+
+  <!-- CLI Layer -->
+  <rect x="30" y="70" width="840" height="50" rx="6" fill="#e8f0fe" stroke="#4285f4" stroke-width="1.5"/>
+  <text x="450" y="92" text-anchor="middle" font-weight="600" fill="#1a1a1a">CLI Layer (clap multicall)</text>
+  <text x="450" y="108" text-anchor="middle" font-size="11" fill="#555">ag search | ag read | ag find | ag edit | ag diff | ag exists | ag outline | ag batch | ag mcp</text>
+
+  <!-- Commands Row -->
+  <rect x="30" y="140" width="130" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="95" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">search</text>
+  <text x="95" y="174" text-anchor="middle" font-size="10" fill="#777">literal+semantic+structural</text>
+
+  <rect x="170" y="140" width="110" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="225" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">read</text>
+  <text x="225" y="174" text-anchor="middle" font-size="10" fill="#777">snap, skeleton, outline</text>
+
+  <rect x="290" y="140" width="100" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="340" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">find</text>
+  <text x="340" y="174" text-anchor="middle" font-size="10" fill="#777">tree+flat, metadata</text>
+
+  <rect x="400" y="140" width="100" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="450" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">edit</text>
+  <text x="450" y="174" text-anchor="middle" font-size="10" fill="#777">dry-run, syntax check</text>
+
+  <rect x="510" y="140" width="100" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="560" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">diff</text>
+  <text x="560" y="174" text-anchor="middle" font-size="10" fill="#777">semantic summary</text>
+
+  <rect x="620" y="140" width="120" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="680" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">exists/outline</text>
+  <text x="680" y="174" text-anchor="middle" font-size="10" fill="#777">bloom, symbols</text>
+
+  <rect x="750" y="140" width="120" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
+  <text x="810" y="158" text-anchor="middle" font-size="12" font-weight="600" fill="#4285f4">mcp/batch</text>
+  <text x="810" y="174" text-anchor="middle" font-size="10" fill="#777">stdio, JSONL</text>
+
+  <!-- Arrow from CLI to Commands -->
+  <line x1="450" y1="120" x2="450" y2="140" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Search Engine (large box) -->
+  <rect x="30" y="210" width="420" height="280" rx="6" fill="#fef7e0" stroke="#f9ab00" stroke-width="1.5"/>
+  <text x="240" y="232" text-anchor="middle" font-weight="700" fill="#1a1a1a">Search Engine</text>
+  <text x="240" y="247" text-anchor="middle" font-size="10" fill="#888">Derived from Semble (MIT)</text>
+
+  <!-- Chunking -->
+  <rect x="45" y="258" width="180" height="40" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="135" y="275" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Chunking</text>
+  <text x="135" y="290" text-anchor="middle" font-size="10" fill="#777">tree-sitter, 1500 char, AST-aware</text>
+
+  <!-- Dense Index -->
+  <rect x="45" y="308" width="180" height="40" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="135" y="325" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Dense Index</text>
+  <text x="135" y="340" text-anchor="middle" font-size="10" fill="#777">Model2Vec, 256-dim, float16</text>
+
+  <!-- Sparse Index -->
+  <rect x="45" y="358" width="180" height="40" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="135" y="375" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Sparse Index</text>
+  <text x="135" y="390" text-anchor="middle" font-size="10" fill="#777">BM25, CSC matrix, compound tokens</text>
+
+  <!-- RRF Fusion -->
+  <rect x="250" y="258" width="185" height="40" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="342" y="275" text-anchor="middle" font-size="11" font-weight="600" fill="#333">RRF Fusion</text>
+  <text x="342" y="290" text-anchor="middle" font-size="10" fill="#777">k=60, adaptive alpha (0.3/0.5)</text>
+
+  <!-- Reranking -->
+  <rect x="250" y="308" width="185" height="90" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="342" y="325" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Reranking Pipeline</text>
+  <text x="260" y="342" font-size="10" fill="#555">1. File coherence (0.2x)</text>
+  <text x="260" y="356" font-size="10" fill="#555">2. Definition boost (3x)</text>
+  <text x="260" y="370" font-size="10" fill="#555">3. Stem matching</text>
+  <text x="260" y="384" font-size="10" fill="#555">4. Noise penalties (0.3x)</text>
+
+  <!-- Budget -->
+  <rect x="250" y="408" width="185" height="36" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="342" y="425" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Budget Enforcement</text>
+  <text x="342" y="438" text-anchor="middle" font-size="10" fill="#777">greedy selection, token-capped</text>
+
+  <!-- Bloom -->
+  <rect x="45" y="408" width="180" height="36" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
+  <text x="135" y="425" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Bloom Filter</text>
+  <text x="135" y="438" text-anchor="middle" font-size="10" fill="#777">O(1) exists check, ~300ns</text>
+
+  <!-- Arrows within search -->
+  <line x1="225" y1="278" x2="250" y2="278" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="225" y1="328" x2="250" y2="328" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="225" y1="378" x2="250" y2="352" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="342" y1="298" x2="342" y2="308" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="342" y1="398" x2="342" y2="408" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Shared Infrastructure -->
+  <rect x="470" y="210" width="400" height="280" rx="6" fill="#e8f5e9" stroke="#34a853" stroke-width="1.5"/>
+  <text x="670" y="232" text-anchor="middle" font-weight="700" fill="#1a1a1a">Shared Infrastructure</text>
+
+  <!-- Tree-sitter -->
+  <rect x="485" y="250" width="175" height="52" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="572" y="270" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Tree-sitter</text>
+  <text x="572" y="285" text-anchor="middle" font-size="10" fill="#777">15 languages compiled in</text>
+  <text x="572" y="298" text-anchor="middle" font-size="10" fill="#777">parse, outline, snap, validate</text>
+
+  <!-- File Walking -->
+  <rect x="680" y="250" width="175" height="52" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="767" y="270" text-anchor="middle" font-size="11" font-weight="600" fill="#333">File Walker</text>
+  <text x="767" y="285" text-anchor="middle" font-size="10" fill="#777">ignore crate</text>
+  <text x="767" y="298" text-anchor="middle" font-size="10" fill="#777">.gitignore-aware</text>
+
+  <!-- Token Counting -->
+  <rect x="485" y="316" width="175" height="40" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="572" y="333" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Token Counter</text>
+  <text x="572" y="348" text-anchor="middle" font-size="10" fill="#777">tokenizers crate, --budget</text>
+
+  <!-- Content Hashing -->
+  <rect x="680" y="316" width="175" height="40" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="767" y="333" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Content Hashing</text>
+  <text x="767" y="348" text-anchor="middle" font-size="10" fill="#777">xxh3, change detection</text>
+
+  <!-- JSON Output -->
+  <rect x="485" y="370" width="175" height="40" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="572" y="387" text-anchor="middle" font-size="11" font-weight="600" fill="#333">JSON Output</text>
+  <text x="572" y="402" text-anchor="middle" font-size="10" fill="#777">envelope, errors, JSONL</text>
+
+  <!-- Embedded Model -->
+  <rect x="680" y="370" width="175" height="40" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="767" y="387" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Embedded Model</text>
+  <text x="767" y="402" text-anchor="middle" font-size="10" fill="#777">potion-code-16M, include_bytes!</text>
+
+  <!-- MCP Server -->
+  <rect x="485" y="424" width="370" height="40" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="670" y="441" text-anchor="middle" font-size="11" font-weight="600" fill="#333">MCP Server (optional)</text>
+  <text x="670" y="456" text-anchor="middle" font-size="10" fill="#777">rmcp crate, stdio transport, exposes all tools</text>
+
+  <!-- Output Layer -->
+  <rect x="30" y="510" width="840" height="50" rx="6" fill="#fce8e6" stroke="#ea4335" stroke-width="1.5"/>
+  <text x="450" y="532" text-anchor="middle" font-weight="600" fill="#1a1a1a">Output: stdout (JSON)</text>
+  <text x="450" y="548" text-anchor="middle" font-size="11" fill="#555">{"version":"0.1.0", "command":"...", "status":"ok"|"error", "tokens":N, "data":{...}}</text>
+
+  <!-- Arrow from components to output -->
+  <line x1="240" y1="490" x2="240" y2="510" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+  <line x1="670" y1="464" x2="670" y2="510" stroke="#555" stroke-width="1" marker-end="url(#arrow)"/>
+
+  <!-- Platform bar -->
+  <rect x="30" y="580" width="840" height="44" rx="6" fill="#f3e8fd" stroke="#9334e6" stroke-width="1.5"/>
+  <text x="450" y="600" text-anchor="middle" font-weight="600" fill="#1a1a1a">Cross-Platform: Single Static Binary</text>
+  <text x="450" y="616" text-anchor="middle" font-size="11" fill="#555">Linux x86_64 + aarch64 | macOS Apple Silicon + Intel | Windows x86_64 | ~47 MB | zero dependencies</text>
+
+  <!-- Key metrics -->
+  <rect x="30" y="636" width="200" height="34" rx="4" fill="#fff" stroke="#ccc" stroke-width="1"/>
+  <text x="130" y="658" text-anchor="middle" font-size="11" fill="#555">98% fewer tokens vs grep+read</text>
+
+  <rect x="250" y="636" width="180" height="34" rx="4" fill="#fff" stroke="#ccc" stroke-width="1"/>
+  <text x="340" y="658" text-anchor="middle" font-size="11" fill="#555">NDCG@10 target: 0.85</text>
+
+  <rect x="450" y="636" width="180" height="34" rx="4" fill="#fff" stroke="#ccc" stroke-width="1"/>
+  <text x="540" y="658" text-anchor="middle" font-size="11" fill="#555">Index: &lt;500ms | Query: &lt;5ms</text>
+
+  <rect x="650" y="636" width="220" height="34" rx="4" fill="#fff" stroke="#ccc" stroke-width="1"/>
+  <text x="760" y="658" text-anchor="middle" font-size="11" fill="#555">15 languages, embedded grammars</text>
+</svg>

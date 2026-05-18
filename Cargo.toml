@@ -1,0 +1,112 @@
+[package]
+name = "prx"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+description = "Praxis — agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff for AI coding agents."
+license = "MIT"
+repository = "https://github.com/civitas-io/prx"
+keywords = ["cli", "ai", "agent", "search", "tools"]
+categories = ["command-line-utilities", "development-tools"]
+
+[dependencies]
+# CLI framework — derive API with multicall for busybox-style dispatch
+clap = { version = "4.6", features = ["derive"] }
+
+# AST parsing — 0.26 confirmed compatible with all grammar crates via tree-sitter-language bridge
+tree-sitter = "0.26"
+# Structural search patterns (fn $NAME($$$))
+ast-grep-core = "0.42"
+
+# Embedding model weights — zero-copy deserialization from include_bytes!
+safetensors = "0.7"
+# Dense matrix ops — embedding lookup, mean pool, L2 normalize, cosine similarity
+ndarray = "0.17"
+# Sparse matrices — pre-computed BM25 scores in CSC format
+sprs = "0.11"
+
+# Token counting — cl100k_base tokenizer for --budget enforcement
+tokenizers = "0.23"
+
+# Diff computation — TextDiff for ag diff, ChangeTag iteration
+similar = "3.1"
+
+# Bloom filter — O(1) existence checks for ag exists
+bloomfilter = "3.0"
+
+# JSON serialization — output envelope, structured errors
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Content hashing — xxh3 128-bit for change detection
+xxhash-rust = { version = "0.8", features = ["xxh3"] }
+
+# .gitignore-aware file walking — from ripgrep
+ignore = "0.4"
+
+# Error handling
+thiserror = "2"                    # Typed errors for library code (AgError enum)
+anyhow = "1"                      # Ergonomic errors for CLI main()
+
+# Regex for literal search and identifier extraction
+regex = "1"
+
+# Home directory resolution for stats file
+dirs-next = "2"
+
+# Binary serialization for persistent index
+bincode = "1"
+
+# f16 support for loading float16 model weights
+half = "2"
+
+# Continuation token encoding for paginated search
+base64 = "0.22"
+
+# MCP server (optional, enabled by default)
+rmcp = { version = "1", features = ["server", "transport-io", "schemars"], optional = true }
+tokio = { version = "1", features = ["full"], optional = true }
+schemars = { version = "1", optional = true }
+
+# File watching (optional, for ag index --watch)
+notify = { version = "8", optional = true }
+
+# Tree-sitter language grammars — all confirmed working with tree-sitter 0.26
+tree-sitter-rust = "0.24"
+tree-sitter-python = "0.25"
+tree-sitter-javascript = "0.25"
+tree-sitter-typescript = "0.23"
+tree-sitter-go = "0.25"
+tree-sitter-java = "0.23"
+tree-sitter-c = "0.24"
+tree-sitter-cpp = "0.23"
+tree-sitter-ruby = "0.23"
+tree-sitter-bash = "0.25"
+tree-sitter-json = "0.24"
+tree-sitter-html = "0.23"
+tree-sitter-css = "0.25"
+
+[features]
+default = ["mcp"]
+mcp = ["rmcp", "tokio", "schemars"]
+watch = ["notify", "tokio"]
+
+[profile.release]
+lto = true
+strip = true
+codegen-units = 1
+opt-level = "z"                    # Optimize for size (model weights dominate binary)
+
+[dev-dependencies]
+assert_cmd = "2"                   # CLI integration testing
+predicates = "3"                   # Assertion helpers for CLI output
+tempfile = "3"                     # Temp dirs for test fixtures
+criterion = "0.8"                  # Benchmarking
+
+[[bench]]
+name = "search"
+harness = false
+
+[[bench]]
+name = "chunking"
+harness = false

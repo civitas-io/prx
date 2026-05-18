@@ -1,0 +1,489 @@
+use std::path::Path;
+
+use clap::Args;
+use serde::Serialize;
+
+use crate::hash;
+use crate::output::AgError;
+use crate::parsing::{self, outline, snap};
+use crate::tokens;
+
+#[derive(Args)]
+pub struct ReadArgs {
+    /// File path
+    pub file: String,
+
+    /// Line range (e.g., 10-20)
+    #[arg(long)]
+    pub lines: Option<String>,
+
+    /// Expand range to enclosing structure
+    #[arg(long)]
+    pub snap: Option<String>,
+
+    /// Return signatures and exports only
+    #[arg(long)]
+    pub skeleton: bool,
+
+    /// Return symbol table
+    #[arg(long)]
+    pub outline: bool,
+
+    /// Return content hash only
+    #[arg(long)]
+    pub hash: bool,
+
+    /// Token budget for content
+    #[arg(long)]
+    pub budget: Option<usize>,
+
+    /// Include file metadata
+    #[arg(long)]
+    pub meta: bool,
+}
+
+#[derive(Serialize, serde::Deserialize, Debug)]
+pub struct ReadOutput {
+    pub file: String,
+    pub meta: FileMeta,
+    pub content: Option<ContentBlock>,
+    pub outline: Option<Vec<SymbolEntry>>,
+}
+
+#[derive(Serialize, serde::Deserialize, Debug)]
+pub struct FileMeta {
+    pub language: Option<String>,
+    pub lines: usize,
+    pub bytes: usize,
+    pub modified: Option<u64>,
+    pub hash: String,
+}
+
+#[derive(Serialize, serde::Deserialize, Debug)]
+pub struct ContentBlock {
+    pub range: (usize, usize),
+    pub snap: Option<String>,
+    pub snap_reason: Option<String>,
+    pub text: String,
+    pub tokens: usize,
+    pub truncated: bool,
+}
+
+#[derive(Serialize, serde::Deserialize, Debug)]
+pub struct SymbolEntry {
+    pub name: String,
+    pub kind: String,
+    pub lines: (usize, usize),
+    pub signature: String,
+    pub children: Vec<SymbolEntry>,
+}
+
+pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
+    let path = Path::new(&args.file);
+    if !path.exists() {
+        return Err(AgError::FileNotFound {
+            path: args.file.clone(),
+        });
+    }
+
+    let content = std::fs::read_to_string(path).map_err(AgError::Io)?;
+    let file_hash = hash::hash_bytes(content.as_bytes());
+    let line_count = content.lines().count();
+    let byte_count = content.len();
+    let ext = parsing::extension_from_path(path);
+    let language = ext
+        .and_then(parsing::languages::language_name_for_extension)
+        .map(String::from);
+
+    let modified = std::fs::metadata(path)
+        .ok()
+        .and_then(|m| m.modified().ok())
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|d| d.as_secs());
+
+    let meta = FileMeta {
+        language: language.clone(),
+        lines: line_count,
+        bytes: byte_count,
+        modified,
+        hash: file_hash,
+    };
+
+    if args.hash {
+        let output = ReadOutput {
+            file: args.file,
+            meta,
+            content: None,
+            outline: None,
+        };
+        return to_json(output);
+    }
+
+    let symbols = ext
+        .map(|e| outline::extract_symbols(&content, e))
+        .unwrap_or_default();
+    let symbol_entries = symbols_to_entries(&symbols);
+
+    if args.outline && !args.skeleton {
+        let output = ReadOutput {
+            file: args.file,
+            meta,
+            content: None,
+            outline: Some(symbol_entries),
+        };
+        return to_json(output);
+    }
+
+    if args.skeleton {
+        let skeleton_text = symbols
+            .iter()
+            .map(|s| format!("{}  // L{}", s.signature, s.start_line))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let tok = tokens::count_fast(&skeleton_text);
+        let output = ReadOutput {
+            file: args.file,
+            meta,
+            content: Some(ContentBlock {
+                range: (1, line_count),
+                snap: None,
+                snap_reason: None,
+                text: skeleton_text,
+                tokens: tok,
+                truncated: false,
+            }),
+            outline: Some(symbol_entries),
+        };
+        return to_json(output);
+    }
+
+    let (text, range, snap_info) = if let Some(ref line_spec) = args.lines {
+        let (start, end) = parse_line_range(line_spec)?;
+        if let Some(ref snap_target) = args.snap {
+            let target = parse_snap_target(snap_target)?;
+            if let Some(ext_str) = ext {
+                if let Some(result) = snap::snap_to_structure(&content, ext_str, start, target) {
+                    let text = extract_lines(&content, result.start_line, result.end_line);
+                    (
+                        text,
+                        (result.start_line, result.end_line),
+                        Some((
+                            snap_target.clone(),
+                            format!(
+                                "expanded to enclosing {} `{}`",
+                                result.target_kind,
+                                result.target_name.as_deref().unwrap_or("anonymous")
+                            ),
+                        )),
+                    )
+                } else {
+                    let text = extract_lines(&content, start, end);
+                    (text, (start, end), None)
+                }
+            } else {
+                let text = extract_lines(&content, start, end);
+                (text, (start, end), None)
+            }
+        } else {
+            let text = extract_lines(&content, start, end);
+            (text, (start, end), None)
+        }
+    } else {
+        (content.clone(), (1, line_count), None)
+    };
+
+    let mut truncated = false;
+    let final_text = if let Some(budget) = args.budget {
+        let tok = tokens::count_fast(&text);
+        if tok > budget {
+            truncated = true;
+            truncate_to_budget(&text, budget)
+        } else {
+            text
+        }
+    } else {
+        text
+    };
+
+    let tok = tokens::count_fast(&final_text);
+    let output = ReadOutput {
+        file: args.file,
+        meta,
+        content: Some(ContentBlock {
+            range,
+            snap: snap_info.as_ref().map(|(s, _)| s.clone()),
+            snap_reason: snap_info.map(|(_, r)| r),
+            text: final_text,
+            tokens: tok,
+            truncated,
+        }),
+        outline: Some(symbol_entries),
+    };
+
+    to_json(output)
+}
+
+fn parse_line_range(spec: &str) -> Result<(usize, usize), AgError> {
+    let parts: Vec<&str> = spec.split('-').collect();
+    if parts.len() != 2 {
+        return Err(AgError::InvalidArgument {
+            flag: "lines".to_string(),
+            message: format!("expected START-END, got `{spec}`"),
+        });
+    }
+    let start: usize = parts[0].parse().map_err(|_| AgError::InvalidArgument {
+        flag: "lines".to_string(),
+        message: format!("invalid start line: `{}`", parts[0]),
+    })?;
+    let end: usize = parts[1].parse().map_err(|_| AgError::InvalidArgument {
+        flag: "lines".to_string(),
+        message: format!("invalid end line: `{}`", parts[1]),
+    })?;
+    Ok((start, end))
+}
+
+fn parse_snap_target(s: &str) -> Result<snap::SnapTarget, AgError> {
+    match s {
+        "function" | "fn" => Ok(snap::SnapTarget::Function),
+        "class" => Ok(snap::SnapTarget::Class),
+        "block" => Ok(snap::SnapTarget::Block),
+        _ => Err(AgError::InvalidArgument {
+            flag: "snap".to_string(),
+            message: format!("expected function|class|block, got `{s}`"),
+        }),
+    }
+}
+
+fn extract_lines(content: &str, start: usize, end: usize) -> String {
+    content
+        .lines()
+        .enumerate()
+        .filter(|(i, _)| {
+            let line_num = i + 1;
+            line_num >= start && line_num <= end
+        })
+        .map(|(_, line)| line)
+        .collect::<Vec<_>>()
+        .join("\n")
+}
+
+fn truncate_to_budget(text: &str, budget: usize) -> String {
+    let target_chars = budget * 4;
+    if text.len() <= target_chars {
+        return text.to_string();
+    }
+    let mid = text.len() / 2;
+    let half = target_chars / 2;
+    let start = mid.saturating_sub(half);
+    let end = (start + target_chars).min(text.len());
+    text[start..end].to_string()
+}
+
+fn symbols_to_entries(symbols: &[outline::Symbol]) -> Vec<SymbolEntry> {
+    symbols
+        .iter()
+        .map(|s| SymbolEntry {
+            name: s.name.clone(),
+            kind: s.kind.to_string(),
+            lines: (s.start_line, s.end_line),
+            signature: s.signature.clone(),
+            children: symbols_to_entries(&s.children),
+        })
+        .collect()
+}
+
+fn to_json(output: ReadOutput) -> Result<serde_json::Value, AgError> {
+    serde_json::to_value(output).map_err(|e| AgError::Internal {
+        message: e.to_string(),
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    fn make_test_dir() -> (TempDir, String) {
+        let dir = TempDir::new().unwrap();
+        let rs_path = dir.path().join("sample.rs");
+        std::fs::write(
+            &rs_path,
+            "fn hello() {\n    println!(\"hi\");\n}\n\nfn world(x: i32) -> i32 {\n    x + 1\n}\n\nstruct Point {\n    x: f64,\n    y: f64,\n}\n",
+        )
+        .unwrap();
+        (dir, rs_path.to_string_lossy().to_string())
+    }
+
+    fn read_args(file: &str) -> ReadArgs {
+        ReadArgs {
+            file: file.to_string(),
+            lines: None,
+            snap: None,
+            skeleton: false,
+            outline: false,
+            hash: false,
+            budget: None,
+            meta: false,
+        }
+    }
+
+    #[test]
+    fn reads_full_file() {
+        let (_dir, path) = make_test_dir();
+        let result = run(read_args(&path)).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.content.is_some());
+        let content = out.content.unwrap();
+        assert!(content.text.contains("fn hello"));
+        assert!(content.text.contains("fn world"));
+        assert!(!content.truncated);
+    }
+
+    #[test]
+    fn includes_meta_always() {
+        let (_dir, path) = make_test_dir();
+        let result = run(read_args(&path)).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert_eq!(out.meta.language.as_deref(), Some("rust"));
+        assert!(out.meta.lines > 0);
+        assert!(out.meta.bytes > 0);
+        assert_eq!(out.meta.hash.len(), 32);
+    }
+
+    #[test]
+    fn includes_outline_by_default() {
+        let (_dir, path) = make_test_dir();
+        let result = run(read_args(&path)).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let outline = out.outline.unwrap();
+        let names: Vec<&str> = outline.iter().map(|s| s.name.as_str()).collect();
+        assert!(names.contains(&"hello"), "missing hello: {names:?}");
+        assert!(names.contains(&"world"), "missing world: {names:?}");
+        assert!(names.contains(&"Point"), "missing Point: {names:?}");
+    }
+
+    #[test]
+    fn hash_only_returns_no_content() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.hash = true;
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.content.is_none());
+        assert!(out.outline.is_none());
+        assert_eq!(out.meta.hash.len(), 32);
+    }
+
+    #[test]
+    fn outline_only_returns_no_content() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.outline = true;
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.content.is_none());
+        assert!(out.outline.is_some());
+        assert!(!out.outline.unwrap().is_empty());
+    }
+
+    #[test]
+    fn skeleton_returns_signatures_only() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.skeleton = true;
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let content = out.content.unwrap();
+        assert!(content.text.contains("fn hello()"));
+        assert!(content.text.contains("fn world(x: i32)"));
+        assert!(!content.text.contains("println!"));
+        assert!(content.tokens < out.meta.bytes / 4);
+    }
+
+    #[test]
+    fn line_range() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.lines = Some("1-3".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let content = out.content.unwrap();
+        assert_eq!(content.range, (1, 3));
+        assert!(content.text.contains("fn hello"));
+        assert!(!content.text.contains("fn world"));
+    }
+
+    #[test]
+    fn snap_to_function() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.lines = Some("2-2".to_string());
+        args.snap = Some("function".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let content = out.content.unwrap();
+        assert!(content.text.contains("fn hello"));
+        assert!(content.snap.is_some());
+        assert!(content.snap_reason.is_some());
+    }
+
+    #[test]
+    fn budget_truncates() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.budget = Some(5);
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let content = out.content.unwrap();
+        assert!(content.truncated);
+        assert!(content.tokens <= 5);
+    }
+
+    #[test]
+    fn nonexistent_file_errors() {
+        let args = read_args("/nonexistent/file.rs");
+        let err = run(args).unwrap_err();
+        assert!(matches!(err, AgError::FileNotFound { .. }));
+    }
+
+    #[test]
+    fn invalid_line_range_errors() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.lines = Some("abc".to_string());
+        let err = run(args).unwrap_err();
+        assert!(matches!(err, AgError::InvalidArgument { .. }));
+    }
+
+    #[test]
+    fn invalid_snap_target_errors() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.lines = Some("1-3".to_string());
+        args.snap = Some("invalid".to_string());
+        let err = run(args).unwrap_err();
+        assert!(matches!(err, AgError::InvalidArgument { .. }));
+    }
+
+    #[test]
+    fn parse_line_range_valid() {
+        assert_eq!(parse_line_range("10-20").unwrap(), (10, 20));
+        assert_eq!(parse_line_range("1-1").unwrap(), (1, 1));
+    }
+
+    #[test]
+    fn parse_line_range_invalid() {
+        assert!(parse_line_range("abc").is_err());
+        assert!(parse_line_range("1-2-3").is_err());
+        assert!(parse_line_range("a-b").is_err());
+    }
+}

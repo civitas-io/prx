@@ -11,7 +11,7 @@ budgets, structural awareness, and content hashing -- designed for AI coding
 agents, not humans.
 
 - **Repository:** `github.com/civitas-io/prx`
-- **License:** MIT
+- **License:** Apache 2.0
 - **Language:** Rust (edition 2024)
 - **Status:** Pre-alpha (documentation-first phase)
 
@@ -202,7 +202,7 @@ breaking changes are documented in CHANGELOG.md with migration guides. Use the
 | Linting | `cargo clippy -- -D warnings` |
 | Testing | `cargo test` |
 | Build | `cargo build --release` |
-| License | MIT |
+| License | Apache 2.0 |
 | Package layout | `src/` (single crate) |
 
 ### Code Style

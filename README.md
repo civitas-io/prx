@@ -1,36 +1,39 @@
 # prx (Praxis)
 
-Agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff
-for AI coding agents.
+Agent-native Unix tools for AI coding agents. A single Rust binary replacing
+grep, cat, find, sed, and diff with structured JSON output, token budgets,
+and embedded semantic search.
 
-prx returns structured JSON with token budgets, structural awareness, and
-content hashing. It ships as a single static binary with an embedded semantic
-search model. No runtime dependencies. No internet required. No setup.
+Part of the [Civitas](https://github.com/civitas-io) ecosystem.
 
 ## Why
 
-AI coding agents spend 30-93% of their tokens on exploration. The core loop --
-grep for a pattern, read files for context, grep again -- wastes 93% of consumed
-tokens because Unix tools return human-shaped output that agents must re-parse.
+AI coding agents waste 30-93% of their tokens on exploration. The grep-read-grep
+loop alone burns 93% of consumed tokens on output agents must re-parse. Test
+output is worse: 164 passing tests produce ~1,200 tokens of "ok" lines that no
+agent needs.
 
-ag fixes this at the source. Instead of compressing human tool output after the
-fact, ag returns exactly what agents need: labeled fields, ranked results, and
-token-budgeted responses.
+prx fixes this at the source. Instead of compressing human tool output after
+the fact, prx returns exactly what agents need: labeled fields, ranked results,
+and token-budgeted responses.
 
-## Tools
+## Commands
 
 | Command | Replaces | What it does |
 |---|---|---|
-| `prx search` | grep, rg | Hybrid search: literal + semantic + structural. Token-budgeted, ranked results with enclosing function context. |
-| `prx read` | cat, head, tail | Structured file reading. Skeleton mode (signatures only), structural snapping, content hashing. |
-| `prx find` | find, ls, tree | Codebase mapping. Dual tree+flat output, inline metadata, .gitignore-aware. |
-| `prx edit` | sed, awk | Safe edits. Literal matching, dry-run by default, syntax validation, scoped to functions. |
-| `prx diff` | diff, git diff | Semantic diffs. Natural language summaries, function-level attribution, move detection. |
-| `prx exists` | grep -q | O(1) bloom filter existence check. ~0 tokens. |
+| `prx search` | grep, rg | Hybrid search: literal + semantic + structural. Token-budgeted, ranked results. |
+| `prx read` | cat, head, tail | Structured file reading. Skeleton mode, structural snapping, content hashing. |
+| `prx find` | find, ls, tree | Codebase mapping. Dual tree+flat output, inline metadata. |
+| `prx edit` | sed, awk | Safe edits. Literal matching, dry-run by default, syntax validation. |
+| `prx diff` | diff, git diff | Semantic diffs. Natural language summaries, function-level attribution. |
+| `prx run` | -- | Structured command runner. Parses test/build/lint output. 95-99% token savings. |
+| `prx exists` | grep -q | O(1) bloom filter existence check. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
+| `prx index` | -- | Persistent search index with validation. 6x faster repeated searches. |
 | `prx mcp` | -- | MCP server over stdio for direct agent integration. |
-| `prx run` | -- | Structured command runner. Parses test/build/lint output, returns only failures and warnings. 95-99% token reduction on test output. |
-| `prx batch` | xargs | Parallel JSONL batch execution. One round-trip, multiple results. |
+| `prx batch` | xargs | Parallel JSONL batch execution. |
+| `prx init` | -- | Auto-detect agent frameworks, generate integration configs. |
+| `prx stats` | -- | Token savings dashboard. |
 
 ## Quick Start
 
@@ -47,12 +50,14 @@ prx read src/auth.ts --lines 42-67 --snap function
 # Safe editing with preview
 prx edit src/auth.ts --find "old_api()" --replace "new_api()" --dry-run
 
+# Run tests with 95%+ token savings
+prx run cargo test
+
 # Check if something exists before searching (~0 tokens)
 prx exists "redis" src/
 
-# Everything at once
-echo '{"cmd":"search","query":"auth","budget":300}
-{"cmd":"read","file":"src/auth.ts","skeleton":true}' | prx batch
+# Build persistent index for faster searches
+prx index .
 ```
 
 ## Output
@@ -72,7 +77,6 @@ All output is JSON by default:
         "line": 42,
         "match": "authenticate",
         "context_name": "handleLogin",
-        "context_signature": "async handleLogin(req: Request): Promise<Response>",
         "snippet": "async handleLogin(req: Request)...",
         "relevance": 0.94
       }
@@ -103,51 +107,54 @@ Use `--plain` for human-readable output. Use `--budget N` to cap token usage.
 
 Works with Claude Code, Cursor, Codex, OpenCode, and any MCP-compatible agent.
 
-### AGENTS.md / CLAUDE.md
+### AGENTS.md
 
-Add to your project's AGENTS.md:
-
-```markdown
-## Code Search
-
-Use `prx search` instead of grep for finding code:
-
-    prx search "authentication flow" .
-    prx search --literal "authenticate(" src/
-    prx read src/auth.ts --skeleton
-    prx read src/auth.ts --snap function --lines 42-67
+```bash
+prx init --agents-md    # appends usage snippet to your AGENTS.md
+prx init                # auto-detect frameworks, generate all configs
 ```
+
+### Three Integration Tiers
+
+1. **CLI on PATH** — works everywhere (top-level agents, sub-agents, scripts, CI)
+2. **MCP server** — richer integration for top-level agents
+3. **Agent definitions** — dedicated Claude Code sub-agent (`prx init --agent claude-code`)
+
+## How Search Works
+
+prx's search is derived from [Semble](https://github.com/MinishLab/semble) (MIT).
+Three retrieval methods:
+
+- **Literal**: regex matching at ripgrep speed
+- **Semantic**: 16M-parameter static embedding model (Model2Vec), embedded in the binary
+- **Structural**: AST pattern matching via tree-sitter (`fn $NAME($$$)`)
+
+Results are fused via Reciprocal Rank Fusion and reranked with code-aware signals:
+definition boost, identifier stem matching, file coherence, noise penalties, and
+saturation decay.
+
+## prx run — Structured Command Output
+
+```bash
+prx run cargo test      # 95-99% token savings on passing tests
+prx run cargo clippy    # only warnings and errors
+prx run pytest          # parsed test results
+prx run npm test        # jest/vitest output parsed
+```
+
+Supports 9 tool parsers: cargo test, cargo build/clippy, pytest, go test,
+jest/vitest, tsc, eslint, plus a fallback for unknown commands.
 
 ## Install
 
 ```bash
 # Prebuilt binaries (Linux, macOS, Windows)
-curl -L https://github.com/civitas-io/prx/releases/latest/download/ag-$(uname -s)-$(uname -m) -o ag
-chmod +x ag
+curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-$(uname -s)-$(uname -m).tar.gz | tar xz
+chmod +x prx
 
 # Via cargo
 cargo install prx
-
-# Via homebrew
-brew install civitas-io/tap/prx
 ```
-
-## How Search Works
-
-ag's search is derived from [Semble](https://github.com/MinishLab/semble) (MIT).
-It combines three retrieval methods:
-
-- **Literal**: regex matching at ripgrep speed
-- **Semantic**: 16M-parameter static embedding model (Model2Vec), embedded in the
-  binary, runs on CPU in milliseconds
-- **Structural**: AST pattern matching via tree-sitter (e.g., `fn $NAME($$$)`)
-
-Results are fused via Reciprocal Rank Fusion and reranked with code-aware
-signals: definition boost, identifier stem matching, file coherence, noise
-penalties (test files, compat shims), and saturation decay.
-
-Benchmarks target NDCG@10 >= 0.85, matching Semble at 99% of transformer
-quality with 200x faster indexing.
 
 ## Platform Support
 
@@ -159,12 +166,25 @@ quality with 200x faster indexing.
 | macOS Intel | Supported |
 | Windows x86_64 | Supported |
 
-Single static binary. No runtime dependencies.
+Single static binary. No runtime dependencies. No internet required.
 
-## Status
+## Current Status
 
-Pre-alpha. Documentation-first phase. See [ROADMAP](docs/vision/ROADMAP.md).
+| Metric | Value |
+|---|---|
+| Commands | 13 |
+| Tests | 300 (256 unit + 44 E2E) |
+| Coverage | 84% |
+| Languages | 14 (tree-sitter grammars) |
+| Release binary | ~77 MB (includes 61 MB embedded model) |
+| CI | GitHub Actions (Linux, macOS, Windows) |
+
+See [ROADMAP](docs/vision/ROADMAP.md) for what's next.
+
+## Contributing
+
+See [CONTRIBUTING](docs/CONTRIBUTING.md) for setup instructions and development workflow.
 
 ## License
 
-MIT
+Apache 2.0

@@ -61,6 +61,7 @@ prx read src/auth.ts                           # full file with metadata
 prx read src/auth.ts --skeleton                # signatures and exports only
 prx read src/auth.ts --lines 42-67 --snap fn   # expand to enclosing function
 prx read src/auth.ts --outline                 # symbol table
+prx read src/auth.ts --if-changed abc123...    # skip if unchanged (returns cached stub)
 
 # Find -- codebase mapping
 prx find src/ --pattern "*.ts" --depth 3       # bounded file discovery
@@ -125,13 +126,15 @@ Use `--plain` for human-readable output. Use `--budget N` to cap token usage.
    This costs ~10% of the tokens and tells you what is in the file.
 3. Use `prx read --snap function` to read specific functions without pulling the
    entire file into context.
-4. Use `prx exists "pattern"` before full searches when you just need a yes/no.
-5. Use `prx edit --dry-run` (default) to preview changes before `--apply`.
-6. Use `prx diff --stat-only` for cheap change detection (~30 tokens).
-7. Use `prx run cargo test` instead of raw `cargo test` — returns only failures,
+4. Re-reading a file? Pass `--if-changed <previous_hash>` to skip if unchanged.
+   The hash is in `meta.hash` from the previous response. Cache hits cost ~50 bytes.
+5. Use `prx exists "pattern"` before full searches when you just need a yes/no.
+6. Use `prx edit --dry-run` (default) to preview changes before `--apply`.
+7. Use `prx diff --stat-only` for cheap change detection (~30 tokens).
+8. Use `prx run cargo test` instead of raw `cargo test` — returns only failures,
    saves 95-99% tokens on passing test suites.
-8. Use `prx batch` to combine multiple independent queries in one round-trip.
-9. Use `--budget N` on every content-returning command to control token cost.
+9. Use `prx batch` to combine multiple independent queries in one round-trip.
+10. Use `--budget N` on every content-returning command to control token cost.
 
 ### Integration Strategy
 

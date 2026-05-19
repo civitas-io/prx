@@ -22,7 +22,7 @@ and token-budgeted responses.
 | Command | Replaces | What it does |
 |---|---|---|
 | `prx search` | grep, rg | Hybrid search: literal + semantic + structural. Token-budgeted, ranked results. |
-| `prx read` | cat, head, tail | Structured file reading. Skeleton mode, structural snapping, content hashing. |
+| `prx read` | cat, head, tail | Structured file reading. Skeleton mode, structural snapping, `--if-changed` cache. |
 | `prx find` | find, ls, tree | Codebase mapping. Dual tree+flat output, inline metadata. |
 | `prx edit` | sed, awk | Safe edits. Literal matching, dry-run by default, syntax validation. |
 | `prx diff` | diff, git diff | Semantic diffs. Natural language summaries, function-level attribution. |
@@ -47,6 +47,9 @@ prx read src/auth.ts --skeleton
 
 # Read just the function you need
 prx read src/auth.ts --lines 42-67 --snap function
+
+# Skip re-reading unchanged files (~50 bytes vs full content)
+prx read src/auth.ts --if-changed a3f9b2c1...
 
 # Safe editing with preview
 prx edit src/auth.ts --find "old_api()" --replace "new_api()" --dry-run

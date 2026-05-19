@@ -176,6 +176,64 @@ fn read_line_range() {
     assert_eq!(range[1], 3);
 }
 
+#[test]
+fn read_if_changed_match_returns_cached() {
+    let dir = test_dir();
+    let file = dir.path().join("main.rs");
+    let out = ag()
+        .args(["read", file.to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    let hash = json["data"]["meta"]["hash"].as_str().unwrap();
+
+    let out2 = ag()
+        .args(["read", file.to_str().unwrap(), "--if-changed", hash])
+        .output()
+        .unwrap();
+    assert!(out2.status.success());
+    let json2 = parse_json(&out2.stdout);
+    assert_eq!(json2["data"]["cached"], true);
+    assert!(json2["data"]["content"].is_null());
+    assert!(json2["data"]["outline"].is_null());
+    assert_eq!(json2["data"]["meta"]["hash"].as_str().unwrap(), hash);
+}
+
+#[test]
+fn read_if_changed_mismatch_returns_full() {
+    let dir = test_dir();
+    let file = dir.path().join("main.rs");
+    let out = ag()
+        .args([
+            "read",
+            file.to_str().unwrap(),
+            "--if-changed",
+            "00000000000000000000000000000000",
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert!(json["data"]["cached"].is_null() || json["data"]["cached"] == false);
+    assert!(
+        json["data"]["content"]["text"]
+            .as_str()
+            .unwrap()
+            .contains("fn main")
+    );
+}
+
+#[test]
+fn read_if_changed_malformed_errors() {
+    let dir = test_dir();
+    let file = dir.path().join("main.rs");
+    ag().args(["read", file.to_str().unwrap(), "--if-changed", "bad"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("invalid_argument"));
+}
+
 // ==================== ag find ====================
 
 #[test]

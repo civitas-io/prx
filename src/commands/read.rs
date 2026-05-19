@@ -40,11 +40,17 @@ pub struct ReadArgs {
     /// Include file metadata
     #[arg(long)]
     pub meta: bool,
+
+    /// Return cached stub if file hash matches (skip content/outline)
+    #[arg(long)]
+    pub if_changed: Option<String>,
 }
 
 #[derive(Serialize, serde::Deserialize, Debug)]
 pub struct ReadOutput {
     pub file: String,
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub cached: bool,
     pub meta: FileMeta,
     pub content: Option<ContentBlock>,
     pub outline: Option<Vec<SymbolEntry>>,
@@ -78,6 +84,17 @@ pub struct SymbolEntry {
     pub children: Vec<SymbolEntry>,
 }
 
+fn validate_hash(input: &str) -> Result<String, AgError> {
+    let normalized = input.to_ascii_lowercase();
+    if normalized.len() != 32 || !normalized.chars().all(|c| c.is_ascii_hexdigit()) {
+        return Err(AgError::InvalidArgument {
+            flag: "if-changed".to_string(),
+            message: format!("expected 32-char hex hash, got `{input}`"),
+        });
+    }
+    Ok(normalized)
+}
+
 pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
     let path = Path::new(&args.file);
     if !path.exists() {
@@ -106,12 +123,27 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
         lines: line_count,
         bytes: byte_count,
         modified,
-        hash: file_hash,
+        hash: file_hash.clone(),
     };
+
+    if let Some(ref prev_hash) = args.if_changed {
+        let normalized = validate_hash(prev_hash)?;
+        if normalized == file_hash {
+            let output = ReadOutput {
+                file: args.file,
+                cached: true,
+                meta,
+                content: None,
+                outline: None,
+            };
+            return to_json(output);
+        }
+    }
 
     if args.hash {
         let output = ReadOutput {
             file: args.file,
+            cached: false,
             meta,
             content: None,
             outline: None,
@@ -127,6 +159,7 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
     if args.outline && !args.skeleton {
         let output = ReadOutput {
             file: args.file,
+            cached: false,
             meta,
             content: None,
             outline: Some(symbol_entries),
@@ -143,6 +176,7 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
         let tok = tokens::count_fast(&skeleton_text);
         let output = ReadOutput {
             file: args.file,
+            cached: false,
             meta,
             content: Some(ContentBlock {
                 range: (1, line_count),
@@ -208,6 +242,7 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
     let tok = tokens::count_fast(&final_text);
     let output = ReadOutput {
         file: args.file,
+        cached: false,
         meta,
         content: Some(ContentBlock {
             range,
@@ -324,6 +359,7 @@ mod tests {
             hash: false,
             budget: None,
             meta: false,
+            if_changed: None,
         }
     }
 
@@ -485,5 +521,120 @@ mod tests {
         assert!(parse_line_range("abc").is_err());
         assert!(parse_line_range("1-2-3").is_err());
         assert!(parse_line_range("a-b").is_err());
+    }
+
+    #[test]
+    fn if_changed_match_returns_cached_stub() {
+        let (_dir, path) = make_test_dir();
+        let first = run(read_args(&path)).unwrap();
+        let first_out: ReadOutput = serde_json::from_value(first).unwrap();
+        let hash = first_out.meta.hash.clone();
+
+        let mut args = read_args(&path);
+        args.if_changed = Some(hash);
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.cached);
+        assert!(out.content.is_none());
+        assert!(out.outline.is_none());
+        assert_eq!(out.meta.hash, first_out.meta.hash);
+        assert_eq!(out.meta.bytes, first_out.meta.bytes);
+    }
+
+    #[test]
+    fn if_changed_mismatch_returns_full_content() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.if_changed = Some("00000000000000000000000000000000".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(!out.cached);
+        assert!(out.content.is_some());
+        assert!(out.outline.is_some());
+    }
+
+    #[test]
+    fn if_changed_malformed_hash_errors() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.if_changed = Some("not-a-hash".to_string());
+        let err = run(args).unwrap_err();
+        assert!(matches!(err, AgError::InvalidArgument { .. }));
+    }
+
+    #[test]
+    fn if_changed_match_with_skeleton_still_returns_stub() {
+        let (_dir, path) = make_test_dir();
+        let first = run(read_args(&path)).unwrap();
+        let hash = first
+            .get("meta")
+            .unwrap()
+            .get("hash")
+            .unwrap()
+            .as_str()
+            .unwrap()
+            .to_string();
+
+        let mut args = read_args(&path);
+        args.if_changed = Some(hash);
+        args.skeleton = true;
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.cached);
+        assert!(out.content.is_none());
+    }
+
+    #[test]
+    fn if_changed_match_with_lines_still_returns_stub() {
+        let (_dir, path) = make_test_dir();
+        let first = run(read_args(&path)).unwrap();
+        let hash = first
+            .get("meta")
+            .unwrap()
+            .get("hash")
+            .unwrap()
+            .as_str()
+            .unwrap()
+            .to_string();
+
+        let mut args = read_args(&path);
+        args.if_changed = Some(hash);
+        args.lines = Some("1-5".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.cached);
+        assert!(out.content.is_none());
+    }
+
+    #[test]
+    fn if_changed_uppercase_hash_matches() {
+        let (_dir, path) = make_test_dir();
+        let first = run(read_args(&path)).unwrap();
+        let hash = first
+            .get("meta")
+            .unwrap()
+            .get("hash")
+            .unwrap()
+            .as_str()
+            .unwrap()
+            .to_uppercase();
+
+        let mut args = read_args(&path);
+        args.if_changed = Some(hash);
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        assert!(out.cached);
+    }
+
+    #[test]
+    fn cached_false_not_serialized() {
+        let (_dir, path) = make_test_dir();
+        let result = run(read_args(&path)).unwrap();
+        assert!(result.get("cached").is_none());
     }
 }

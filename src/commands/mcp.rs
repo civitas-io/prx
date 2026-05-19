@@ -55,6 +55,9 @@ pub struct ReadParams {
     /// Return hash only
     #[serde(default)]
     pub hash: bool,
+    /// Return cached stub if file hash matches
+    #[serde(default)]
+    pub if_changed: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, JsonSchema)]
@@ -160,6 +163,7 @@ impl AgMcpServer {
             hash: p.hash,
             budget: None,
             meta: false,
+            if_changed: p.if_changed,
         };
         match super::read::run(args) {
             Ok(v) => serde_json::to_string(&v).unwrap_or_else(|e| format!("error: {e}")),

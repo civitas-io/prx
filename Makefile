@@ -16,10 +16,11 @@ help:
 	@echo "  make clean      - Remove build artifacts"
 
 setup: models
+	@bash scripts/install-hooks.sh
 	cargo build --no-default-features
 	cargo test --no-default-features --lib
 	@echo ""
-	@echo "Setup complete. Run 'make check' to verify everything."
+	@echo "Setup complete. Pre-commit hook installed. Run 'make check' to verify."
 
 check:
 	cargo fmt --check

@@ -79,27 +79,56 @@ All phases complete. Released at https://github.com/civitas-io/prx/releases/tag/
 | Error logging | High | `~/.prx/errors.jsonl` captures every fallback with error details for debugging |
 | Real-world baseline data | Medium | Fallback results provide measured (not estimated) baseline token counts |
 
-## v0.2.0 — Distribution
+## v0.2.0 — Context Intelligence
+
+Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
+(native structured output, not post-hoc compression).
+
+### Session & Caching
+
+| Item | Priority | Description | Inspired by |
+|---|---|---|---|
+| Session cache | High | Track file hashes per session. Re-reads of unchanged files return ~13-token cache-hit response instead of full content. Eliminates 50% of file read tokens (SWE-bench data). | LeanCTX `full` mode cache |
+| File reference IDs | Medium | Assign sequential IDs (F1, F2...) to files in a session. Accept `F1` as path alias in subsequent commands. Saves ~10 tokens per reference. | LeanCTX structured headers |
+
+### Read Modes
+
+| Item | Priority | Description | Inspired by |
+|---|---|---|---|
+| `--mode aggressive` | High | Strip comments + whitespace, keep all functional code. 20-40% savings on verbose files. | LeanCTX aggressive mode |
+| `--mode diff` | High | Only return lines changed since last read (via hash comparison with session cache). 80-97% savings on re-reads. | LeanCTX diff mode |
+| `--mode entropy` | Medium | Shannon entropy scoring + Jaccard similarity dedup. Filters repetitive low-information lines. 60-85% savings on generated files (schemas, protobuf, OpenAPI specs). | LeanCTX entropy mode |
+| Auto mode for read | Medium | Auto-select best read mode based on file size, type, and cache state. | LeanCTX auto/smart_read |
+
+### Search Improvements
+
+| Item | Priority | Description | Inspired by |
+|---|---|---|---|
+| Graph proximity boost | High | Build lightweight import graph from `use`/`import`/`require` statements. Boost search results that are in the dependency neighborhood of top results. | LeanCTX graph-aware RRF |
+| MMR diversity | Low | Maximal Marginal Relevance in reranking to reduce redundant results from same cluster. Principled alternative to our saturation decay. | LeanCTX reranking |
+
+### Distribution
 
 | Item | Priority | Description |
 |---|---|---|
 | `cargo publish` | High | Publish to crates.io for `cargo install prx` |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
-| Benchmarks | High | NDCG@10 measurement, token efficiency curves, latency profiling |
+| Benchmarks (NDCG@10) | High | Head-to-head quality measurement vs ripgrep, Semble |
 | More run parsers | Medium | bun test, deno test, dotnet test, ruff |
 | Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
-| Float16 native inference | Low | f16 math without f32 conversion |
 
-## Future (post v0.2.0)
+## v0.3.0 — Project Intelligence
 
-| Tool | Purpose |
-|---|---|
-| `prx context` | Assemble context packages ("everything about module X") |
-| `prx impact` | Static call graph analysis ("what breaks if I change X?") |
-| `prx deps` | Import and dependency graph |
-| `prx blame` | Structured git blame per function |
-| `prx test` | Test discovery related to functions and files |
-| Custom embeddings | Support for user-provided or fine-tuned models |
+| Item | Priority | Description |
+|---|---|---|
+| `prx context` | High | Assemble context packages ("everything about module X") — combine search + read + outline into one call |
+| `prx impact` | High | Reverse dependency analysis ("what breaks if I change X?") using the import graph |
+| `prx deps` | Medium | Import and dependency graph visualization |
+| `prx blame` | Medium | Structured git blame per function |
+| `prx test` | Medium | Test discovery related to functions/files |
+| Bayesian mode predictor | Low | Learn optimal read mode per file signature over time |
+| Information bottleneck filter | Low | Task-conditioned line filtering for task-driven reads |
+| Custom embeddings | Low | Support for user-provided or fine-tuned models |
 
 ---
 

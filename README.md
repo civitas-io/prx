@@ -38,6 +38,8 @@ and token-budgeted responses.
 
 ## Quick Start
 
+> Full command reference with benchmarks: [USAGE.md](docs/USAGE.md)
+
 ```bash
 # Search by meaning, not just text
 prx search "authentication flow" src/
@@ -124,6 +126,16 @@ prx init                # auto-detect frameworks, generate all configs
 2. **MCP server** — richer integration for top-level agents
 3. **Agent definitions** — dedicated Claude Code sub-agent (`prx init --agent claude-code`)
 
+### For AI Agents
+
+If you are an AI coding agent evaluating prx, read
+[`skills/agents.md`](skills/agents.md) for:
+
+- What prx is and why it saves tokens
+- How to use every command with examples
+- How to install prx as a skill, MCP server, or CLI tool for yourself
+- Measured token savings per feature
+
 ## How Search Works
 
 prx combines three retrieval methods into a single ranked result set:
@@ -132,9 +144,10 @@ prx combines three retrieval methods into a single ranked result set:
 - **Semantic**: 16M-parameter static embedding model embedded in the binary, runs on CPU in milliseconds
 - **Structural**: AST pattern matching via tree-sitter (e.g., `fn $NAME($$$)`)
 
-Results are fused via Reciprocal Rank Fusion and reranked with a 5-stage
+Results are fused via Reciprocal Rank Fusion and reranked with a 6-stage
 code-aware pipeline: definition boost, identifier stem matching, file
-coherence, noise penalties (test files, compat shims), and saturation decay.
+coherence, **import graph proximity** (files in the dependency neighborhood
+of top results), noise penalties, and saturation decay.
 
 ## prx run — Structured Command Output
 
@@ -157,30 +170,30 @@ to `~/.prx/errors.jsonl` for debugging.
 
 ## Real-World Token Savings
 
-Measured across 200 real agent calls (2 sessions: code review + implementation):
+Measured across real agent sessions on production codebases:
 
 <p align="center">
   <img src="docs/assets/token-savings.svg" alt="Token savings per command" width="720"/>
 </p>
 
-| Command | Calls | Baseline | prx | Savings |
-|---|---|---|---|---|
-| `run` | 13 | 1,434 | 675 | **52.9%** |
-| `read` | 24 | 34,368 | 18,439 | **46.3%** |
-| `search` | 56 | 25,550 | 16,622 | **34.9%** |
-| `outline` | 5 | 2,503 | 1,804 | **27.9%** |
-| `find` | 23 | — | — | structured JSON (replaces find + wc + file) |
-| `exists` | 14 | — | — | O(1) bloom filter (replaces grep -rl) |
-| **Total** | **200** | | | **36,114 tokens saved** |
+| Feature | Scenario | Savings |
+|---|---|---|
+| `--if-changed` (hit) | Re-reading unchanged file | **99%** |
+| `--mode diff` | File with local changes | **98-99%** |
+| `--mode entropy` | Generated code (50+ fields) | **86%** |
+| `--mode aggressive` | Python/JS with docstrings | **11-19%** |
+| `prx run` | Passing test suites | **95-99%** |
+| `--skeleton` | Full file to signatures | **~90%** |
+| `prx search` | vs grep + follow-up reads | **35%** |
 
-`prx run cargo test` delivers the highest per-call savings: 95-99% token
-reduction on passing test suites. `prx read` saves the most in absolute terms —
-skeleton/outline modes return ~16% of what `cat` would.
+Over 200 measured calls: **36,000+ tokens saved** from baseline Unix tools.
 
 ```bash
 prx stats --compare     # per-command savings breakdown
 prx bench .             # synthetic benchmark: prx vs grep+cat
 ```
+
+See [USAGE.md](docs/USAGE.md) for detailed benchmarks and the full command reference.
 
 ## Install
 
@@ -250,10 +263,10 @@ Single static binary. No runtime dependencies. No internet required after build.
 
 | Metric | Value |
 |---|---|
-| Version | 0.1.0 |
 | Commands | 14 |
-| Tests | 304 (260 unit + 44 E2E) |
+| Tests | 353 (304 unit + 49 E2E) |
 | Languages | 14 (tree-sitter grammars) |
+| Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
 | Release binary | ~48 MB (float16 model embedded) |
 | CI | GitHub Actions (Linux x86_64, Linux aarch64, macOS arm64, Windows) |
 | Fallback | Graceful fallback to grep/cat/find on internal errors |

@@ -5,7 +5,7 @@ use serde::Serialize;
 
 use crate::hash;
 use crate::output::AgError;
-use crate::parsing::{self, outline, snap};
+use crate::parsing::{self, outline, snap, strip};
 use crate::tokens;
 
 #[derive(Args)]
@@ -44,6 +44,10 @@ pub struct ReadArgs {
     /// Return cached stub if file hash matches (skip content/outline)
     #[arg(long)]
     pub if_changed: Option<String>,
+
+    /// Read mode: aggressive (strip comments), entropy (filter repetitive lines)
+    #[arg(long)]
+    pub mode: Option<String>,
 }
 
 #[derive(Serialize, serde::Deserialize, Debug)]
@@ -226,6 +230,8 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
         (content.clone(), (1, line_count), None)
     };
 
+    let text = apply_read_mode(text, &args.mode, ext)?;
+
     let mut truncated = false;
     let final_text = if let Some(budget) = args.budget {
         let tok = tokens::count_fast(&text);
@@ -256,6 +262,56 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
     };
 
     to_json(output)
+}
+
+fn apply_read_mode(
+    text: String,
+    mode: &Option<String>,
+    ext: Option<&str>,
+) -> Result<String, AgError> {
+    match mode.as_deref() {
+        None => Ok(text),
+        Some("aggressive") => Ok(strip::strip_comments(&text, ext.unwrap_or(""))),
+        Some("entropy") => Ok(entropy_filter(&text)),
+        Some(other) => Err(AgError::InvalidArgument {
+            flag: "mode".to_string(),
+            message: format!("expected aggressive|entropy, got `{other}`"),
+        }),
+    }
+}
+
+fn entropy_filter(text: &str) -> String {
+    let lines: Vec<&str> = text.lines().collect();
+    if lines.len() < 10 {
+        return text.to_string();
+    }
+
+    let mut seen_patterns: std::collections::HashMap<String, usize> =
+        std::collections::HashMap::new();
+    let mut result = Vec::new();
+    let mut suppressed = 0usize;
+
+    for line in &lines {
+        let normalized = line.trim().replace(|c: char| c.is_ascii_digit(), "N");
+        let count = seen_patterns.entry(normalized).or_insert(0);
+        *count += 1;
+
+        if *count <= 3 {
+            result.push(*line);
+        } else {
+            suppressed += 1;
+        }
+    }
+
+    if suppressed > 0 {
+        let mut out = result.join("\n");
+        out.push_str(&format!(
+            "\n\n... ({suppressed} repetitive lines filtered)\n"
+        ));
+        out
+    } else {
+        text.to_string()
+    }
 }
 
 fn parse_line_range(spec: &str) -> Result<(usize, usize), AgError> {
@@ -360,6 +416,7 @@ mod tests {
             budget: None,
             meta: false,
             if_changed: None,
+            mode: None,
         }
     }
 
@@ -636,5 +693,75 @@ mod tests {
         let (_dir, path) = make_test_dir();
         let result = run(read_args(&path)).unwrap();
         assert!(result.get("cached").is_none());
+    }
+
+    #[test]
+    fn mode_aggressive_strips_comments() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("commented.rs");
+        std::fs::write(
+            &path,
+            "// header\nfn main() {\n    // body comment\n    let x = 1;\n}\n",
+        )
+        .unwrap();
+        let path_str = path.to_string_lossy().to_string();
+
+        let mut args = read_args(&path_str);
+        args.mode = Some("aggressive".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let text = out.content.unwrap().text;
+        assert!(!text.contains("// header"));
+        assert!(!text.contains("// body comment"));
+        assert!(text.contains("fn main()"));
+        assert!(text.contains("let x = 1;"));
+    }
+
+    #[test]
+    fn mode_aggressive_fewer_tokens() {
+        let (_dir, path) = make_test_dir();
+        let normal = run(read_args(&path)).unwrap();
+        let normal_out: ReadOutput = serde_json::from_value(normal).unwrap();
+        let normal_len = normal_out.content.unwrap().text.len();
+
+        let mut args = read_args(&path);
+        args.mode = Some("aggressive".to_string());
+        let aggressive = run(args).unwrap();
+        let agg_out: ReadOutput = serde_json::from_value(aggressive).unwrap();
+        let agg_len = agg_out.content.unwrap().text.len();
+
+        assert!(agg_len <= normal_len);
+    }
+
+    #[test]
+    fn mode_entropy_filters_repetitive() {
+        let dir = TempDir::new().unwrap();
+        let path = dir.path().join("repetitive.rs");
+        let mut content = String::from("fn main() {\n");
+        for i in 0..20 {
+            content.push_str(&format!("    let field_{i} = \"value\";\n"));
+        }
+        content.push_str("}\n");
+        std::fs::write(&path, &content).unwrap();
+        let path_str = path.to_string_lossy().to_string();
+
+        let mut args = read_args(&path_str);
+        args.mode = Some("entropy".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+
+        let text = out.content.unwrap().text;
+        assert!(text.contains("repetitive lines filtered"));
+        assert!(text.len() < content.len());
+    }
+
+    #[test]
+    fn mode_invalid_errors() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.mode = Some("bogus".to_string());
+        let err = run(args).unwrap_err();
+        assert!(matches!(err, AgError::InvalidArgument { .. }));
     }
 }

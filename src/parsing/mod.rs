@@ -1,6 +1,7 @@
 pub mod languages;
 pub mod outline;
 pub mod snap;
+pub mod strip;
 
 use std::path::Path;
 use tree_sitter::Parser;

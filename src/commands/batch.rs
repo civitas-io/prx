@@ -142,6 +142,7 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
                     .get("if_changed")
                     .and_then(|v| v.as_str())
                     .map(String::from),
+                mode: cmd.get("mode").and_then(|v| v.as_str()).map(String::from),
             })
         }
         "exists" => {

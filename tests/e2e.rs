@@ -234,6 +234,37 @@ fn read_if_changed_malformed_errors() {
         .stdout(predicate::str::contains("invalid_argument"));
 }
 
+#[test]
+fn read_mode_aggressive_strips_comments() {
+    let dir = test_dir();
+    let file = dir.path().join("commented.rs");
+    std::fs::write(
+        &file,
+        "// header comment\nfn main() {\n    // body\n    let x = 1;\n}\n",
+    )
+    .unwrap();
+    let out = ag()
+        .args(["read", file.to_str().unwrap(), "--mode", "aggressive"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    let text = json["data"]["content"]["text"].as_str().unwrap();
+    assert!(text.contains("fn main"));
+    assert!(!text.contains("header comment"));
+    assert!(!text.contains("// body"));
+}
+
+#[test]
+fn read_mode_invalid_errors() {
+    let dir = test_dir();
+    let file = dir.path().join("main.rs");
+    ag().args(["read", file.to_str().unwrap(), "--mode", "bogus"])
+        .assert()
+        .failure()
+        .stdout(predicate::str::contains("invalid_argument"));
+}
+
 // ==================== ag find ====================
 
 #[test]

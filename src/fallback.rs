@@ -211,6 +211,7 @@ mod tests {
             budget: None,
             meta: false,
             if_changed: None,
+            mode: None,
         };
         let cli = Commands::Read(args);
         let (cmd, cmd_args) = fallback_spec("read", &cli).unwrap();

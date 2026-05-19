@@ -3,7 +3,10 @@ use predicates::prelude::*;
 use tempfile::TempDir;
 
 fn ag() -> Command {
-    Command::cargo_bin("prx").unwrap()
+    let mut cmd = Command::cargo_bin("prx").unwrap();
+    cmd.env("PRX_STATS_FILE", "/dev/null");
+    cmd.env("PRX_ERRORS_FILE", "/dev/null");
+    cmd
 }
 
 fn test_dir() -> TempDir {

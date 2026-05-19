@@ -87,6 +87,9 @@ pub fn execute_fallback(cmd: &str, args: &[String]) -> Option<serde_json::Value>
 }
 
 fn errors_path() -> PathBuf {
+    if let Ok(custom) = std::env::var("PRX_ERRORS_FILE") {
+        return PathBuf::from(custom);
+    }
     dirs_next::home_dir()
         .unwrap_or_else(|| PathBuf::from("."))
         .join(".prx")

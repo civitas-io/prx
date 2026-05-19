@@ -132,38 +132,75 @@ fn handle_fallback(command: &str, error: &str, plain: bool, _wall_ms: u64) {
 fn log_telemetry(command: &str, data: &serde_json::Value, wall_ms: u64) {
     let actual_bytes = serde_json::to_string(data).map(|s| s.len()).unwrap_or(0);
 
+    // Baseline: what grep+cat would cost for the same information
     let baseline_bytes = match command {
         "search" => {
-            // baseline: grep returns all match lines + agent reads matched files
-            // estimate: total_matches * avg snippet size, or file sizes
-            data.get("total_matches")
+            let matches = data
+                .get("total_matches")
                 .and_then(|v| v.as_u64())
-                .map(|n| n as usize * 200) // ~200 bytes per grep match line + context
-                .unwrap_or(actual_bytes)
+                .unwrap_or(0) as usize;
+            let unique_files = data
+                .get("matches")
+                .and_then(|m| m.as_array())
+                .map(|arr| {
+                    let mut files: Vec<&str> = arr
+                        .iter()
+                        .filter_map(|m| m.get("file").and_then(|f| f.as_str()))
+                        .collect();
+                    files.sort();
+                    files.dedup();
+                    files.len()
+                })
+                .unwrap_or(1);
+            // grep output (~120B per match) + cat of unique matched files (~3000B avg)
+            matches * 120 + unique_files * 3000
         }
-        "read" => {
-            // baseline: cat entire file
-            data.get("meta")
-                .and_then(|m| m.get("bytes"))
-                .and_then(|v| v.as_u64())
-                .map(|b| b as usize)
-                .unwrap_or(actual_bytes)
-        }
+        "read" => data
+            .get("meta")
+            .and_then(|m| m.get("bytes"))
+            .and_then(|v| v.as_u64())
+            .map(|b| b as usize)
+            .unwrap_or(actual_bytes),
         "run" => {
-            // baseline: raw command output
             let saved = data
                 .get("output_tokens_saved")
                 .and_then(|v| v.as_u64())
                 .unwrap_or(0) as usize;
             actual_bytes + saved * 4
         }
-        "outline" => {
-            // baseline: cat all files to get symbols
-            data.get("symbols")
-                .and_then(|s| s.as_array())
-                .map(|syms| syms.len() * 500) // ~500 bytes per file to cat
-                .unwrap_or(actual_bytes)
+        "find" => {
+            let total = data
+                .get("stats")
+                .and_then(|s| s.get("total_files"))
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0) as usize;
+            // find output (~80B per file) + follow-up wc -l/file for each (~40B)
+            total * 120
         }
+        "exists" => {
+            // grep -rl scans entire codebase, returns matching file list
+            // estimate: ~500B for a typical grep -rl output
+            500usize.max(actual_bytes)
+        }
+        "diff" => {
+            let additions = data
+                .get("stats")
+                .and_then(|s| s.get("additions"))
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0) as usize;
+            let deletions = data
+                .get("stats")
+                .and_then(|s| s.get("deletions"))
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0) as usize;
+            // git diff: ~100B per changed line (with context)
+            (additions + deletions) * 100 + 200
+        }
+        "outline" => data
+            .get("symbols")
+            .and_then(|s| s.as_array())
+            .map(|syms| syms.len() * 500)
+            .unwrap_or(actual_bytes),
         _ => actual_bytes,
     };
 

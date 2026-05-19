@@ -230,7 +230,7 @@ pub fn run(args: ReadArgs) -> Result<serde_json::Value, AgError> {
         (content.clone(), (1, line_count), None)
     };
 
-    let text = apply_read_mode(text, &args.mode, ext)?;
+    let text = apply_read_mode(text, &args.mode, ext, &args.file)?;
 
     let mut truncated = false;
     let final_text = if let Some(budget) = args.budget {
@@ -268,15 +268,82 @@ fn apply_read_mode(
     text: String,
     mode: &Option<String>,
     ext: Option<&str>,
+    file_path: &str,
 ) -> Result<String, AgError> {
     match mode.as_deref() {
         None => Ok(text),
         Some("aggressive") => Ok(strip::strip_comments(&text, ext.unwrap_or(""))),
         Some("entropy") => Ok(entropy_filter(&text)),
+        Some("diff") => diff_against_git(&text, file_path),
         Some(other) => Err(AgError::InvalidArgument {
             flag: "mode".to_string(),
-            message: format!("expected aggressive|entropy, got `{other}`"),
+            message: format!("expected aggressive|diff|entropy, got `{other}`"),
         }),
+    }
+}
+
+fn diff_against_git(current: &str, file_path: &str) -> Result<String, AgError> {
+    let git_content = std::process::Command::new("git")
+        .args(["show", &format!("HEAD:{}", git_relative_path(file_path))])
+        .output();
+
+    let old = match git_content {
+        Ok(output) if output.status.success() => {
+            String::from_utf8_lossy(&output.stdout).to_string()
+        }
+        _ => return Ok(current.to_string()),
+    };
+
+    if old == current {
+        return Ok("[no changes vs HEAD]\n".to_string());
+    }
+
+    let diff = similar::TextDiff::from_lines(&old, current);
+    let mut result = Vec::new();
+
+    for change in diff.iter_all_changes() {
+        let prefix = match change.tag() {
+            similar::ChangeTag::Equal => continue,
+            similar::ChangeTag::Delete => "-",
+            similar::ChangeTag::Insert => "+",
+        };
+        if let Some(line_no) = change.new_index() {
+            result.push(format!(
+                "{prefix}L{}: {}",
+                line_no + 1,
+                change.value().trim_end()
+            ));
+        } else if let Some(line_no) = change.old_index() {
+            result.push(format!(
+                "{prefix}L{}: {}",
+                line_no + 1,
+                change.value().trim_end()
+            ));
+        }
+    }
+
+    if result.is_empty() {
+        Ok("[no changes vs HEAD]\n".to_string())
+    } else {
+        Ok(result.join("\n") + "\n")
+    }
+}
+
+fn git_relative_path(file_path: &str) -> String {
+    let output = std::process::Command::new("git")
+        .args(["rev-parse", "--show-toplevel"])
+        .output();
+
+    match output {
+        Ok(o) if o.status.success() => {
+            let root = String::from_utf8_lossy(&o.stdout).trim().to_string();
+            file_path
+                .strip_prefix(&root)
+                .and_then(|p| p.strip_prefix('/'))
+                .unwrap_or(file_path)
+                .to_string()
+        }
+        _ => file_path.to_string(),
     }
 }
 
@@ -754,6 +821,17 @@ mod tests {
         let text = out.content.unwrap().text;
         assert!(text.contains("repetitive lines filtered"));
         assert!(text.len() < content.len());
+    }
+
+    #[test]
+    fn mode_diff_returns_diff_or_full() {
+        let (_dir, path) = make_test_dir();
+        let mut args = read_args(&path);
+        args.mode = Some("diff".to_string());
+        let result = run(args).unwrap();
+        let out: ReadOutput = serde_json::from_value(result).unwrap();
+        let text = out.content.unwrap().text;
+        assert!(!text.is_empty());
     }
 
     #[test]

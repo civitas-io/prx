@@ -128,18 +128,75 @@ Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
 | New features | 5 (--if-changed, 3 read modes, proximity boost) |
 | LOC added | ~1,400 |
 
-## v0.3.0 — Project Intelligence
+## v0.3.0 — Run Parsers & Project Intelligence
+
+### Run Parsers — Infrastructure & DevOps
+
+Prioritized by token waste × agent usage frequency. Each parser extracts
+only failures, warnings, and summaries — dropping progress bars, cache hits,
+dependency resolution, and verbose defaults.
+
+| Parser | Tool | Typical output | Noise | What to extract | Priority |
+|---|---|---|---|---|---|
+| terraform | `plan`, `apply` | 5-50k tokens | 75-85% | Changed resources only, drop `(known after apply)` + unchanged attrs | **High** |
+| kubectl | `describe`, `get -o yaml` | 2-30k tokens | 80-90% | Warning events, non-Ready pods, restart counts, error phases | **High** |
+| kubectl-logs | `logs` (+ docker logs) | 1-100k+ tokens | 70-90% | ERROR/WARN/FATAL lines, stack traces, deduplicate repeated lines | **High** |
+| docker-build | `build` | 500-10k tokens | 80% | Failed step + last 20 lines, final image ID/size, warnings | **High** |
+| mvn | `test`, `build` | 5-50k tokens | 90% | Surefire summary, compilation errors, drop "Downloading from" spam | **High** |
+| gradle | `build`, `test` | 5-30k tokens | 85% | Test failures, build errors, drop daemon/resolution noise | **High** |
+| dotnet | `test`, `build` | 2-50k tokens | 75-85% | CS-prefixed errors/warnings with file:line, test failures | **High** |
+| mypy | type check | 500-10k tokens | 50% | `file:line: error:` lines, note: context, error count | **High** |
+| npm-ls | `npm list` | 5-50k+ tokens | 95% | Top-level deps, version conflicts, peer dep warnings | **High** |
+| git-log | `log`, `log -p` | 2-100k+ tokens | 50-60% | Compact hash + subject + author table, condensed diff stats | **High** |
+| docker-ps | `ps` | 200-1k tokens | 50% | Unhealthy/Exited containers, recent restarts | Medium |
+| helm | `install`, `upgrade`, `status` | 200-5k tokens | 50-70% | Release status, NOTES, hook failures | Medium |
+| ruff | `check` | 100-2k tokens | 30% | Structured JSON parse (ruff supports --output-format=json) | Medium |
+| bun-test | `bun test` | 1-10k tokens | 70% | Reuse jest parser — similar output format | Medium |
+| deno-test | `deno test` | 1-10k tokens | 70% | Test failures + summary | Medium |
+| git-blame | `blame` | 1-20k tokens | 70% | Collapse runs of same SHA into ranges | Medium |
+| aws | `describe-*`, `s3 ls` | 5-50k tokens | 85% | Filter to state, tags, errors; drop nested defaults | Medium |
+| gcloud | `compute instances list` | 500-5k tokens | 60% | Similar to aws profile | Medium |
+
+**Implementation notes:**
+- kubectl, terraform, npm, aws, gcloud support `--output json` / `--format json` — auto-detect and parse structured output when available
+- kubectl-logs and docker-logs share a generic log noise filter (dedupe repeated lines, keep error context windows)
+- mvn + gradle share a JVM build parser (detect Surefire/Failsafe/Spock plugin variants)
+- bun test reuses the jest parser
+
+**Skipping** (output already small enough, parsing adds maintenance with little savings):
+- `ls -la` (use `prx find` instead), `df -h`, `env`, `pip list`, `git status`,
+  `kubectl apply`, `terraform output`
+
+### Project Intelligence
 
 | Item | Priority | Description |
 |---|---|---|
-| `prx context` | High | Assemble context packages ("everything about module X") — combine search + read + outline into one call |
+| `prx context` | High | Assemble context packages ("everything about module X") — search + read + outline in one call |
 | `prx impact` | High | Reverse dependency analysis ("what breaks if I change X?") using the import graph |
 | `prx deps` | Medium | Import and dependency graph visualization |
-| `prx blame` | Medium | Structured git blame per function |
+| `prx blame` | Medium | Structured git blame per function (collapse same-SHA runs) |
 | `prx test` | Medium | Test discovery related to functions/files |
+
+### Intelligence Features
+
+| Item | Priority | Description |
+|---|---|---|
+| Auto-detect `--json` flags | High | For tools that support structured output (kubectl, terraform, npm, aws, gcloud), auto-add the JSON flag and parse natively |
+| Generic log noise filter | High | Dedupe repeated lines, keep error context windows — shared by kubectl-logs, docker-logs, journalctl, CI output |
 | Bayesian mode predictor | Low | Learn optimal read mode per file signature over time |
 | Information bottleneck filter | Low | Task-conditioned line filtering for task-driven reads |
 | Custom embeddings | Low | Support for user-provided or fine-tuned models |
+
+## v0.4.0 — Distribution & Ecosystem
+
+| Item | Priority | Description |
+|---|---|---|
+| `cargo publish` | High | Publish to crates.io for `cargo install prx` |
+| Homebrew formula | High | `brew install civitas-io/tap/prx` |
+| npm wrapper | Medium | `npx prx` for JS/TS agents |
+| pip wrapper | Medium | `pip install prx` for Python agents |
+| Benchmarks (NDCG@10) | High | Head-to-head quality measurement vs ripgrep |
+| Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
 
 ---
 

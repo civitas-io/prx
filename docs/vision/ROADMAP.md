@@ -88,36 +88,45 @@ Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
 
 ### Session & Caching
 
-| Item | Priority | Description | Inspired by |
+| Item | Priority | Status | Description |
 |---|---|---|---|
-| Session cache | High | Track file hashes per session. Re-reads of unchanged files return ~13-token cache-hit response instead of full content. Eliminates 50% of file read tokens (SWE-bench data). | LeanCTX `full` mode cache |
-| File reference IDs | Medium | Assign sequential IDs (F1, F2...) to files in a session. Accept `F1` as path alias in subsequent commands. Saves ~10 tokens per reference. | LeanCTX structured headers |
+| `--if-changed HASH` | High | **Done** | Stateless conditional read. Agent passes previous hash, gets 48-token stub if unchanged. 99% reduction on re-reads. |
+| File reference IDs | Medium | Planned | Assign sequential IDs (F1, F2...) to files in a session. Accept `F1` as path alias. |
 
 ### Read Modes
 
-| Item | Priority | Description | Inspired by |
+| Item | Priority | Status | Description |
 |---|---|---|---|
-| `--mode aggressive` | High | Strip comments + whitespace, keep all functional code. 20-40% savings on verbose files. | LeanCTX aggressive mode |
-| `--mode diff` | High | Only return lines changed since last read (via hash comparison with session cache). 80-97% savings on re-reads. | LeanCTX diff mode |
-| `--mode entropy` | Medium | Shannon entropy scoring + Jaccard similarity dedup. Filters repetitive low-information lines. 60-85% savings on generated files (schemas, protobuf, OpenAPI specs). | LeanCTX entropy mode |
-| Auto mode for read | Medium | Auto-select best read mode based on file size, type, and cache state. | LeanCTX auto/smart_read |
+| `--mode aggressive` | High | **Done** | Tree-sitter comment stripping + blank line collapse. 1-19% savings (real-world: tested on fiddler). |
+| `--mode diff` | High | **Done** | Changed lines vs git HEAD only. 80-97% savings on modified files. |
+| `--mode entropy` | Medium | **Done** | Pattern-based repetitive line filter. 5-87% savings (86% on generated structs). |
+| Auto mode for read | Medium | Planned | Auto-select best read mode based on file size, type, and cache state. |
 
 ### Search Improvements
 
-| Item | Priority | Description | Inspired by |
+| Item | Priority | Status | Description |
 |---|---|---|---|
-| Graph proximity boost | High | Build lightweight import graph from `use`/`import`/`require` statements. Boost search results that are in the dependency neighborhood of top results. | LeanCTX graph-aware RRF |
-| MMR diversity | Low | Maximal Marginal Relevance in reranking to reduce redundant results from same cluster. Principled alternative to our saturation decay. | LeanCTX reranking |
+| Graph proximity boost | High | **Done** | Import graph from 7 languages via regex. BFS 2-hop neighborhood. 0.25x additive boost with hop decay. Persisted to imports.bin. |
+| MMR diversity | Low | Planned | Maximal Marginal Relevance in reranking. |
 
 ### Distribution
 
-| Item | Priority | Description |
-|---|---|---|
-| `cargo publish` | High | Publish to crates.io for `cargo install prx` |
-| Homebrew formula | High | `brew install civitas-io/tap/prx` |
-| Benchmarks (NDCG@10) | High | Head-to-head quality measurement vs ripgrep, Semble |
-| More run parsers | Medium | bun test, deno test, dotnet test, ruff |
-| Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
+| Item | Priority | Status | Description |
+|---|---|---|---|
+| `cargo publish` | High | Planned | Publish to crates.io for `cargo install prx` |
+| Homebrew formula | High | Planned | `brew install civitas-io/tap/prx` |
+| Benchmarks (NDCG@10) | High | Planned | Head-to-head quality measurement vs ripgrep, Semble |
+| More run parsers | Medium | Planned | bun test, deno test, dotnet test, ruff |
+| Additional grammars | Medium | Planned | Kotlin, Swift, C#, PHP, Elixir |
+
+### v0.2.0 Stats
+
+| Metric | Value |
+|---|---|
+| Tests | 353 (304 unit + 49 E2E) |
+| New modules | 3 (imports.rs, graph.rs, proximity.rs) |
+| New features | 5 (--if-changed, 3 read modes, proximity boost) |
+| LOC added | ~1,400 |
 
 ## v0.3.0 — Project Intelligence
 

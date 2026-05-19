@@ -21,11 +21,11 @@
   <text x="360" y="32" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a1a1a">Token Savings — Real-World Telemetry</text>
   <text x="360" y="52" text-anchor="middle" font-size="11" fill="#888">200 calls across 2 agent sessions (code review + implementation)</text>
 
-  <!-- Legend -->
-  <rect x="480" y="18" width="12" height="12" rx="2" fill="url(#baseline)"/>
-  <text x="496" y="29" font-size="11" fill="#555">Unix tools (baseline)</text>
-  <rect x="600" y="18" width="12" height="12" rx="2" fill="url(#prx)"/>
-  <text x="616" y="29" font-size="11" fill="#555">prx</text>
+  <!-- Legend (top-right, stacked vertically) -->
+  <rect x="620" y="18" width="12" height="12" rx="2" fill="url(#baseline)"/>
+  <text x="636" y="29" font-size="11" fill="#555">Unix tools (baseline)</text>
+  <rect x="620" y="36" width="12" height="12" rx="2" fill="url(#prx)"/>
+  <text x="636" y="47" font-size="11" fill="#555">prx</text>
 
   <!-- Chart area: x=100..690, y=75..340 -->
   <!-- Y-axis label -->

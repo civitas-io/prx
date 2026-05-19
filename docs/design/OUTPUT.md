@@ -1,6 +1,6 @@
 # Output Format Specification
 
-All JSON output includes a top-level `version` field (semver string) for programmatic compatibility detection. Schemas described here apply to ag v0.1.x.
+All JSON output includes a top-level `version` field (semver string) for programmatic compatibility detection. Schemas described here apply to prx v0.2.x.
 
 ---
 
@@ -20,7 +20,7 @@ Every response uses this envelope. `status` is `"ok"` or `"error"`.
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "search",
   "status": "ok",
   "tokens": 487,
@@ -32,7 +32,7 @@ On error, `data` is absent and `error` is present. `error.code` is a stable mach
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "search",
   "status": "error",
   "error": {
@@ -49,7 +49,7 @@ On error, `data` is absent and `error` is present. `error.code` is a stable mach
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "search",
   "status": "ok",
   "tokens": 612,
@@ -85,7 +85,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "read",
   "status": "ok",
   "tokens": 1043,
@@ -125,7 +125,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "find",
   "status": "ok",
   "tokens": 204,
@@ -171,7 +171,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "edit",
   "status": "ok",
   "tokens": 89,
@@ -201,7 +201,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "diff",
   "status": "ok",
   "tokens": 341,
@@ -237,7 +237,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "outline",
   "status": "ok",
   "tokens": 156,
@@ -267,7 +267,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "index",
   "status": "ok",
   "tokens": 42,
@@ -287,7 +287,7 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "exists",
   "status": "ok",
   "tokens": 14,
@@ -308,8 +308,8 @@ With `--exists`: `data` contains only `exists` (bool) and `confidence` (`"exact"
 Output is JSONL: one complete envelope per line, in input order. Each line is self-contained.
 
 ```jsonl
-{"version":"0.1.0","command":"search","status":"ok","id":"q1","tokens":612,"data":{"matches":[{"file":"src/auth.ts","line":42,"column":7,"match":"verifyToken","context_type":"function","context_name":"verifyToken","context_signature":"async function verifyToken(token: string): Promise<User>","snippet":"export async function verifyToken(token: string): Promise<User> {","relevance":0.94,"language":"typescript"}],"total_matches":1,"returned":1,"budget_used":612,"truncated":false,"continuation_token":null}}
-{"version":"0.1.0","command":"read","status":"error","id":"q2","error":{"code":"file_not_found","message":"File not found: src/payments/stripe.ts","suggestion":"Check the file path. Use `prx find` to discover files."}}
+{"version":"0.2.0","command":"search","status":"ok","id":"q1","tokens":612,"data":{"matches":[{"file":"src/auth.ts","line":42,"column":7,"match":"verifyToken","context_type":"function","context_name":"verifyToken","context_signature":"async function verifyToken(token: string): Promise<User>","snippet":"export async function verifyToken(token: string): Promise<User> {","relevance":0.94,"language":"typescript"}],"total_matches":1,"returned":1,"budget_used":612,"truncated":false,"continuation_token":null}}
+{"version":"0.2.0","command":"read","status":"error","id":"q2","error":{"code":"file_not_found","message":"File not found: src/payments/stripe.ts","suggestion":"Check the file path. Use `prx find` to discover files."}}
 ```
 
 Input commands with an `"id"` field have it echoed in their output line. Commands without one omit the field.
@@ -320,7 +320,7 @@ Input commands with an `"id"` field have it echoed in their output line. Command
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "stats",
   "status": "ok",
   "tokens": 67,

@@ -64,7 +64,7 @@ prx run <command> [args...]
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "run",
   "status": "ok",
   "tokens": 15,

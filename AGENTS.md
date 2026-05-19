@@ -13,7 +13,7 @@ agents, not humans.
 - **Repository:** `github.com/civitas-io/prx`
 - **License:** Apache 2.0
 - **Language:** Rust (edition 2024)
-- **Status:** Pre-alpha (documentation-first phase)
+- **Status:** v0.2.0 released
 
 ### What prx Is
 
@@ -347,6 +347,7 @@ ag/
 │   ├── search/                  # Search engine
 │   │   ├── mod.rs
 │   │   ├── fusion.rs            # RRF fusion, adaptive alpha
+│   │   ├── graph.rs             # Import graph (BFS, persistence, suffix resolution)
 │   │   ├── semantic.rs          # Model2Vec embedding search
 │   │   ├── literal.rs           # Regex/literal search
 │   │   ├── structural.rs        # ast-grep pattern search
@@ -360,6 +361,7 @@ ag/
 │   │   ├── mod.rs
 │   │   ├── boosting.rs          # Definition boost, stem matching, coherence
 │   │   ├── penalties.rs         # Noise penalties, saturation decay
+│   │   ├── proximity.rs         # Import graph proximity boost
 │   │   └── weighting.rs         # Alpha weight resolution
 │   │
 │   ├── index/                   # Index management
@@ -370,9 +372,11 @@ ag/
 │   │
 │   └── parsing/                 # Tree-sitter integration
 │       ├── mod.rs
+│       ├── imports.rs           # Per-language regex import extraction (7 languages)
 │       ├── languages.rs         # Language detection, grammar loading
 │       ├── outline.rs           # Symbol extraction
-│       └── snap.rs              # Structural snapping (function/class boundaries)
+│       ├── snap.rs              # Structural snapping (function/class boundaries)
+│       └── strip.rs             # Tree-sitter comment stripping (--mode aggressive)
 │
 │   └── runner/                  # prx run parsers
 │       ├── mod.rs               # Runner framework, tool detection
@@ -387,6 +391,9 @@ ag/
 │
 ├── models/                      # Embedding model weights (build-time)
 │   └── potion-code-16M.safetensors  # Included via include_bytes!
+│
+├── skills/
+│   └── agents.md                # Agent-facing skill guide (install, usage, integration)
 │
 ├── tests/
 │   ├── integration/             # CLI integration tests
@@ -414,7 +421,7 @@ These are settled decisions. Do not revisit without discussion.
 | 7 | **Dry-run edits by default** | `prx edit` previews changes. `--apply` commits. Agents see what will change before it happens. |
 | 8 | **Content hashes in every response** | Enables cheap "has this changed?" checks. Eliminates ~50% of redundant file re-reads. |
 | 9 | **No daemon for basic usage** | All commands work statelessly. Optional `prx index --watch` for warm caching. |
-| 10 | **5-stage reranking pipeline** | Definition boost, stem matching, file coherence, noise penalties, saturation decay. Quality comes from ranking, not just retrieval. |
+| 10 | **6-stage reranking pipeline** | Definition boost, stem matching, file coherence, import graph proximity, noise penalties, saturation decay. Quality comes from ranking, not just retrieval. |
 | 11 | **BM25 with compound identifier tokenization** | camelCase/snake_case splitting without stemming. Code identifiers are semantically distinct -- "HTTPResponse" and "HTTP" mean different things. |
 | 12 | **RRF fusion with adaptive alpha** | Symbol queries (Foo::bar) lean BM25 (alpha=0.3). Natural language queries stay balanced (alpha=0.5). Auto-detected. |
 

@@ -17,7 +17,7 @@ Every ag command returns a JSON envelope to stdout.
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "search",
   "status": "ok",
   "tokens": 487,
@@ -29,7 +29,7 @@ Every ag command returns a JSON envelope to stdout.
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "read",
   "status": "error",
   "error": {

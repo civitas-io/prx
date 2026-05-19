@@ -1,6 +1,6 @@
 # Search Subsystem Architecture
 
-Derived from Semble (MinishLab/semble, MIT license). Core algorithms adapted from their Python implementation to pure Rust.
+Hybrid retrieval engine combining literal, semantic, and structural search with a 5-stage reranking pipeline.
 
 ---
 

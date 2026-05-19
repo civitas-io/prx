@@ -177,7 +177,7 @@ Chunk {
 }
 ```
 
-### Algorithm (ported from Semble)
+### Algorithm
 
 1. Parse with tree-sitter
 2. Recursive `merge_nodes(root, 1500)`:

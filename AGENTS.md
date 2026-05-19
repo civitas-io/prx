@@ -26,16 +26,10 @@ agents, not humans.
 ### What prx Is NOT
 
 - NOT a wrapper around existing tools (unlike RTK, squeez, LeanCTX)
-- NOT search-only (unlike Semble, Hypergrep, FileSift)
+- NOT search-only — covers the full read-search-edit-diff loop
 - NOT a framework or SDK -- it is a CLI tool that agents invoke
 - NOT an AI/LLM -- the tool is deterministic; the agent calling it is the LLM
 - NOT a replacement for LSP -- prx provides structural awareness without a server
-
-### Attribution
-
-The search subsystem is derived from [Semble](https://github.com/MinishLab/semble)
-(MinishLab, MIT license). Core algorithms (hybrid retrieval, reranking pipeline,
-Model2Vec inference) adapted from their Python implementation to pure Rust.
 
 ---
 
@@ -302,7 +296,7 @@ ag/
 │   │   └── ROADMAP.md           # Phased delivery plan
 │   ├── architecture/
 │   │   ├── SYSTEM.md            # System architecture
-│   │   └── SEARCH.md            # Search subsystem (Semble-derived)
+│   │   └── SEARCH.md            # Search subsystem architecture
 │   ├── design/
 │   │   ├── CLI.md               # CLI interface specification
 │   │   ├── OUTPUT.md            # JSON output format specification
@@ -414,7 +408,7 @@ These are settled decisions. Do not revisit without discussion.
 | 7 | **Dry-run edits by default** | `prx edit` previews changes. `--apply` commits. Agents see what will change before it happens. |
 | 8 | **Content hashes in every response** | Enables cheap "has this changed?" checks. Eliminates ~50% of redundant file re-reads. |
 | 9 | **No daemon for basic usage** | All commands work statelessly. Optional `prx index --watch` for warm caching. |
-| 10 | **Semble's reranking pipeline, not just search** | Definition boost, stem matching, file coherence, noise penalties, saturation decay. Quality comes from ranking, not just retrieval. |
+| 10 | **5-stage reranking pipeline** | Definition boost, stem matching, file coherence, noise penalties, saturation decay. Quality comes from ranking, not just retrieval. |
 | 11 | **BM25 with compound identifier tokenization** | camelCase/snake_case splitting without stemming. Code identifiers are semantically distinct -- "HTTPResponse" and "HTTP" mean different things. |
 | 12 | **RRF fusion with adaptive alpha** | Symbol queries (Foo::bar) lean BM25 (alpha=0.3). Natural language queries stay balanced (alpha=0.5). Auto-detected. |
 

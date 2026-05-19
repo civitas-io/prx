@@ -123,16 +123,15 @@ prx init                # auto-detect frameworks, generate all configs
 
 ## How Search Works
 
-prx's search is derived from [Semble](https://github.com/MinishLab/semble) (MIT).
-Three retrieval methods:
+prx combines three retrieval methods into a single ranked result set:
 
 - **Literal**: regex matching at ripgrep speed
-- **Semantic**: 16M-parameter static embedding model (Model2Vec), embedded in the binary
-- **Structural**: AST pattern matching via tree-sitter (`fn $NAME($$$)`)
+- **Semantic**: 16M-parameter static embedding model embedded in the binary, runs on CPU in milliseconds
+- **Structural**: AST pattern matching via tree-sitter (e.g., `fn $NAME($$$)`)
 
-Results are fused via Reciprocal Rank Fusion and reranked with code-aware signals:
-definition boost, identifier stem matching, file coherence, noise penalties, and
-saturation decay.
+Results are fused via Reciprocal Rank Fusion and reranked with a 5-stage
+code-aware pipeline: definition boost, identifier stem matching, file
+coherence, noise penalties (test files, compat shims), and saturation decay.
 
 ## prx run — Structured Command Output
 

@@ -51,7 +51,7 @@
 
 ## Search Subsystem (`src/search/`)
 
-Derived from Semble's architecture, reimplemented in pure Rust. Supports three retrieval modes that can be combined.
+Hybrid retrieval engine implemented in pure Rust. Supports three retrieval modes that can be combined.
 
 ### Retrieval Modes
 

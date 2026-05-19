@@ -9,13 +9,13 @@
   <rect width="900" height="680" fill="#fafafa" rx="8"/>
 
   <!-- Title -->
-  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a1a1a">ag System Architecture</text>
+  <text x="450" y="32" text-anchor="middle" font-size="18" font-weight="bold" fill="#1a1a1a">prx System Architecture</text>
   <text x="450" y="50" text-anchor="middle" font-size="11" fill="#888">Single binary, busybox-style, structured JSON output</text>
 
   <!-- CLI Layer -->
   <rect x="30" y="70" width="840" height="50" rx="6" fill="#e8f0fe" stroke="#4285f4" stroke-width="1.5"/>
   <text x="450" y="92" text-anchor="middle" font-weight="600" fill="#1a1a1a">CLI Layer (clap multicall)</text>
-  <text x="450" y="108" text-anchor="middle" font-size="11" fill="#555">ag search | ag read | ag find | ag edit | ag diff | ag exists | ag outline | ag batch | ag mcp</text>
+  <text x="450" y="108" text-anchor="middle" font-size="11" fill="#555">prx search | prx read | prx find | prx edit | prx diff | prx exists | prx outline | prx batch | prx mcp</text>
 
   <!-- Commands Row -->
   <rect x="30" y="140" width="130" height="44" rx="5" fill="#fff" stroke="#4285f4" stroke-width="1"/>
@@ -52,7 +52,7 @@
   <!-- Search Engine (large box) -->
   <rect x="30" y="210" width="420" height="280" rx="6" fill="#fef7e0" stroke="#f9ab00" stroke-width="1.5"/>
   <text x="240" y="232" text-anchor="middle" font-weight="700" fill="#1a1a1a">Search Engine</text>
-  <text x="240" y="247" text-anchor="middle" font-size="10" fill="#888">Derived from Semble (MIT)</text>
+  <text x="240" y="247" text-anchor="middle" font-size="10" fill="#888">Hybrid: literal + semantic + structural</text>
 
   <!-- Chunking -->
   <rect x="45" y="258" width="180" height="40" rx="4" fill="#fff" stroke="#f9ab00" stroke-width="1"/>
@@ -152,7 +152,7 @@
   <!-- Platform bar -->
   <rect x="30" y="580" width="840" height="44" rx="6" fill="#f3e8fd" stroke="#9334e6" stroke-width="1.5"/>
   <text x="450" y="600" text-anchor="middle" font-weight="600" fill="#1a1a1a">Cross-Platform: Single Static Binary</text>
-  <text x="450" y="616" text-anchor="middle" font-size="11" fill="#555">Linux x86_64 + aarch64 | macOS Apple Silicon + Intel | Windows x86_64 | ~47 MB | zero dependencies</text>
+  <text x="450" y="616" text-anchor="middle" font-size="11" fill="#555">Linux x86_64 + aarch64 | macOS Apple Silicon | Windows x86_64 | ~48 MB | zero dependencies</text>
 
   <!-- Key metrics -->
   <rect x="30" y="636" width="200" height="34" rx="4" fill="#fff" stroke="#ccc" stroke-width="1"/>

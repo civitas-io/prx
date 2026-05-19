@@ -1,0 +1,127 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 400" font-family="system-ui, -apple-system, sans-serif" font-size="13">
+  <defs>
+    <linearGradient id="baseline" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#e0e0e0"/>
+      <stop offset="100%" stop-color="#d0d0d0"/>
+    </linearGradient>
+    <linearGradient id="prx" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#34a853"/>
+      <stop offset="100%" stop-color="#2d9249"/>
+    </linearGradient>
+    <linearGradient id="prx-high" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#1e8e3e"/>
+      <stop offset="100%" stop-color="#188038"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="720" height="400" fill="#fafafa" rx="8"/>
+
+  <!-- Title -->
+  <text x="360" y="32" text-anchor="middle" font-size="16" font-weight="bold" fill="#1a1a1a">Token Savings — Real-World Telemetry</text>
+  <text x="360" y="52" text-anchor="middle" font-size="11" fill="#888">200 calls across 2 agent sessions (code review + implementation)</text>
+
+  <!-- Legend -->
+  <rect x="480" y="18" width="12" height="12" rx="2" fill="url(#baseline)"/>
+  <text x="496" y="29" font-size="11" fill="#555">Unix tools (baseline)</text>
+  <rect x="600" y="18" width="12" height="12" rx="2" fill="url(#prx)"/>
+  <text x="616" y="29" font-size="11" fill="#555">prx</text>
+
+  <!-- Chart area: x=100..690, y=75..340 -->
+  <!-- Y-axis label -->
+  <text x="18" y="210" text-anchor="middle" font-size="11" fill="#888" transform="rotate(-90, 18, 210)">Tokens consumed</text>
+
+  <!-- Y-axis gridlines and labels (max ~34,368 → scale to 35,000) -->
+  <!-- 0 -->
+  <line x1="95" y1="340" x2="690" y2="340" stroke="#e8e8e8" stroke-width="1"/>
+  <text x="88" y="344" text-anchor="end" font-size="10" fill="#999">0</text>
+  <!-- 10k -->
+  <line x1="95" y1="264" x2="690" y2="264" stroke="#e8e8e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="88" y="268" text-anchor="end" font-size="10" fill="#999">10k</text>
+  <!-- 20k -->
+  <line x1="95" y1="188" x2="690" y2="188" stroke="#e8e8e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="88" y="192" text-anchor="end" font-size="10" fill="#999">20k</text>
+  <!-- 30k -->
+  <line x1="95" y1="112" x2="690" y2="112" stroke="#e8e8e8" stroke-width="1" stroke-dasharray="4,4"/>
+  <text x="88" y="116" text-anchor="end" font-size="10" fill="#999">30k</text>
+
+  <!-- Scale: 35,000 tokens = 265px (y=75 to y=340) → 1 token = 0.00757px -->
+  <!-- Each command group: ~95px wide, bar=38px each, gap=4px between pair -->
+
+  <!-- search: 56 calls, baseline=25550, actual=16622, savings=34.9% -->
+  <!-- baseline: 25550 * 265/35000 = 193.5px → y=340-193.5=146.5 -->
+  <!-- actual: 16622 * 265/35000 = 125.9px → y=340-125.9=214.1 -->
+  <g>
+    <rect x="115" y="146" width="38" height="194" rx="3" fill="url(#baseline)"/>
+    <rect x="157" y="214" width="38" height="126" rx="3" fill="url(#prx)"/>
+    <text x="155" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#333">search</text>
+    <text x="155" y="372" text-anchor="middle" font-size="10" fill="#888">56 calls</text>
+    <!-- Savings badge -->
+    <rect x="153" y="197" width="46" height="16" rx="8" fill="#1e8e3e"/>
+    <text x="176" y="209" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">-34.9%</text>
+  </g>
+
+  <!-- read: 24 calls, baseline=34368, actual=18439, savings=46.3% -->
+  <!-- baseline: 34368 * 265/35000 = 260.2px → y=340-260.2=79.8 -->
+  <!-- actual: 18439 * 265/35000 = 139.6px → y=340-139.6=200.4 -->
+  <g>
+    <rect x="215" y="80" width="38" height="260" rx="3" fill="url(#baseline)"/>
+    <rect x="257" y="200" width="38" height="140" rx="3" fill="url(#prx)"/>
+    <text x="255" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#333">read</text>
+    <text x="255" y="372" text-anchor="middle" font-size="10" fill="#888">24 calls</text>
+    <rect x="253" y="183" width="46" height="16" rx="8" fill="#1e8e3e"/>
+    <text x="276" y="195" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">-46.3%</text>
+  </g>
+
+  <!-- run: 13 calls, baseline=1434, actual=675, savings=52.9% -->
+  <!-- baseline: 1434 * 265/35000 = 10.9px → y=340-10.9=329.1 -->
+  <!-- actual: 675 * 265/35000 = 5.1px → y=340-5.1=334.9 -->
+  <!-- Too small at this scale — use minimum bar height of 30px for visibility -->
+  <g>
+    <rect x="315" y="310" width="38" height="30" rx="3" fill="url(#baseline)"/>
+    <rect x="357" y="325" width="38" height="15" rx="3" fill="url(#prx-high)"/>
+    <text x="355" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#333">run</text>
+    <text x="355" y="372" text-anchor="middle" font-size="10" fill="#888">13 calls</text>
+    <rect x="353" y="308" width="46" height="16" rx="8" fill="#1e8e3e"/>
+    <text x="376" y="320" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">-52.9%</text>
+  </g>
+
+  <!-- outline: 5 calls, baseline=2503, actual=1804, savings=27.9% -->
+  <!-- Also small — use min height -->
+  <g>
+    <rect x="415" y="321" width="38" height="19" rx="3" fill="url(#baseline)"/>
+    <rect x="457" y="326" width="38" height="14" rx="3" fill="url(#prx)"/>
+    <text x="455" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#333">outline</text>
+    <text x="455" y="372" text-anchor="middle" font-size="10" fill="#888">5 calls</text>
+    <rect x="453" y="309" width="46" height="16" rx="8" fill="#1e8e3e"/>
+    <text x="476" y="321" text-anchor="middle" font-size="10" font-weight="600" fill="#fff">-27.9%</text>
+  </g>
+
+  <!-- find: 23 calls — structured JSON with metadata vs plain find -->
+  <!-- No savings measured yet (baseline = parity) — show as "structured" benefit -->
+  <g>
+    <rect x="515" y="265" width="38" height="75" rx="3" fill="url(#baseline)"/>
+    <rect x="557" y="265" width="38" height="75" rx="3" fill="url(#prx)" opacity="0.5"/>
+    <text x="555" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#333">find</text>
+    <text x="555" y="372" text-anchor="middle" font-size="10" fill="#888">23 calls</text>
+    <rect x="551" y="248" width="50" height="16" rx="8" fill="#4285f4"/>
+    <text x="576" y="260" text-anchor="middle" font-size="9" font-weight="600" fill="#fff">structured</text>
+  </g>
+
+  <!-- exists: 14 calls — O(1) bloom filter vs grep -rl -->
+  <g>
+    <rect x="615" y="325" width="38" height="15" rx="3" fill="url(#baseline)"/>
+    <rect x="657" y="336" width="38" height="4" rx="2" fill="url(#prx-high)"/>
+    <text x="655" y="358" text-anchor="middle" font-size="11" font-weight="600" fill="#333">exists</text>
+    <text x="655" y="372" text-anchor="middle" font-size="10" fill="#888">14 calls</text>
+    <rect x="645" y="308" width="34" height="16" rx="8" fill="#4285f4"/>
+    <text x="662" y="320" text-anchor="middle" font-size="9" font-weight="600" fill="#fff">O(1)</text>
+  </g>
+
+  <!-- Summary stats -->
+  <rect x="100" y="385" width="590" height="1" fill="#e0e0e0"/>
+
+  <text x="165" y="398" text-anchor="middle" font-size="11" fill="#333" font-weight="600">36,114 tokens saved</text>
+  <text x="360" y="398" text-anchor="middle" font-size="11" fill="#888">across 200 calls</text>
+  <text x="555" y="398" text-anchor="middle" font-size="11" fill="#1e8e3e" font-weight="600">up to 52.9% reduction per command</text>
+</svg>

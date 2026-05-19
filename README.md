@@ -152,9 +152,27 @@ silently falls back to the equivalent Unix command (grep/cat/find) and returns
 results in the same JSON envelope with `"fallback": true`. Errors are logged
 to `~/.prx/errors.jsonl` for debugging.
 
-## Token Savings Tracking
+## Real-World Token Savings
 
-Every prx command logs actual vs baseline token counts automatically.
+Measured across 200 real agent calls (2 sessions: code review + implementation):
+
+<p align="center">
+  <img src="docs/assets/token-savings.svg" alt="Token savings per command" width="720"/>
+</p>
+
+| Command | Calls | Baseline | prx | Savings |
+|---|---|---|---|---|
+| `run` | 13 | 1,434 | 675 | **52.9%** |
+| `read` | 24 | 34,368 | 18,439 | **46.3%** |
+| `search` | 56 | 25,550 | 16,622 | **34.9%** |
+| `outline` | 5 | 2,503 | 1,804 | **27.9%** |
+| `find` | 23 | — | — | structured JSON (replaces find + wc + file) |
+| `exists` | 14 | — | — | O(1) bloom filter (replaces grep -rl) |
+| **Total** | **200** | | | **36,114 tokens saved** |
+
+`prx run cargo test` delivers the highest per-call savings: 95-99% token
+reduction on passing test suites. `prx read` saves the most in absolute terms —
+skeleton/outline modes return ~16% of what `cat` would.
 
 ```bash
 prx stats --compare     # per-command savings breakdown

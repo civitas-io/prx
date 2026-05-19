@@ -283,8 +283,13 @@ fn apply_read_mode(
 }
 
 fn diff_against_git(current: &str, file_path: &str) -> Result<String, AgError> {
+    let parent = std::path::Path::new(file_path)
+        .parent()
+        .unwrap_or(std::path::Path::new("."));
+
     let git_content = std::process::Command::new("git")
         .args(["show", &format!("HEAD:{}", git_relative_path(file_path))])
+        .current_dir(parent)
         .output();
 
     let old = match git_content {
@@ -330,8 +335,13 @@ fn diff_against_git(current: &str, file_path: &str) -> Result<String, AgError> {
 }
 
 fn git_relative_path(file_path: &str) -> String {
+    let parent = std::path::Path::new(file_path)
+        .parent()
+        .unwrap_or(std::path::Path::new("."));
+
     let output = std::process::Command::new("git")
         .args(["rev-parse", "--show-toplevel"])
+        .current_dir(parent)
         .output();
 
     match output {

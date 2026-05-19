@@ -1,7 +1,10 @@
 pub mod boosting;
 pub mod penalties;
+pub mod proximity;
 
 use std::collections::HashMap;
+
+use crate::search::graph::ImportGraph;
 
 pub fn rerank(
     scores: &mut HashMap<usize, f32>,
@@ -9,10 +12,14 @@ pub fn rerank(
     file_paths: &[String],
     query: &str,
     top_k: usize,
+    graph: Option<&ImportGraph>,
 ) -> Vec<(usize, f32)> {
     boosting::boost_file_coherence(scores, file_paths);
     boosting::boost_definitions(scores, chunk_texts, file_paths, query);
     boosting::boost_stem_matches(scores, file_paths, query);
+    if let Some(g) = graph {
+        proximity::boost_proximity(scores, file_paths, g);
+    }
     penalties::apply_noise_penalties(scores, file_paths);
 
     let mut ranked: Vec<(usize, f32)> = scores.iter().map(|(&id, &s)| (id, s)).collect();
@@ -38,7 +45,7 @@ mod tests {
             "src/handler.rs".to_string(),
             "tests/test_process.py".to_string(),
         ];
-        let result = rerank(&mut scores, &texts, &paths, "authenticate", 3);
+        let result = rerank(&mut scores, &texts, &paths, "authenticate", 3, None);
 
         assert!(!result.is_empty());
         assert_eq!(result[0].0, 0, "definition chunk should rank first");
@@ -49,14 +56,14 @@ mod tests {
         let mut scores = HashMap::from([(0, 1.0), (1, 1.0)]);
         let texts = vec!["fn auth() {}".to_string(), "fn test_auth() {}".to_string()];
         let paths = vec!["src/auth.rs".to_string(), "tests/test_auth.py".to_string()];
-        let result = rerank(&mut scores, &texts, &paths, "auth", 2);
+        let result = rerank(&mut scores, &texts, &paths, "auth", 2, None);
         assert_eq!(result[0].0, 0, "source file should rank above test file");
     }
 
     #[test]
     fn empty_scores_no_panic() {
         let mut scores = HashMap::new();
-        let result = rerank(&mut scores, &[], &[], "test", 5);
+        let result = rerank(&mut scores, &[], &[], "test", 5, None);
         assert!(result.is_empty());
     }
 }

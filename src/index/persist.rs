@@ -138,6 +138,17 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
     })?;
     std::fs::write(index_dir.join(BM25_FILE), bm25_bin).map_err(AgError::Io)?;
 
+    let file_paths: Vec<String> = {
+        let mut paths: Vec<String> = all_chunks.iter().map(|c| c.file_path.clone()).collect();
+        paths.sort();
+        paths.dedup();
+        paths
+    };
+    let import_graph = crate::search::graph::ImportGraph::build_full(&file_paths, |path| {
+        std::fs::read_to_string(root.join(path)).ok()
+    });
+    let _ = import_graph.save(&index_dir);
+
     Ok(IndexStats {
         files: entries.len(),
         chunks: all_chunks.len(),

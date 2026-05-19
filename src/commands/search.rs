@@ -15,7 +15,7 @@ use crate::index::sparse::{self, SparseIndex};
 use crate::output::AgError;
 use crate::parsing;
 use crate::ranking;
-use crate::search::{fusion, structural};
+use crate::search::{fusion, graph::ImportGraph, structural};
 use crate::walk::{self, WalkOpts};
 
 #[derive(Args)]
@@ -253,6 +253,8 @@ fn hybrid_search(
     let alpha = fusion::resolve_alpha(query, alpha_override);
     let fused = fusion::rrf_fuse(&semantic_results, &bm25_results, alpha);
 
+    let import_graph = load_or_build_graph(root, &fused, &chunk_file_paths);
+
     let mut score_map: HashMap<usize, f32> = fused.into_iter().collect();
     let ranked = ranking::rerank(
         &mut score_map,
@@ -260,6 +262,7 @@ fn hybrid_search(
         &chunk_file_paths,
         query,
         top_k * 2,
+        import_graph.as_ref(),
     );
 
     let mut matches = Vec::new();
@@ -309,6 +312,42 @@ fn hybrid_search(
 }
 
 type InMemoryIndex = (Vec<chunking::Chunk>, Vec<String>, Vec<String>, SparseIndex);
+
+fn load_or_build_graph(
+    root: &Path,
+    fused: &[(usize, f32)],
+    chunk_file_paths: &[String],
+) -> Option<ImportGraph> {
+    let index_dir = root.join(".prx").join("index");
+    if let Ok(graph) = ImportGraph::load(&index_dir) {
+        return Some(graph);
+    }
+
+    let mut seed_paths: Vec<&str> = fused
+        .iter()
+        .take(20)
+        .filter_map(|(id, _)| chunk_file_paths.get(*id).map(|s| s.as_str()))
+        .collect();
+    seed_paths.sort();
+    seed_paths.dedup();
+
+    let all_paths: Vec<String> = {
+        let mut p: Vec<String> = chunk_file_paths.to_vec();
+        p.sort();
+        p.dedup();
+        p
+    };
+
+    if seed_paths.is_empty() || all_paths.is_empty() {
+        return None;
+    }
+
+    Some(ImportGraph::build_partial(
+        &seed_paths,
+        &all_paths,
+        |path| std::fs::read_to_string(root.join(path)).ok(),
+    ))
+}
 
 fn build_index_in_memory(root: &Path) -> Result<InMemoryIndex, AgError> {
     let entries = walk::walk(root, &WalkOpts::default());

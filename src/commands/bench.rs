@@ -102,7 +102,14 @@ fn tasks(root: &str) -> Vec<Task> {
         Task {
             name: "semantic_search",
             query: "hash content bytes",
-            prx_args: vec!["search".into(), "--literal".into(), "hash".into(), r.clone(), "--top-k".into(), "5".into()],
+            prx_args: vec![
+                "search".into(),
+                "--literal".into(),
+                "hash".into(),
+                r.clone(),
+                "--top-k".into(),
+                "5".into(),
+            ],
             baseline_cmd: vec!["grep".into(), "-rn".into(), "hash".into(), r.clone()],
         },
         Task {

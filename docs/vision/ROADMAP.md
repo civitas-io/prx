@@ -71,13 +71,21 @@ All phases complete. Released at https://github.com/civitas-io/prx/releases/tag/
 
 ---
 
-## v0.2.0 — Next
+## v0.1.1 — Reliability
 
 | Item | Priority | Description |
 |---|---|---|
-| Benchmarks | High | NDCG@10 measurement, token efficiency curves, latency profiling |
+| Graceful fallback | High | On prx failure, silently fall back to grep/cat/find, return results, log error. See docs/design/FALLBACK.md |
+| Error logging | High | `~/.prx/errors.jsonl` captures every fallback with error details for debugging |
+| Real-world baseline data | Medium | Fallback results provide measured (not estimated) baseline token counts |
+
+## v0.2.0 — Distribution
+
+| Item | Priority | Description |
+|---|---|---|
 | `cargo publish` | High | Publish to crates.io for `cargo install prx` |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
+| Benchmarks | High | NDCG@10 measurement, token efficiency curves, latency profiling |
 | More run parsers | Medium | bun test, deno test, dotnet test, ruff |
 | Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
 | Float16 native inference | Low | f16 math without f32 conversion |

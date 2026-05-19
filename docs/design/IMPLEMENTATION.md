@@ -409,3 +409,76 @@ LTO, strip, `codegen-units=1` (already in `Cargo.toml`). Verify binary size ~47M
 - GitHub releases with prebuilt binaries (linux, macos, windows)
 - `cargo install prx`
 - Homebrew formula
+
+---
+
+## v0.1.1: Graceful Fallback
+
+See docs/design/FALLBACK.md for full specification.
+
+### Step 4.1: Fallback Module (`src/fallback.rs`)
+
+**Functions:**
+```
+can_fallback(command: &str) -> bool
+run_fallback(command: &str, cli: &Commands) -> Option<serde_json::Value>
+log_error(command: &str, error: &str, fallback_cmd: &str, fallback_bytes: usize)
+```
+
+Fallback-eligible: search, read, find, exists, outline, diff, run.
+Not eligible: edit (destructive), mcp, init, stats, bench, batch, index.
+
+Each fallback function:
+1. Constructs the equivalent Unix command from the prx args
+2. Runs it via `std::process::Command`
+3. Wraps the raw stdout in `{"raw": "...", "source": "grep -rn ..."}`
+4. Returns as `serde_json::Value`
+
+**Acceptance:** Force a search error, verify fallback grep runs and returns results.
+
+---
+
+### Step 4.2: Error Logging
+
+Append to `~/.prx/errors.jsonl`:
+```json
+{"ts": ..., "command": "search", "error": "...", "fallback_cmd": "grep -rn ...", "fallback_bytes": 4500}
+```
+
+Fire-and-forget — error logging never blocks the fallback result.
+
+**Acceptance:** Trigger a fallback, verify error entry in errors.jsonl.
+
+---
+
+### Step 4.3: Main Dispatch Integration
+
+Update `main.rs`:
+1. Wrap command dispatch in `std::panic::catch_unwind`
+2. On error or panic, check `can_fallback(command)`
+3. If yes: run fallback, log error, output with `fallback: true` in envelope
+4. If no: return error as-is (current behavior)
+
+**Acceptance:** prx search on a path that triggers an internal error returns grep results with `fallback: true`.
+
+---
+
+### Step 4.4: Envelope Update
+
+Add optional `fallback: bool` to the JSON envelope. Only present when true.
+`status` remains `"ok"` — the agent got results.
+
+**Acceptance:** Verify envelope has `fallback: true` on fallback, absent on normal operation.
+
+---
+
+### Step 4.5: Telemetry Integration
+
+When fallback runs, log to stats.jsonl with:
+- `actual_bytes` = fallback output bytes (what the agent received)
+- `baseline_bytes` = same (fallback IS the baseline)
+- `baseline_strategy` = "fallback_measured"
+
+This gives us measured (not estimated) baseline data for the commands that fail.
+
+**Acceptance:** Trigger fallback, verify stats entry has `baseline_strategy: "fallback_measured"`.

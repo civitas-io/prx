@@ -11,72 +11,108 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build-release:
-    name: Build (${{ matrix.target }})
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+  build-linux-x86:
+    name: Linux x86_64
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     continue-on-error: true
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            target: x86_64-unknown-linux-gnu
-            binary: prx
-          - os: ubuntu-latest
-            target: aarch64-unknown-linux-gnu
-            binary: prx
-            cross: true
-          - os: macos-latest
-            target: aarch64-apple-darwin
-            binary: prx
-          - os: macos-13
-            target: x86_64-apple-darwin
-            binary: prx
-          - os: windows-latest
-            target: x86_64-pc-windows-msvc
-            binary: prx.exe
     steps:
       - uses: actions/checkout@v4
-
       - uses: dtolnay/rust-toolchain@stable
-        with:
-          targets: ${{ matrix.target }}
-
-      - name: Install cross
-        if: matrix.cross
-        run: cargo install cross
-
       - name: Download models
         run: bash scripts/download-models.sh
-
-      - name: Build (native)
-        if: ${{ !matrix.cross }}
-        run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Build (cross)
-        if: matrix.cross
-        run: cross build --release --target ${{ matrix.target }}
-
-      - name: Package binary
-        shell: bash
-        run: |
-          cd target/${{ matrix.target }}/release
-          if [ "${{ matrix.binary }}" = "prx.exe" ]; then
-            7z a ../../../prx-${{ matrix.target }}.zip ${{ matrix.binary }}
-          else
-            tar czf ../../../prx-${{ matrix.target }}.tar.gz ${{ matrix.binary }}
-          fi
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Build
+        run: cargo build --release --target x86_64-unknown-linux-gnu
+      - name: Package
+        run: tar czf prx-x86_64-unknown-linux-gnu.tar.gz -C target/x86_64-unknown-linux-gnu/release prx
+      - uses: actions/upload-artifact@v4
         with:
-          name: prx-${{ matrix.target }}
-          path: prx-${{ matrix.target }}.*
+          name: prx-x86_64-unknown-linux-gnu
+          path: prx-x86_64-unknown-linux-gnu.tar.gz
+
+  build-linux-arm:
+    name: Linux aarch64
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-unknown-linux-gnu
+      - name: Install cross
+        run: cargo install cross
+      - name: Download models
+        run: bash scripts/download-models.sh
+      - name: Build
+        run: cross build --release --target aarch64-unknown-linux-gnu
+      - name: Package
+        run: tar czf prx-aarch64-unknown-linux-gnu.tar.gz -C target/aarch64-unknown-linux-gnu/release prx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prx-aarch64-unknown-linux-gnu
+          path: prx-aarch64-unknown-linux-gnu.tar.gz
+
+  build-macos-arm:
+    name: macOS Apple Silicon
+    runs-on: macos-latest
+    timeout-minutes: 25
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Download models
+        run: bash scripts/download-models.sh
+      - name: Build
+        run: cargo build --release --target aarch64-apple-darwin
+      - name: Package
+        run: tar czf prx-aarch64-apple-darwin.tar.gz -C target/aarch64-apple-darwin/release prx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prx-aarch64-apple-darwin
+          path: prx-aarch64-apple-darwin.tar.gz
+
+  build-macos-intel:
+    name: macOS Intel
+    runs-on: macos-13
+    timeout-minutes: 25
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Download models
+        run: bash scripts/download-models.sh
+      - name: Build
+        run: cargo build --release --target x86_64-apple-darwin
+      - name: Package
+        run: tar czf prx-x86_64-apple-darwin.tar.gz -C target/x86_64-apple-darwin/release prx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prx-x86_64-apple-darwin
+          path: prx-x86_64-apple-darwin.tar.gz
+
+  build-windows:
+    name: Windows x86_64
+    runs-on: windows-latest
+    timeout-minutes: 25
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Download models
+        run: bash scripts/download-models.sh
+      - name: Build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+      - name: Package
+        run: 7z a prx-x86_64-pc-windows-msvc.zip target/x86_64-pc-windows-msvc/release/prx.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: prx-x86_64-pc-windows-msvc
+          path: prx-x86_64-pc-windows-msvc.zip
 
   create-release:
     name: Create Release
-    needs: build-release
+    needs: [build-linux-x86, build-linux-arm, build-macos-arm, build-macos-intel, build-windows]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -85,19 +121,20 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
+          merge-multiple: true
 
       - name: List available binaries
-        run: find artifacts -type f | sort
+        run: ls -lh artifacts/ 2>/dev/null || echo "No artifacts"
 
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
-          files: artifacts/**/*
+          files: artifacts/*
           body: |
             ## prx ${{ github.ref_name }}
 
-            Download the binary for your platform and run it. No dependencies required.
+            Download the binary for your platform. No dependencies required.
 
             | Platform | File |
             |---|---|
@@ -107,4 +144,4 @@ jobs:
             | macOS Intel | `prx-x86_64-apple-darwin.tar.gz` |
             | Windows x86_64 | `prx-x86_64-pc-windows-msvc.zip` |
 
-            Some platform binaries may be missing if the build timed out. Check back later or build from source: `git clone && make setup && make release`
+            > Some binaries may be absent if a build timed out. Build from source: `git clone https://github.com/civitas-io/prx && cd prx && make setup && make release`

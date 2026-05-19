@@ -205,7 +205,6 @@ make clean      - Remove build artifacts
 | Linux x86_64 | Supported |
 | Linux aarch64 | Supported |
 | macOS Apple Silicon | Supported |
-| macOS Intel | Supported |
 | Windows x86_64 | Supported |
 
 Single static binary. No runtime dependencies. No internet required after build.

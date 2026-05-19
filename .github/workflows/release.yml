@@ -72,25 +72,6 @@ jobs:
           name: prx-aarch64-apple-darwin
           path: prx-aarch64-apple-darwin.tar.gz
 
-  build-macos-intel:
-    name: macOS Intel
-    runs-on: macos-13
-    timeout-minutes: 25
-    continue-on-error: true
-    steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
-      - name: Download models
-        run: bash scripts/download-models.sh
-      - name: Build
-        run: cargo build --release --target x86_64-apple-darwin
-      - name: Package
-        run: tar czf prx-x86_64-apple-darwin.tar.gz -C target/x86_64-apple-darwin/release prx
-      - uses: actions/upload-artifact@v4
-        with:
-          name: prx-x86_64-apple-darwin
-          path: prx-x86_64-apple-darwin.tar.gz
-
   build-windows:
     name: Windows x86_64
     runs-on: windows-latest
@@ -112,7 +93,7 @@ jobs:
 
   create-release:
     name: Create Release
-    needs: [build-linux-x86, build-linux-arm, build-macos-arm, build-macos-intel, build-windows]
+    needs: [build-linux-x86, build-linux-arm, build-macos-arm, build-windows]
     if: always()
     runs-on: ubuntu-latest
     steps:
@@ -141,7 +122,6 @@ jobs:
             | Linux x86_64 | `prx-x86_64-unknown-linux-gnu.tar.gz` |
             | Linux aarch64 | `prx-aarch64-unknown-linux-gnu.tar.gz` |
             | macOS Apple Silicon | `prx-aarch64-apple-darwin.tar.gz` |
-            | macOS Intel | `prx-x86_64-apple-darwin.tar.gz` |
             | Windows x86_64 | `prx-x86_64-pc-windows-msvc.zip` |
 
             > Some binaries may be absent if a build timed out. Build from source: `git clone https://github.com/civitas-io/prx && cd prx && make setup && make release`

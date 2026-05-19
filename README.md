@@ -22,7 +22,7 @@ and token-budgeted responses.
 | Command | Replaces | What it does |
 |---|---|---|
 | `prx search` | grep, rg | Hybrid search: literal + semantic + structural. Token-budgeted, ranked results. |
-| `prx read` | cat, head, tail | Structured file reading. Skeleton mode, structural snapping, `--if-changed` cache. |
+| `prx read` | cat, head, tail | Structured file reading. `--if-changed` cache, `--mode` (aggressive/diff/entropy). |
 | `prx find` | find, ls, tree | Codebase mapping. Dual tree+flat output, inline metadata. |
 | `prx edit` | sed, awk | Safe edits. Literal matching, dry-run by default, syntax validation. |
 | `prx diff` | diff, git diff | Semantic diffs. Natural language summaries, function-level attribution. |

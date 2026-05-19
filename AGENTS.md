@@ -62,6 +62,9 @@ prx read src/auth.ts --skeleton                # signatures and exports only
 prx read src/auth.ts --lines 42-67 --snap fn   # expand to enclosing function
 prx read src/auth.ts --outline                 # symbol table
 prx read src/auth.ts --if-changed abc123...    # skip if unchanged (returns cached stub)
+prx read src/auth.ts --mode aggressive         # strip comments (1-19% savings)
+prx read src/auth.ts --mode diff               # changed lines vs git HEAD (80-97%)
+prx read schema.rs --mode entropy              # filter repetitive code (5-87%)
 
 # Find -- codebase mapping
 prx find src/ --pattern "*.ts" --depth 3       # bounded file discovery

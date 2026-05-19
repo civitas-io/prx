@@ -14,7 +14,10 @@ jobs:
   build-release:
     name: Build (${{ matrix.target }})
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    continue-on-error: true
     strategy:
+      fail-fast: false
       matrix:
         include:
           - os: ubuntu-latest
@@ -74,6 +77,7 @@ jobs:
   create-release:
     name: Create Release
     needs: build-release
+    if: always()
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -82,8 +86,25 @@ jobs:
         with:
           path: artifacts
 
+      - name: List available binaries
+        run: find artifacts -type f | sort
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
           generate_release_notes: true
           files: artifacts/**/*
+          body: |
+            ## prx ${{ github.ref_name }}
+
+            Download the binary for your platform and run it. No dependencies required.
+
+            | Platform | File |
+            |---|---|
+            | Linux x86_64 | `prx-x86_64-unknown-linux-gnu.tar.gz` |
+            | Linux aarch64 | `prx-aarch64-unknown-linux-gnu.tar.gz` |
+            | macOS Apple Silicon | `prx-aarch64-apple-darwin.tar.gz` |
+            | macOS Intel | `prx-x86_64-apple-darwin.tar.gz` |
+            | Windows x86_64 | `prx-x86_64-pc-windows-msvc.zip` |
+
+            Some platform binaries may be missing if the build timed out. Check back later or build from source: `git clone && make setup && make release`

@@ -1,4 +1,5 @@
 pub mod batch;
+pub mod bench;
 pub mod diff;
 pub mod edit;
 pub mod exists;
@@ -56,6 +57,8 @@ pub enum Commands {
     Init(init::InitArgs),
     /// Run a command and return structured output
     Run(run::RunArgs),
+    /// Run synthetic benchmarks comparing prx vs grep+cat
+    Bench(bench::BenchArgs),
     /// Start MCP server on stdio
     #[cfg(feature = "mcp")]
     Mcp(mcp::McpArgs),
@@ -76,6 +79,7 @@ impl Commands {
             Self::Stats(_) => "stats",
             Self::Init(_) => "init",
             Self::Run(_) => "run",
+            Self::Bench(_) => "bench",
             #[cfg(feature = "mcp")]
             Self::Mcp(_) => "mcp",
         }

@@ -38,6 +38,7 @@ fn main() -> Result<()> {
         Commands::Stats(args) => commands::stats::run(args),
         Commands::Init(args) => commands::init::run(args),
         Commands::Run(args) => commands::run::run(args),
+        Commands::Bench(args) => commands::bench::run(args),
         #[cfg(feature = "mcp")]
         Commands::Mcp(args) => commands::mcp::run(args),
     };

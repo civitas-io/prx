@@ -5,6 +5,7 @@ use clap::Parser;
 
 mod chunking;
 mod commands;
+mod fallback;
 mod hash;
 mod index;
 mod output;
@@ -22,10 +23,76 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let command_name = cli.command.name();
     let plain = cli.plain;
+    let can_fb = fallback::can_fallback(&command_name);
+    let fb_spec = if can_fb {
+        fallback::fallback_spec(&command_name, &cli.command)
+    } else {
+        None
+    };
 
     let start = std::time::Instant::now();
 
-    let result = match cli.command {
+    let result =
+        std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| run_command(cli.command)));
+
+    let wall_ms = start.elapsed().as_millis() as u64;
+
+    match result {
+        Ok(Ok(ref data)) => {
+            log_telemetry(&command_name, data, wall_ms);
+            write_envelope(&command_name, data.clone(), plain);
+        }
+        Ok(Err(ref e)) => {
+            if should_fallback(e) {
+                handle_error(&command_name, &e.to_string(), fb_spec, plain);
+            } else {
+                output::write_error(&command_name, e, plain);
+            }
+        }
+        Err(panic_info) => {
+            let msg = panic_info
+                .downcast_ref::<String>()
+                .map(|s| s.as_str())
+                .or_else(|| panic_info.downcast_ref::<&str>().copied())
+                .unwrap_or("unknown panic");
+            handle_error(&command_name, msg, fb_spec, plain);
+        }
+    }
+
+    Ok(())
+}
+
+fn should_fallback(error: &output::AgError) -> bool {
+    matches!(
+        error,
+        output::AgError::Internal { .. }
+            | output::AgError::ParseError { .. }
+            | output::AgError::IndexCorrupted { .. }
+    )
+}
+
+fn handle_error(command: &str, error: &str, fb_spec: Option<(String, Vec<String>)>, plain: bool) {
+    if let Some((cmd, args)) = fb_spec {
+        if let Some(data) = fallback::execute_fallback(&cmd, &args) {
+            let raw_bytes = serde_json::to_string(&data).map(|s| s.len()).unwrap_or(0);
+            let fallback_cmd = format!("{cmd} {}", args.join(" "));
+            fallback::log_error(command, error, &fallback_cmd, raw_bytes);
+            output::write_fallback_envelope(command, data, plain);
+            return;
+        }
+    }
+
+    output::write_error(
+        command,
+        &output::AgError::Internal {
+            message: error.to_string(),
+        },
+        plain,
+    );
+}
+
+fn run_command(command: Commands) -> Result<serde_json::Value, output::AgError> {
+    match command {
         Commands::Search(args) => commands::search::run(args),
         Commands::Read(args) => commands::read::run(args),
         Commands::Find(args) => commands::find::run(args),
@@ -41,19 +108,25 @@ fn main() -> Result<()> {
         Commands::Bench(args) => commands::bench::run(args),
         #[cfg(feature = "mcp")]
         Commands::Mcp(args) => commands::mcp::run(args),
-    };
-
-    let wall_ms = start.elapsed().as_millis() as u64;
-
-    match result {
-        Ok(ref data) => {
-            log_telemetry(&command_name, data, wall_ms);
-            write_envelope(&command_name, data.clone(), plain);
-        }
-        Err(e) => output::write_error(&command_name, &e, plain),
     }
+}
 
-    Ok(())
+fn handle_fallback(command: &str, error: &str, plain: bool, _wall_ms: u64) {
+    // We can't access cli.command here since it was moved into run_command.
+    // For fallback without the original args, log the error and return error.
+    // Full fallback with arg access requires restructuring — for now, log the error
+    // and return an error with suggestion to use the Unix tool directly.
+    fallback::log_error(command, error, "n/a", 0);
+
+    output::write_error(
+        command,
+        &output::AgError::Internal {
+            message: format!(
+                "{error}. Fallback: use the equivalent Unix command directly (grep/cat/find)."
+            ),
+        },
+        plain,
+    );
 }
 
 fn log_telemetry(command: &str, data: &serde_json::Value, wall_ms: u64) {

@@ -1,5 +1,6 @@
 pub mod chunking;
 pub mod commands;
+pub mod fallback;
 pub mod hash;
 pub mod index;
 pub mod output;

@@ -135,6 +135,32 @@ fn write_plain(_command: &str, data: &serde_json::Value) {
     let _ = writeln!(stdout);
 }
 
+pub fn build_fallback_envelope(command: &str, data: serde_json::Value) -> serde_json::Value {
+    let json_data = serde_json::to_string(&data).unwrap_or_default();
+    let tokens = json_data.len() / 4;
+
+    serde_json::json!({
+        "version": env!("CARGO_PKG_VERSION"),
+        "command": command,
+        "status": "ok",
+        "fallback": true,
+        "tokens": tokens,
+        "data": data,
+    })
+}
+
+pub fn write_fallback_envelope(command: &str, data: serde_json::Value, plain: bool) {
+    if plain {
+        write_plain(command, &data);
+        return;
+    }
+
+    let envelope = build_fallback_envelope(command, data);
+    let mut stdout = std::io::stdout().lock();
+    let _ = serde_json::to_writer(&mut stdout, &envelope);
+    let _ = writeln!(stdout);
+}
+
 pub fn build_envelope(command: &str, data: serde_json::Value) -> serde_json::Value {
     let json_data = serde_json::to_string(&data).unwrap_or_default();
     let tokens = json_data.len() / 4;

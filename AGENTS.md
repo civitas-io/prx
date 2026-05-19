@@ -96,7 +96,7 @@ All output is JSON. Every response follows this envelope:
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "search",
   "status": "ok",
   "tokens": 487,
@@ -108,7 +108,7 @@ Errors are also JSON, on stdout, never stderr:
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "read",
   "status": "error",
   "error": {

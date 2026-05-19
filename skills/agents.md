@@ -86,7 +86,7 @@ All output follows a JSON envelope:
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "read",
   "status": "ok",
   "tokens": 487,

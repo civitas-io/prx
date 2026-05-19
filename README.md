@@ -72,7 +72,7 @@ All output is JSON by default:
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "command": "search",
   "status": "ok",
   "tokens": 487,

@@ -33,7 +33,8 @@ and token-budgeted responses.
 | `prx mcp` | -- | MCP server over stdio for direct agent integration. |
 | `prx batch` | xargs | Parallel JSONL batch execution. |
 | `prx init` | -- | Auto-detect agent frameworks, generate integration configs. |
-| `prx stats` | -- | Token savings dashboard. |
+| `prx stats` | -- | Token savings dashboard with `--compare` for real-world savings. |
+| `prx bench` | -- | Synthetic benchmark runner: prx vs grep+cat side-by-side. |
 
 ## Quick Start
 
@@ -145,6 +146,22 @@ prx run npm test        # jest/vitest output parsed
 Supports 9 tool parsers: cargo test, cargo build/clippy, pytest, go test,
 jest/vitest, tsc, eslint, plus a fallback for unknown commands.
 
+## Reliability
+
+prx never breaks your agent's workflow. If an internal error occurs, prx
+silently falls back to the equivalent Unix command (grep/cat/find) and returns
+results in the same JSON envelope with `"fallback": true`. Errors are logged
+to `~/.prx/errors.jsonl` for debugging.
+
+## Token Savings Tracking
+
+Every prx command logs actual vs baseline token counts automatically.
+
+```bash
+prx stats --compare     # per-command savings breakdown
+prx bench .             # synthetic benchmark: prx vs grep+cat
+```
+
 ## Install
 
 ### Prebuilt Binaries
@@ -214,12 +231,13 @@ Single static binary. No runtime dependencies. No internet required after build.
 | Metric | Value |
 |---|---|
 | Version | 0.1.0 |
-| Commands | 13 |
-| Tests | 300 (256 unit + 44 E2E) |
-| Coverage | 84% |
+| Commands | 14 |
+| Tests | 304 (260 unit + 44 E2E) |
 | Languages | 14 (tree-sitter grammars) |
 | Release binary | ~48 MB (float16 model embedded) |
-| CI | GitHub Actions (Linux, macOS, Windows) |
+| CI | GitHub Actions (Linux x86_64, Linux aarch64, macOS arm64, Windows) |
+| Fallback | Graceful fallback to grep/cat/find on internal errors |
+| Telemetry | Real-world token savings tracking via `prx stats --compare` |
 
 See [ROADMAP](docs/vision/ROADMAP.md) for what's next.
 

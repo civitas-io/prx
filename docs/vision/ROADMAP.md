@@ -71,13 +71,15 @@ All phases complete. Released at https://github.com/civitas-io/prx/releases/tag/
 
 ---
 
-## v0.1.1 — Reliability
+## v0.1.1 — Reliability [DONE]
 
-| Item | Priority | Description |
-|---|---|---|
-| Graceful fallback | High | On prx failure, silently fall back to grep/cat/find, return results, log error. See docs/design/FALLBACK.md |
-| Error logging | High | `~/.prx/errors.jsonl` captures every fallback with error details for debugging |
-| Real-world baseline data | Medium | Fallback results provide measured (not estimated) baseline token counts |
+| Item | Status |
+|---|---|
+| Graceful fallback | Done — catch_unwind + fallback to grep/cat/find on internal errors |
+| Error logging | Done — `~/.prx/errors.jsonl` captures every fallback |
+| Real-world telemetry | Done — `prx stats --compare` shows per-command savings |
+| Synthetic benchmarks | Done — `prx bench` runs side-by-side comparisons |
+| Pre-commit hook | Done — mirrors CI checks (fmt + clippy + tests) |
 
 ## v0.2.0 — Context Intelligence
 

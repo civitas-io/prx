@@ -11,48 +11,49 @@ PROJECT
 
 CURRENT STATE
 -------------
-- 13 commands, all implemented and working
-- 300 tests (256 unit + 44 E2E), all passing
-- 84% coverage (target: 80%)
-- Clippy clean, fmt clean
-- CI: GitHub Actions (Linux, macOS, Windows)
+- 14 commands, all implemented
+- 304 tests (260 unit + 44 E2E), all passing
+- Clippy clean, fmt clean, pre-commit hook active
+- CI: GitHub Actions (Linux x86_64 + aarch64, macOS arm64, Windows x86_64)
 - Release binary: ~48 MB (float16 model embedded)
-- v0.1.0 tagged and pushed, release pipeline building binaries
+- Graceful fallback: on internal errors, falls back to grep/cat/find
+- Real-world telemetry: prx stats --compare
+- Installed locally at /Users/jeryn/.cargo/bin/prx
+- Workspace AGENTS.md at /Users/jeryn/workspace/projects/AGENTS.md
 
-COMMANDS
---------
-search    - literal + semantic + structural, RRF fusion, 5-stage reranking
-read      - --lines, --snap, --skeleton, --outline, --hash, --budget
-find      - tree+flat, --pattern, --depth, --changed-since, --related-to
-edit      - literal/regex, dry-run default, --apply, --in-function, syntax check
-diff      - git diff, function attribution, semantic notes, --stat-only
-run       - 9 parsers (cargo test/build/clippy, pytest, go, jest/vitest, tsc, eslint)
-index     - persistent .prx/index/, --rebuild, --stats, --watch
-outline   - file + directory, --kind filter
-exists    - bloom filter O(1)
-batch     - JSONL stdin dispatch
-stats     - token savings dashboard (PRX_STATS_FILE env)
-init      - auto-detect frameworks, generate configs
-mcp       - MCP server over stdio (rmcp, 6 tools)
-
-NEXT (v0.2.0)
+COMMANDS (14)
 -------------
-- Benchmarks (NDCG@10, token efficiency, latency profiling)
-- cargo publish to crates.io
-- Homebrew formula
-- More run parsers (bun test, deno test, dotnet test, ruff)
-- Additional language grammars (Kotlin, Swift, C#, PHP, Elixir)
+search, read, find, edit, diff, run, index, outline, exists,
+batch, stats, init, mcp, bench
+
+KEY FEATURES
+------------
+- Hybrid search: literal + semantic (Model2Vec, float16) + structural (ast-grep)
+- RRF fusion (k=60) with 5-stage reranking pipeline
+- 9 test/build/lint parsers in prx run (95-99% token savings)
+- Persistent index with validation (6x faster repeated searches)
+- Graceful fallback to Unix tools on internal errors
+- Real-world telemetry with baseline estimation
+- MCP server over stdio (rmcp)
+
+NEXT (v0.2.0 — Context Intelligence)
+-------------------------------------
+Session cache (13-token re-reads)
+Read modes: aggressive, diff, entropy, auto
+Graph proximity boost for search
+File reference IDs (F1/F2 aliases)
+cargo publish, Homebrew formula
+NDCG@10 benchmarks
 
 KEY DECISIONS
 -------------
-- Named "prx" (Praxis) to avoid conflict with "ag" (The Silver Searcher)
-- tree-sitter 0.26 confirmed compatible with all grammar crates
-- Model weights embedded via include_bytes! (float16, 31MB, no downloads)
+- Named "prx" (Praxis) — Latin for practice/action, fits civitas-io theme
+- Model weights embedded via include_bytes! (float16, 31MB)
 - Pure Rust Model2Vec inference (no ONNX Runtime)
-- Custom BM25 with sprs (not tantivy)
+- tree-sitter 0.26 confirmed compatible with all grammar crates
 - Three-tier integration: CLI + MCP + agent definitions
-- Windows paths normalized to forward slashes
-- Stats path configurable via PRX_STATS_FILE env var
+- Fallback only on internal errors (panics, parse, index), not user errors
+- macOS Intel dropped from release builds (macos-13 runner stuck)
 
 TO CONTINUE
 -----------

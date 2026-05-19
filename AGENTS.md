@@ -325,6 +325,7 @@ ag/
 │   ├── tokens.rs                # Token counting (tokenizers crate)
 │   ├── hash.rs                  # Content hashing (xxh3)
 │   ├── walk.rs                  # File walking (ignore crate, .gitignore/.prxignore)
+│   ├── fallback.rs              # Graceful fallback to grep/cat/find on internal errors
 │   │
 │   ├── commands/                # Subcommand handlers
 │   │   ├── mod.rs
@@ -340,7 +341,8 @@ ag/
 │   │   ├── stats.rs             # prx stats
 │   │   ├── mcp.rs               # prx mcp
 │   │   ├── init.rs              # prx init
-│   │   └── run.rs               # prx run (structured command runner)
+│   │   ├── run.rs               # prx run (structured command runner)
+│   │   └── bench.rs             # prx bench (synthetic benchmarks)
 │   │
 │   ├── search/                  # Search engine
 │   │   ├── mod.rs

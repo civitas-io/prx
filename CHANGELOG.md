@@ -5,9 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0] - 2026-05-18
+## [0.1.0] - 2026-05-19
 
-Initial release. 13 commands, 300 tests, 84% coverage.
+Initial release. 14 commands, 304 tests.
+
+### Reliability
+
+- Graceful fallback: on internal errors (panics, parse errors), prx silently falls back to grep/cat/find and returns results with `fallback: true` in the envelope. User errors (file not found) are returned normally.
+- Error logging: every fallback logs to `~/.prx/errors.jsonl` for debugging
+- Pre-commit hook: mirrors CI checks (fmt + clippy + tests)
+
+### Telemetry & Benchmarks
+
+- Real-world telemetry: every command logs `actual_bytes` vs `baseline_bytes` to `~/.prx/stats.jsonl`
+- `prx stats --compare`: per-command savings breakdown from real usage
+- `prx bench`: synthetic benchmark runner comparing prx vs grep+cat side-by-side
 
 ### Commands
 

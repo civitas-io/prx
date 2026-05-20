@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn parse_build_success() {
-        let output = "   Compiling ag v0.1.0\n    Finished `dev` profile in 1.5s\n";
+        let output = "   Compiling prx v0.2.0\n    Finished `dev` profile in 1.5s\n";
         let result = parse(output);
         assert_eq!(result.failed, 0);
         assert!(result.summary.contains("succeeded"));

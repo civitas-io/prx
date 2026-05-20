@@ -57,9 +57,9 @@ ag occupies the middle ground: structural awareness without a running LSP server
 
 ---
 
-## Where ag Fits
+## Where prx Fits
 
-ag is not a wrapper. RTK, squeez, and LeanCTX all sit in front of existing tools and compress their output. ag replaces the tools.
+ag is not a wrapper. RTK, squeez, and LeanCTX all sit in front of existing tools and compress their output. prx replaces the tools.
 
 ag is not search-only. Semble, instant-grep, FileSift, and Hypergrep all solve the retrieval problem well. None of them read, edit, or diff files. An agent still needs other tools to act on what it finds.
 
@@ -69,7 +69,7 @@ ag is a single Rust binary that replaces five core tools (read, grep, find, edit
 
 The closest analog is aict: same philosophy of reimplementing coreutils for agent consumption. prx differs in three ways. It's written in Rust, so it's faster than the tools it replaces rather than slower. It adds semantic search natively rather than treating retrieval as a separate concern. And it covers the full read-search-edit-diff loop rather than stopping at structured output.
 
-ag absorbs Semble's proven search architecture directly. The hybrid retrieval pipeline (embeddings + BM25 + reranking) and the NDCG 0.854 quality baseline come from Semble's published work. ag extends that foundation with the read, find, edit, and diff operations that search-only tools leave to other tools.
+ag absorbs Semble's proven search architecture directly. The hybrid retrieval pipeline (embeddings + BM25 + reranking) and the NDCG 0.854 quality baseline come from Semble's published work. prx extends that foundation with the read, find, edit, and diff operations that search-only tools leave to other tools.
 
 ---
 

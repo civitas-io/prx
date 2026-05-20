@@ -1,6 +1,6 @@
 # Benchmarking Plan
 
-This document defines how ag measures and reports its performance. Three
+This document defines how prx measures and reports its performance. Three
 dimensions matter: retrieval quality (did we find the right code?), token
 efficiency (how much did it cost?), and latency (how fast?). Each is measured
 both synthetically and in real agent sessions.
@@ -66,8 +66,8 @@ Report NDCG@5 and NDCG@10. Break down by:
 |---|---|---|
 | ripgrep | `rg --json` on query keywords | Literal text search quality |
 | Semble | Python API, same queries | Hybrid search quality (our target) |
-| BM25-only | ag with `--mode bm25` | Lexical retrieval without embeddings |
-| Semantic-only | ag with `--mode semantic` | Embedding retrieval without BM25 |
+| BM25-only | prx with `--mode bm25` | Lexical retrieval without embeddings |
+| Semantic-only | prx with `--mode semantic` | Embedding retrieval without BM25 |
 
 ### Correctness Gate
 
@@ -109,7 +109,7 @@ Model the agent's actual workflow, not just search results.
 
 Report token efficiency at fixed recall levels:
 
-| Recall target | ag tokens | ripgrep+read tokens | Savings |
+| Recall target | prx tokens | ripgrep+read tokens | Savings |
 |---|---|---|---|
 | 50% | ? | ? | ? |
 | 75% | ? | ? | ? |
@@ -171,7 +171,7 @@ Break down by:
 
 ### Per-Subcommand Baselines
 
-| ag command | Baseline tool | What to compare |
+| prx command | Baseline tool | What to compare |
 |---|---|---|
 | `prx search --literal` | `rg --json` | Latency, should be within 2x |
 | `prx search --semantic` | Semble CLI | Latency at same quality |
@@ -197,7 +197,7 @@ Real-world measurement is non-optional.
 | Agent | Claude Code (or OpenCode) | Same |
 | Model | Claude Sonnet 4.6 | Same |
 | Tasks | 20-30 real coding tasks | Same |
-| Search tool | ripgrep + cat (default) | ag (all subcommands) |
+| Search tool | ripgrep + cat (default) | prx (all subcommands) |
 | Environment | Docker container, identical | Docker container, identical |
 
 **Task corpus** (3 sources, 20-30 tasks total):
@@ -305,7 +305,7 @@ Results published in `benchmarks/results/` and referenced from README.md:
 - `ndcg_by_category.json` — per-query-category breakdown
 - `token_efficiency.json` — recall-vs-tokens curve
 - `latency_by_size.json` — latency vs repository size
-- `comparison.json` — ag vs ripgrep vs Semble on same dataset
+- `comparison.json` — prx vs ripgrep vs Semble on same dataset
 
 ### Reproducibility
 

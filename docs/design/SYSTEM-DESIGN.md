@@ -11,7 +11,7 @@ revisit without discussion.
 
 ## 1. Output Envelope (`src/output.rs`)
 
-Every ag command returns a JSON envelope to stdout.
+Every prx command returns a JSON envelope to stdout.
 
 ### Success Envelope
 
@@ -395,7 +395,7 @@ structural diff produces natural language descriptions. Deterministic, no LLM.
 1. Walk files, chunk, embed, build BM25 matrix, build bloom
 2. Write to `.prx/index/`:
    - `chunks.bin`, `dense.bin`, `sparse.bin`, `bloom.bin`, `meta.json`
-3. `meta.json`: ag version, timestamp, file count, per-file content hashes
+3. `meta.json`: prx version, timestamp, file count, per-file content hashes
 4. `--watch`: file watcher (notify crate), incremental re-index
 5. `--stats`: print index statistics
 6. Validation: before using cached index, check version + file hashes

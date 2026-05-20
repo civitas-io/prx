@@ -1,4 +1,4 @@
-# ag System Architecture
+# prx System Architecture
 
 ## Overview
 

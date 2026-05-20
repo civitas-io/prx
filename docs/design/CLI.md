@@ -1,6 +1,6 @@
 # CLI Interface Specification
 
-> This document describes the CLI interface for ag v0.1.x. Flags and behavior may change between minor versions. Use `prx --version` and the JSON output `version` field for programmatic detection.
+> This document describes the CLI interface for prx v0.1.x. Flags and behavior may change between minor versions. Use `prx --version` and the JSON output `version` field for programmatic detection.
 
 ---
 
@@ -176,7 +176,7 @@ Uses bloom filter for O(1) probable check, falls back to literal search for exac
 
 Start the MCP server on stdio.
 
-No arguments. Exposes all ag tools as MCP tools. Designed for agent framework integration.
+No arguments. Exposes all prx tools as MCP tools. Designed for agent framework integration.
 
 ---
 
@@ -211,7 +211,7 @@ Generate integration files for agent frameworks.
 | Flag | Description |
 |------|-------------|
 | `--agent FRAMEWORK` | Target framework: `claude-code`, `cursor`, `codex`, `opencode`, `all` |
-| `--agents-md` | Append ag usage snippet to AGENTS.md in current directory |
+| `--agents-md` | Append prx usage snippet to AGENTS.md in current directory |
 
 **Without flags**: auto-detects installed frameworks and writes appropriate configs.
 
@@ -228,8 +228,8 @@ Generate integration files for agent frameworks.
 
 **Rationale**: MCP integration only works for top-level agents. Sub-agents
 (Claude Code explore agents, Codex sub-agents) cannot call MCP tools and must
-invoke ag via bash. The AGENTS.md snippet and Claude Code sub-agent definition
-ensure ag is available at every level of agent delegation.
+invoke prx via bash. The AGENTS.md snippet and Claude Code sub-agent definition
+ensure prx is available at every level of agent delegation.
 
 ---
 

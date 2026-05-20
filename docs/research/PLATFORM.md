@@ -67,7 +67,7 @@ Result: zero external binary dependencies, works on every platform.
 
 | Configuration | Size |
 |---|---|
-| ag without model | ~15 MB |
+| prx without model | ~15 MB |
 | + potion-code-16M float16 | +32 MB = ~47 MB |
 | + LTO + strip | ~40 MB |
 

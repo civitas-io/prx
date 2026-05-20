@@ -28,7 +28,7 @@ fn parse_json(output: &[u8]) -> serde_json::Value {
     serde_json::from_slice(output).expect("invalid JSON output")
 }
 
-// ==================== ag search ====================
+// ==================== prx search ====================
 
 #[test]
 fn search_literal_finds_match() {
@@ -102,7 +102,7 @@ fn search_with_budget() {
     assert!(json["data"]["budget_used"].as_u64().unwrap() <= 10);
 }
 
-// ==================== ag read ====================
+// ==================== prx read ====================
 
 #[test]
 fn read_full_file() {
@@ -265,7 +265,7 @@ fn read_mode_invalid_errors() {
         .stdout(predicate::str::contains("invalid_argument"));
 }
 
-// ==================== ag find ====================
+// ==================== prx find ====================
 
 #[test]
 fn find_all_files() {
@@ -303,7 +303,7 @@ fn find_bad_path() {
         .stdout(predicate::str::contains("file_not_found"));
 }
 
-// ==================== ag edit ====================
+// ==================== prx edit ====================
 
 #[test]
 fn edit_dry_run_no_change() {
@@ -381,7 +381,7 @@ fn edit_nonexistent_file() {
         .stdout(predicate::str::contains("file_not_found"));
 }
 
-// ==================== ag outline ====================
+// ==================== prx outline ====================
 
 #[test]
 fn outline_file() {
@@ -405,7 +405,7 @@ fn outline_nonexistent() {
         .stdout(predicate::str::contains("file_not_found"));
 }
 
-// ==================== ag exists ====================
+// ==================== prx exists ====================
 
 #[test]
 fn exists_found() {
@@ -443,7 +443,7 @@ fn exists_bad_path() {
         .stdout(predicate::str::contains("file_not_found"));
 }
 
-// ==================== ag run ====================
+// ==================== prx run ====================
 
 #[test]
 fn run_echo() {
@@ -462,7 +462,7 @@ fn run_failing_command() {
     assert_ne!(json["data"]["exit_code"], 0);
 }
 
-// ==================== ag index ====================
+// ==================== prx index ====================
 
 #[test]
 fn index_build() {
@@ -501,7 +501,7 @@ fn index_bad_path() {
         .stdout(predicate::str::contains("file_not_found"));
 }
 
-// ==================== ag init ====================
+// ==================== prx init ====================
 
 #[test]
 fn init_agents_md() {
@@ -557,7 +557,7 @@ fn plain_mode_no_json() {
     assert!(!stdout.starts_with("{\"version\""));
 }
 
-// ==================== ag diff (git integration) ====================
+// ==================== prx diff (git integration) ====================
 
 fn git_test_dir() -> TempDir {
     let dir = TempDir::new().unwrap();
@@ -714,7 +714,7 @@ fn find_changed_since() {
     );
 }
 
-// ==================== ag stats ====================
+// ==================== prx stats ====================
 
 #[test]
 fn stats_with_env_override() {
@@ -730,7 +730,7 @@ fn stats_with_env_override() {
     assert_eq!(json["status"], "ok");
 }
 
-// ==================== ag batch ====================
+// ==================== prx batch ====================
 
 #[test]
 fn batch_multiple_commands() {

@@ -1,4 +1,4 @@
-# ag — Agent-Native Unix Tools
+# prx — Agent-Native Unix Tools
 
 **Status:** Draft  
 **Date:** 2026-05-18  

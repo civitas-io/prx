@@ -46,13 +46,13 @@ impl AgError {
     fn suggestion(&self) -> Option<&str> {
         match self {
             Self::FileNotFound { .. } => {
-                Some("Check the file path. Use `ag find` to discover files.")
+                Some("Check the file path. Use `prx find` to discover files.")
             }
             Self::ParseError { .. } => {
                 Some("Verify the file is valid source code for the detected language.")
             }
             Self::IndexCorrupted { .. } => {
-                Some("Run `ag index --rebuild` to regenerate the index.")
+                Some("Run `prx index --rebuild` to regenerate the index.")
             }
             _ => None,
         }

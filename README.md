@@ -1,87 +1,47 @@
 # prx (Praxis)
 
-Agent-native Unix tools for AI coding agents. A single Rust binary replacing
-grep, cat, find, sed, and diff with structured JSON output, token budgets,
-and embedded semantic search.
+[![CI](https://github.com/civitas-io/prx/actions/workflows/ci.yml/badge.svg)](https://github.com/civitas-io/prx/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#platform-support)
 
-Part of the [Civitas](https://github.com/civitas-io) ecosystem.
+**The grep-read-grep loop burns 93% of your agent's tokens on output it must re-parse. prx fixes this at the source.**
 
-## Why
+prx is a single Rust binary that replaces the five Unix tools AI coding agents use most — `grep`, `cat`, `find`, `sed`, `diff` — with structured JSON output, token budgets, and embedded semantic search. One call. Full answer. No re-parsing.
 
-AI coding agents waste 30-93% of their tokens on exploration. The grep-read-grep
-loop alone burns 93% of consumed tokens on output agents must re-parse. Test
-output is worse: 164 passing tests produce ~1,200 tokens of "ok" lines that no
-agent needs.
+> *prx is shorter than grep, cat, find, sed, and diff combined.*
 
-prx fixes this at the source. Instead of compressing human tool output after
-the fact, prx returns exactly what agents need: labeled fields, ranked results,
-and token-budgeted responses.
+---
 
-## Commands
+## The Problem
 
-| Command | Replaces | What it does |
-|---|---|---|
-| `prx search` | grep, rg | Hybrid search: literal + semantic + structural. Token-budgeted, ranked results. |
-| `prx read` | cat, head, tail | Structured file reading. `--if-changed` cache, `--mode` (aggressive/diff/entropy). |
-| `prx find` | find, ls, tree | Codebase mapping. Dual tree+flat output, inline metadata. |
-| `prx edit` | sed, awk | Safe edits. Literal matching, dry-run by default, syntax validation. |
-| `prx diff` | diff, git diff | Semantic diffs. Natural language summaries, function-level attribution. |
-| `prx run` | -- | Structured command runner. Parses test/build/lint output. 95-99% token savings. |
-| `prx exists` | grep -q | O(1) bloom filter existence check. |
-| `prx outline` | ctags | Symbol table for a file or directory. |
-| `prx index` | -- | Persistent search index with validation. 6x faster repeated searches. |
-| `prx mcp` | -- | MCP server over stdio for direct agent integration. |
-| `prx batch` | xargs | Parallel JSONL batch execution. |
-| `prx init` | -- | Auto-detect agent frameworks, generate integration configs. |
-| `prx stats` | -- | Token savings dashboard with `--compare` for real-world savings. |
-| `prx bench` | -- | Synthetic benchmark runner: prx vs grep+cat side-by-side. |
+Every AI coding agent runs some version of this loop:
 
-## Quick Start
-
-> Full command reference with benchmarks: [USAGE.md](docs/USAGE.md)
-
-```bash
-# Search by meaning, not just text
-prx search "authentication flow" src/
-
-# Get file structure without reading it (~10% of tokens)
-prx read src/auth.ts --skeleton
-
-# Read just the function you need
-prx read src/auth.ts --lines 42-67 --snap function
-
-# Skip re-reading unchanged files (~50 bytes vs full content)
-prx read src/auth.ts --if-changed a3f9b2c1...
-
-# Safe editing with preview
-prx edit src/auth.ts --find "old_api()" --replace "new_api()" --dry-run
-
-# Run tests with 95%+ token savings
-prx run cargo test
-
-# Check if something exists before searching (~0 tokens)
-prx exists "redis" src/
-
-# Build persistent index for faster searches
-prx index .
+```
+1. grep "authenticate" src/          → file paths, line numbers
+2. cat src/auth/handler.ts           → entire file (6,500 tokens)
+3. grep "authenticate" src/ -A 5     → same noise, wider context
 ```
 
-## Output
+**11,300 tokens consumed. ~800 useful.** That's 93% waste, per loop, compounding across a session. The tools aren't broken for humans — they're wrong for agents.
 
-All output is JSON by default:
+[SWE-bench research (arxiv 2604.22750)](https://arxiv.org/pdf/2604.22750) puts total exploration waste at 30–93% of agent token budgets. 50% of file reads are re-reads of files the agent already loaded.
+
+---
+
+## The Fix
+
+```bash
+prx search "authenticate" src/
+```
 
 ```json
 {
-  "version": "0.2.0",
-  "command": "search",
-  "status": "ok",
   "tokens": 487,
   "data": {
     "matches": [
       {
         "file": "src/auth/handler.ts",
         "line": 42,
-        "match": "authenticate",
         "context_name": "handleLogin",
         "snippet": "async handleLogin(req: Request)...",
         "relevance": 0.94
@@ -94,7 +54,142 @@ All output is JSON by default:
 }
 ```
 
-Use `--plain` for human-readable output. Use `--budget N` to cap token usage.
+**487 tokens. Ranked results. Metadata included. Done.**
+
+---
+
+## What Makes prx Different
+
+**Not a wrapper.** Tools like RTK, squeez, and LeanCTX compress output from existing tools. prx replaces the tools — no shell spawning, no re-parsing, no post-hoc compression.
+
+**Not search-only.** Semble, Hypergrep, and FileSift solve retrieval well. Your agent still needs other tools to read, edit, and diff. prx covers the full loop.
+
+**Not Python.** No runtime dependencies, no package manager, no internet at runtime. One static binary, 48MB, works in containers and sandboxes.
+
+**Embedded semantic model.** A 16M-parameter embedding model is compiled directly into the binary. Semantic search runs on CPU in milliseconds — no model server, no FAISS, no setup.
+
+---
+
+## Token Savings
+
+Measured across real agent sessions on production codebases (200+ calls, 36,000+ tokens saved):
+
+| Feature | Scenario | Savings |
+|---|---|---|
+| `--if-changed` (hit) | Re-reading an unchanged file | **99%** |
+| `--mode diff` | File with local changes | **98–99%** |
+| `--mode entropy` | Generated code (50+ fields) | **86%** |
+| `prx run` | Passing test suites | **95–99%** |
+| `--skeleton` | Full file → signatures only | **~90%** |
+| `prx search` | vs grep + follow-up reads | **35%** |
+
+<p align="center">
+  <img src="docs/assets/token-savings.svg" alt="Token savings per command" width="720"/>
+</p>
+
+```bash
+prx stats --compare     # see per-command savings in your own sessions
+prx bench .             # benchmark prx vs grep+cat on this repo
+```
+
+---
+
+## Commands
+
+| Command | Replaces | What it does |
+|---|---|---|
+| `prx search` | grep, rg | Hybrid search: literal + semantic + structural. Ranked, token-budgeted. |
+| `prx read` | cat, head, tail | Structured file reading. `--if-changed` cache, `--skeleton`, `--mode`. |
+| `prx find` | find, ls, tree | Codebase mapping. Tree + flat output, inline metadata, semantic scoring. |
+| `prx edit` | sed, awk | Safe edits. Literal matching, dry-run default, tree-sitter syntax validation. |
+| `prx diff` | diff, git diff | Semantic diffs. Function-level attribution, natural language summaries. |
+| `prx run` | — | Structured test/build/lint output. 9 parsers. 95–99% token savings. |
+| `prx exists` | grep -q | O(1) bloom filter existence check. Sub-millisecond, near-zero tokens. |
+| `prx outline` | ctags | Symbol table for a file or directory. |
+| `prx index` | — | Persistent search index. 6x faster repeated searches. |
+| `prx mcp` | — | MCP server over stdio for direct agent integration. |
+| `prx batch` | xargs | Parallel JSONL batch execution. |
+| `prx init` | — | Auto-detect agent frameworks, generate integration configs. |
+| `prx stats` | — | Token savings dashboard with `--compare`. |
+| `prx bench` | — | Synthetic benchmark: prx vs grep+cat side-by-side. |
+
+---
+
+## Quick Start
+
+```bash
+# Search by meaning, not just text
+prx search "authentication flow" src/
+
+# Get file structure without reading the whole file (~10% of tokens)
+prx read src/auth.ts --skeleton
+
+# Read the function you need, not the whole file
+prx read src/auth.ts --lines 42 --snap function
+
+# Skip re-reading files that haven't changed (~50 bytes vs full content)
+prx read src/auth.ts --if-changed a3f9b2c1...
+
+# Safe editing with preview before applying
+prx edit src/auth.ts --find "old_api()" --replace "new_api()" --dry-run
+
+# Run tests, get only failures and summary (95%+ savings)
+prx run cargo test
+
+# Check existence before spending tokens on a full search
+prx exists "redis" src/
+```
+
+> Full command reference with benchmarks: [USAGE.md](docs/USAGE.md)
+
+---
+
+## How Search Works
+
+prx combines three retrieval methods into a single ranked result:
+
+- **Literal** — regex matching at ripgrep speed
+- **Semantic** — 16M-parameter static embedding model (Model2Vec, float16, embedded in the binary; runs on CPU in milliseconds, no server required)
+- **Structural** — AST pattern matching via tree-sitter, e.g. `fn $NAME($$$)` to find all function definitions
+
+Results are fused via Reciprocal Rank Fusion and reranked through a 6-stage pipeline: definition boost → identifier stem matching → file coherence → **import graph proximity** (files in the dependency neighborhood of top results) → noise penalties → saturation decay.
+
+Search quality baseline: NDCG@10 ≥ 0.85, matching [Semble's published results](https://github.com/MinishLab/semble) on which the retrieval architecture is based.
+
+```bash
+prx search "authentication flow" src/          # semantic (auto-detected)
+prx search --literal "authenticate(" src/      # exact match, ripgrep-speed
+prx search --structural 'fn $NAME($$$)' src/   # AST pattern matching
+```
+
+---
+
+## prx run — Structured Command Output
+
+Unix test runners produce thousands of tokens of noise that agents don't need.
+
+```
+running 164 tests
+test test_one ... ok
+test test_two ... ok
+[... 162 more lines ...]
+test result: ok. 164 passed; 0 failed
+```
+
+prx run parses this and returns only what matters:
+
+```json
+{
+  "passed": 164,
+  "failed": 0,
+  "duration_ms": 2341,
+  "failures": []
+}
+```
+
+Supports 9 parsers: `cargo test`, `cargo build`, `cargo clippy`, `pytest`, `go test`, `jest`, `vitest`, `tsc`, `eslint`, plus a fallback for unknown commands.
+
+---
 
 ## Agent Integration
 
@@ -113,140 +208,68 @@ Use `--plain` for human-readable output. Use `--budget N` to cap token usage.
 
 Works with Claude Code, Cursor, Codex, OpenCode, and any MCP-compatible agent.
 
-### AGENTS.md
+### AGENTS.md / Framework Configs
 
 ```bash
-prx init --agents-md    # appends usage snippet to your AGENTS.md
-prx init                # auto-detect frameworks, generate all configs
+prx init                        # auto-detect frameworks, generate all configs
+prx init --agents-md            # append usage snippet to AGENTS.md
+prx init --agent claude-code    # generate dedicated Claude Code sub-agent
 ```
 
 ### Three Integration Tiers
 
-1. **CLI on PATH** — works everywhere (top-level agents, sub-agents, scripts, CI)
-2. **MCP server** — richer integration for top-level agents
-3. **Agent definitions** — dedicated Claude Code sub-agent (`prx init --agent claude-code`)
+| Tier | How | Best for |
+|---|---|---|
+| **CLI on PATH** | `prx search ...` | All agents, CI, scripts |
+| **MCP server** | `prx mcp` | Top-level agent integration |
+| **Agent definition** | `prx init --agent claude-code` | Dedicated sub-agent |
 
 ### For AI Agents
 
-If you are an AI coding agent evaluating prx, read
-[`skills/agents.md`](skills/agents.md) for:
+If you are an AI coding agent evaluating prx, read [`skills/agents.md`](skills/agents.md) — it contains installation instructions, per-command examples, and measured token savings written for agent consumption.
 
-- What prx is and why it saves tokens
-- How to use every command with examples
-- How to install prx as a skill, MCP server, or CLI tool for yourself
-- Measured token savings per feature
-
-## How Search Works
-
-prx combines three retrieval methods into a single ranked result set:
-
-- **Literal**: regex matching at ripgrep speed
-- **Semantic**: 16M-parameter static embedding model embedded in the binary, runs on CPU in milliseconds
-- **Structural**: AST pattern matching via tree-sitter (e.g., `fn $NAME($$$)`)
-
-Results are fused via Reciprocal Rank Fusion and reranked with a 6-stage
-code-aware pipeline: definition boost, identifier stem matching, file
-coherence, **import graph proximity** (files in the dependency neighborhood
-of top results), noise penalties, and saturation decay.
-
-## prx run — Structured Command Output
-
-```bash
-prx run cargo test      # 95-99% token savings on passing tests
-prx run cargo clippy    # only warnings and errors
-prx run pytest          # parsed test results
-prx run npm test        # jest/vitest output parsed
-```
-
-Supports 9 tool parsers: cargo test, cargo build/clippy, pytest, go test,
-jest/vitest, tsc, eslint, plus a fallback for unknown commands.
+---
 
 ## Reliability
 
-prx never breaks your agent's workflow. If an internal error occurs, prx
-silently falls back to the equivalent Unix command (grep/cat/find) and returns
-results in the same JSON envelope with `"fallback": true`. Errors are logged
-to `~/.prx/errors.jsonl` for debugging.
+prx never breaks your agent's workflow. On any internal error, prx silently falls back to the equivalent Unix command (`grep`/`cat`/`find`) and returns results in the same JSON envelope with `"fallback": true`. Errors are logged to `~/.prx/errors.jsonl`.
 
-## Real-World Token Savings
-
-Measured across real agent sessions on production codebases:
-
-<p align="center">
-  <img src="docs/assets/token-savings.svg" alt="Token savings per command" width="720"/>
-</p>
-
-| Feature | Scenario | Savings |
-|---|---|---|
-| `--if-changed` (hit) | Re-reading unchanged file | **99%** |
-| `--mode diff` | File with local changes | **98-99%** |
-| `--mode entropy` | Generated code (50+ fields) | **86%** |
-| `--mode aggressive` | Python/JS with docstrings | **11-19%** |
-| `prx run` | Passing test suites | **95-99%** |
-| `--skeleton` | Full file to signatures | **~90%** |
-| `prx search` | vs grep + follow-up reads | **35%** |
-
-Over 200 measured calls: **36,000+ tokens saved** from baseline Unix tools.
-
-```bash
-prx stats --compare     # per-command savings breakdown
-prx bench .             # synthetic benchmark: prx vs grep+cat
-```
-
-See [USAGE.md](docs/USAGE.md) for detailed benchmarks and the full command reference.
+---
 
 ## Install
 
-### Prebuilt Binaries
-
-Download from [GitHub Releases](https://github.com/civitas-io/prx/releases):
+### Prebuilt Binary (recommended)
 
 ```bash
 # Linux / macOS
 curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-$(uname -s)-$(uname -m).tar.gz | tar xz
 sudo mv prx /usr/local/bin/
-
-# Verify
 prx --version
 ```
 
+Download from [GitHub Releases](https://github.com/civitas-io/prx/releases).
+
 ### Build from Source
 
-Requires Rust >= 1.85 and a C compiler (for tree-sitter grammars).
+Requires Rust ≥ 1.85 and a C compiler (for tree-sitter grammars).
 
 ```bash
 git clone https://github.com/civitas-io/prx.git
 cd prx
-make setup    # downloads models (~35MB), converts to float16, builds, tests
+make setup    # downloads model weights (~35MB), converts to float16, builds, tests
 ```
 
-This takes about 2 minutes on first run. After setup:
+First run takes ~2 minutes. Model weights are embedded into the binary at compile time — no downloads at runtime.
 
 ```bash
-make build    # debug build
-make release  # optimized release build (~48MB)
-make check    # fmt + clippy + all tests
+make build      # debug build
+make release    # optimized release build (~48MB)
+make check      # fmt + clippy + all tests
 ```
 
-The `make setup` step downloads embedding model weights from HuggingFace and
-converts them to float16. These files are embedded into the binary at compile
-time — no downloads happen at runtime. See [CONTRIBUTING](docs/CONTRIBUTING.md)
-for the full developer guide.
+See [CONTRIBUTING](docs/CONTRIBUTING.md) for the full developer guide.
 
-### Available Make Targets
-
-```
-make setup      - First-time setup: download models, verify build
-make check      - Run fmt, clippy, and all tests
-make build      - Debug build
-make release    - Release build (optimized, ~48MB)
-make test       - Run all tests (unit + E2E)
-make test-unit  - Run unit tests only
-make test-e2e   - Run E2E integration tests only
-make models     - Download and convert model files
-make coverage   - Generate HTML coverage report
-make clean      - Remove build artifacts
-```
+---
 
 ## Platform Support
 
@@ -259,9 +282,11 @@ make clean      - Remove build artifacts
 
 Single static binary. No runtime dependencies. No internet required after build.
 
+---
+
 ## Current Status
 
-| Metric | Value |
+| | |
 |---|---|
 | Commands | 14 |
 | Tests | 353 (304 unit + 49 E2E) |
@@ -269,16 +294,20 @@ Single static binary. No runtime dependencies. No internet required after build.
 | Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
 | Release binary | ~48 MB (float16 model embedded) |
 | CI | GitHub Actions (Linux x86_64, Linux aarch64, macOS arm64, Windows) |
-| Fallback | Graceful fallback to grep/cat/find on internal errors |
-| Telemetry | Real-world token savings tracking via `prx stats --compare` |
+| Telemetry | Real-world token savings via `prx stats --compare` |
 
 See [ROADMAP](docs/vision/ROADMAP.md) for what's next.
 
+---
+
 ## Contributing
 
-See [CONTRIBUTING](docs/CONTRIBUTING.md) for setup instructions, development
-workflow, and how to add new commands, languages, and run parsers.
+See [CONTRIBUTING](docs/CONTRIBUTING.md) for setup, development workflow, and how to add new commands, languages, and run parsers.
 
 ## License
 
 Apache 2.0
+
+---
+
+Part of the [Civitas](https://github.com/civitas-io) ecosystem — open infrastructure for AI agent tooling.

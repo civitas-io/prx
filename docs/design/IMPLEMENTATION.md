@@ -228,7 +228,7 @@ Greedy selection by descending score. Skip (don't truncate) chunks exceeding rem
 
 Use `ast_grep_core::Pattern` to parse metavariable patterns. Walk files, match against each file's AST. Return matched nodes with file, line, and matched text.
 
-**Acceptance:** Pattern `fn $NAME($$$)` finds all function definitions in a Rust fixture.
+**Acceptance:** Pattern `fn $NAME($$$) { $$$ }` finds all function definitions in a Rust fixture.
 
 ---
 
@@ -278,7 +278,7 @@ Standalone wrapper around `parsing/outline.rs`. For directories: recurse with `-
 
 ### Step 2.1: `prx edit`
 
-Full implementation per SYSTEM-DESIGN.md section 14. Literal match default, `--regex` opt-in, `--dry-run` default. `--in-function` scoping via tree-sitter. Syntax validation before write. Multi-edit: `--find`/`--replace` multiple times.
+Full implementation per SYSTEM-DESIGN.md section 14. Literal match default, `--regex` opt-in, dry-run by default. `--in-function` scoping via tree-sitter. Syntax validation before write. Multi-edit: `--find`/`--replace` multiple times.
 
 **Acceptance:** Dry-run edit, verify before/after in output. Then `--apply` and verify file changed on disk.
 

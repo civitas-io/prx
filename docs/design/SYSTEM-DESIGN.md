@@ -357,7 +357,7 @@ answer. Agent gets content + ToC + metadata + hash without a second call.
 4. `--all`: all matches. Default: first only.
 5. Compute replacements: (line, before, after) tuples
 6. `--syntax-check` (default true): apply in memory, re-parse, check errors
-7. `--dry-run` (default): return changes without writing
+7. Default behavior is dry-run: return changes without writing
 8. `--apply`: write to disk, return changes as confirmation
 9. Include hash before and after
 

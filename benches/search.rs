@@ -1,8 +1,10 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 
-fn bench_placeholder(c: &mut Criterion) {
-    c.bench_function("placeholder", |b| b.iter(|| 1 + 1));
+// TODO: implement real search benchmarks (NDCG@10, latency, token efficiency)
+// See docs/design/BENCHMARKS.md for the plan
+fn bench_search_placeholder(c: &mut Criterion) {
+    c.bench_function("search_placeholder", |b| b.iter(|| 1 + 1));
 }
 
-criterion_group!(benches, bench_placeholder);
+criterion_group!(benches, bench_search_placeholder);
 criterion_main!(benches);

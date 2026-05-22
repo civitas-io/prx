@@ -69,7 +69,7 @@ ag is a single Rust binary that replaces five core tools (read, grep, find, edit
 
 The closest analog is aict: same philosophy of reimplementing coreutils for agent consumption. prx differs in three ways. It's written in Rust, so it's faster than the tools it replaces rather than slower. It adds semantic search natively rather than treating retrieval as a separate concern. And it covers the full read-search-edit-diff loop rather than stopping at structured output.
 
-ag absorbs Semble's proven search architecture directly. The hybrid retrieval pipeline (embeddings + BM25 + reranking) and the NDCG 0.854 quality baseline come from Semble's published work. prx extends that foundation with the read, find, edit, and diff operations that search-only tools leave to other tools.
+prx uses a similar hybrid retrieval architecture to Semble (embeddings + BM25 + reranking) but is a separate implementation. Semble's published NDCG of 0.854 is a reference point, not a claim about prx's quality — prx has not yet run formal NDCG benchmarks. prx extends beyond search with read, find, edit, and diff operations that search-only tools leave to other tools.
 
 ---
 

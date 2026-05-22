@@ -99,7 +99,7 @@ Find and replace content in a file.
 | `--find STRING` | Text to find (literal by default) |
 | `--replace STRING` | Replacement text |
 | `--regex` | Interpret `--find` as regex |
-| `--dry-run` | Preview changes without applying (default) |
+| (default) | Preview changes without applying. Dry-run is the default behavior. |
 | `--apply` | Apply changes to file |
 | `--in-function NAME` | Scope replacement to named function |
 | `--in-class NAME` | Scope replacement to named class |

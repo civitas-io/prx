@@ -127,7 +127,7 @@ Hybrid search combining literal, semantic, and structural retrieval.
 ```bash
 prx search "authentication flow" src/     # semantic (auto-detected)
 prx search --literal "authenticate(" src/  # exact match
-prx search --structural 'fn $NAME($$$)' src/ # AST pattern
+prx search --structural 'fn $NAME($$$) { $$$ }' src/ # AST pattern
 prx search "auth" src/ --top-k 10         # more results
 prx search "auth" src/ --budget 1000      # cap total tokens
 ```

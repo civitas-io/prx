@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#platform-support)
 
-**The grep-read-grep loop burns 93% of your agent's tokens on output it must re-parse. prx fixes this at the source.**
+**AI coding agents waste [30-93% of tokens on exploration](https://arxiv.org/pdf/2604.22750). prx fixes this at the source.**
 
 prx is a single Rust binary that replaces the five Unix tools AI coding agents use most — `grep`, `cat`, `find`, `sed`, `diff` — with structured JSON output, token budgets, and embedded semantic search. One call. Full answer. No re-parsing.
 
@@ -131,7 +131,7 @@ prx read src/auth.ts --lines 42 --snap function
 prx read src/auth.ts --if-changed a3f9b2c1...
 
 # Safe editing with preview before applying
-prx edit src/auth.ts --find "old_api()" --replace "new_api()" --dry-run
+prx edit src/auth.ts --find "old_api()" --replace "new_api()"
 
 # Run tests, get only failures and summary (95%+ savings)
 prx run cargo test
@@ -150,7 +150,7 @@ prx combines three retrieval methods into a single ranked result:
 
 - **Literal** — regex matching at ripgrep speed
 - **Semantic** — 16M-parameter static embedding model (Model2Vec, float16, embedded in the binary; runs on CPU in milliseconds, no server required)
-- **Structural** — AST pattern matching via tree-sitter, e.g. `fn $NAME($$$)` to find all function definitions
+- **Structural** — AST pattern matching via tree-sitter, e.g. `fn $NAME($$$) { $$$ }` to find all function definitions
 
 Results are fused via Reciprocal Rank Fusion and reranked through a 6-stage pipeline: definition boost → identifier stem matching → file coherence → **import graph proximity** (files in the dependency neighborhood of top results) → noise penalties → saturation decay.
 
@@ -159,7 +159,7 @@ Search quality baseline: NDCG@10 ≥ 0.85, matching [Semble's published results]
 ```bash
 prx search "authentication flow" src/          # semantic (auto-detected)
 prx search --literal "authenticate(" src/      # exact match, ripgrep-speed
-prx search --structural 'fn $NAME($$$)' src/   # AST pattern matching
+prx search --structural 'fn $NAME($$$) { $$$ }' src/   # AST pattern matching
 ```
 
 ---

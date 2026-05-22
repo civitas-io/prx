@@ -128,7 +128,7 @@ All integration tests use `assert_cmd` to test the compiled binary. Test fixture
 - `test_literal_search`: search for known string, verify match in JSON output
 - `test_literal_search_no_match`: search for absent string, verify empty results
 - `test_semantic_search`: search for "authentication" in a project with auth code
-- `test_structural_search`: search for `"fn $NAME($$$)"` in Rust files
+- `test_structural_search`: search for `"fn $NAME($$$) { $$$ }"` in Rust files
 - `test_search_auto_detection`: query `"authenticate("` auto-detects literal mode
 - `test_search_budget`: verify total tokens in output <= budget
 - `test_search_context_function`: verify snippet expanded to enclosing function

@@ -54,7 +54,7 @@ cargo install prx
 # Search -- find code by meaning, not just text
 prx search "authentication flow" src/          # semantic (auto-detected)
 prx search --literal "authenticate(" src/      # exact match, ripgrep-speed
-prx search --structural 'fn $NAME($$$)' src/   # AST pattern matching
+prx search --structural 'fn $NAME($$$) { $$$ }' src/   # AST pattern matching
 
 # Read -- structured file access
 prx read src/auth.ts                           # full file with metadata
@@ -71,7 +71,7 @@ prx find src/ --pattern "*.ts" --depth 3       # bounded file discovery
 prx find src/ --changed-since HEAD~3           # recently modified files
 
 # Edit -- safe, verified modifications
-prx edit src/auth.ts --find "old_call()" --replace "new_call()" --dry-run
+prx edit src/auth.ts --find "old_call()" --replace "new_call()"
 prx edit src/auth.ts --find "old_call()" --replace "new_call()" --apply
 
 # Diff -- semantic change summaries
@@ -132,7 +132,7 @@ Use `--plain` for human-readable output. Use `--budget N` to cap token usage.
 4. Re-reading a file? Pass `--if-changed <previous_hash>` to skip if unchanged.
    The hash is in `meta.hash` from the previous response. Cache hits cost ~50 bytes.
 5. Use `prx exists "pattern"` before full searches when you just need a yes/no.
-6. Use `prx edit --dry-run` (default) to preview changes before `--apply`.
+6. Use `prx edit` to preview changes (dry-run is the default). Add `--apply` to write.
 7. Use `prx diff --stat-only` for cheap change detection (~30 tokens).
 8. Use `prx run cargo test` instead of raw `cargo test` — returns only failures,
    saves 95-99% tokens on passing test suites.

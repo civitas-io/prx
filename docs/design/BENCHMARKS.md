@@ -9,13 +9,13 @@ both synthetically and in real agent sessions.
 
 ## Dimensions
 
-| Dimension | Metric | Target | Baseline |
-|---|---|---|---|
-| Retrieval quality | NDCG@10 | >= 0.85 | Semble: 0.854, ripgrep: 0.126 |
-| Token efficiency | Tokens per query at 90% recall | <= 2,000 | ripgrep+read: ~45,000 |
-| Latency (index) | Wall-clock, cold start | < 500ms (avg repo) | Semble: 263ms |
-| Latency (query) | Wall-clock, warm cache, p50 | < 5ms | Semble: 1.5ms |
-| Real-world savings | Token reduction in agent sessions | >= 60% | grep+read baseline |
+| Dimension | Metric | Target | Baseline | Status |
+|---|---|---|---|---|
+| Retrieval quality | NDCG@10 | >= 0.85 | Semble: 0.854, ripgrep: 0.126 | **Not yet measured** — target from Semble's published results |
+| Token efficiency | Tokens per query at 90% recall | <= 2,000 | ripgrep+read: ~45,000 | Measured: 35-99% savings depending on feature |
+| Latency (index) | Wall-clock, cold start | < 500ms (avg repo) | Semble: 263ms | Measured: 87ms for 145 files |
+| Latency (query) | Wall-clock, warm cache, p50 | < 5ms | Semble: 1.5ms | Not formally benchmarked |
+| Real-world savings | Token reduction in agent sessions | >= 60% | grep+read baseline | Measured: 36,000+ tokens saved across 200 calls |
 
 ---
 

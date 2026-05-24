@@ -177,6 +177,16 @@ dependency resolution, and verbose defaults.
 | `prx blame` | Medium | Structured git blame per function (collapse same-SHA runs) |
 | `prx test` | Medium | Test discovery related to functions/files |
 
+### Reliability & Testing
+
+| Item | Priority | Description |
+|---|---|---|
+| MCP server E2E tests | **High** | No CI coverage for `prx mcp`. Need MCP client test harness to verify tool discovery, parameter validation, and response format. |
+| Incremental indexing | **High** | `prx index` rebuilds everything on every call. Should skip unchanged files (compare mtime+hash from meta.json), only re-chunk/re-index modified files. |
+| Real criterion benchmarks | **High** | Both `benches/search.rs` and `benches/chunking.rs` are placeholders. Need: NDCG@10 on a labeled dataset, search latency (p50/p95/p99), chunking throughput, index build time scaling. |
+| NDCG@10 measurement | **High** | Build a labeled relevance dataset from prx's own codebase (50+ queries with graded relevance). Measure actual NDCG@10 instead of claiming Semble's 0.854. |
+| Structural search validation | Medium | `fn $NAME($$$)` (incomplete pattern) silently returns 0 results. Consider: warn when a pattern compiles but matches nothing, or validate pattern completeness before search. |
+
 ### Intelligence Features
 
 | Item | Priority | Description |
@@ -195,7 +205,6 @@ dependency resolution, and verbose defaults.
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
-| Benchmarks (NDCG@10) | High | Head-to-head quality measurement vs ripgrep |
 | Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
 
 ---

@@ -5,6 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0] - 2026-05-25
+
+Reliability & Search Quality release. NDCG measurement infrastructure, incremental
+indexing, persistent dense index, and search ranking improvements.
+
+### Added
+
+- **MCP server E2E tests** — 8 tests covering JSON-RPC initialize, tools/list,
+  tools/call for all 6 MCP tools, and invalid tool error handling.
+- **Incremental indexing** — `prx index` skips unchanged files by comparing content
+  hashes from the previous index. Reports `files_changed`/`files_unchanged` in output.
+  Walker now excludes `.prx/` directory.
+- **Real criterion benchmarks** — `benches/search.rs` (BM25 build/query, literal search,
+  persistent index build, incremental no-op) and `benches/chunking.rs` (Rust/Python/plaintext
+  at 10/50/100/500 functions).
+- **NDCG@10 measurement** — labeled relevance datasets for prx (50 queries) and an external
+  11k-file Python/TypeScript codebase (49 queries). Automated NDCG harness in `tests/ndcg.rs`.
+  Results tracked per-release in README.
+- **Structural search validation** — warns when a pattern compiles but matches 0 files,
+  or when a pattern fails to compile for all languages. Warning surfaced in search output.
+- **Persistent dense index** — chunk embeddings computed at index time and stored as
+  `embeddings.bin`. At query time, semantic retrieval runs independently of BM25 before
+  RRF fusion. Unlocks semantic recall for queries where BM25 fails.
+- **Chunk header enrichment** — BM25 enrichment prepends `[lang] file_path stem_tokens`
+  to each chunk. Split identifiers (camelCase/snake_case) indexed as separate terms.
+- **Synonym expansion** — 18-pair static dictionary (auth→authentication, db→database,
+  k8s→kubernetes, etc.) applied to BM25 queries for natural language searches.
+- **Chunk overlap** — 200-byte overlap between adjacent chunks, snapped to line boundaries.
+- **Configurable reranker** — `RerankConfig` struct enables selective stage toggling for
+  ablation testing.
+- `docs/design/SEARCH-QUALITY.md` — full NDCG analysis, failure mode diagnosis, improvement
+  roadmap, and symbol graph feasibility assessment.
+- `benchmarks/ndcg_dataset.json` — 50 labeled queries for prx codebase.
+- `benchmarks/ndcg_dataset_fiddler.json` — 49 labeled queries for external codebase.
+
+### Changed
+
+- **Symbol-query ranking** — definition boost increased from 3x to 12x for symbol queries
+  (single PascalCase/snake_case tokens). Import-heavy chunks penalized at 0.2x.
+- **Alpha tuning** — symbol queries now use alpha=0.1 (near-pure BM25, was 0.3).
+  Natural language queries use alpha=0.6 (was 0.5). Queries containing synonyms use 0.5.
+- **Reranker weights** — definition boost 3→4 (NL), stem match 1.0→1.5, file coherence
+  0.2→0.15, import penalty 0.3→0.2.
+- **Definition detection** — improved pattern matching for Python/TypeScript class and
+  function definitions (requires space or paren after keyword).
+- **Model loading** — extracted `load_model()` to `index/dense.rs` as a public function,
+  shared between index-time embedding and query-time fallback.
+- `is_symbol_query()` made public for use by ranking pipeline.
+
+### Stats
+
+| Metric | v0.2.0 | v0.3.0 |
+|---|---|---|
+| Tests | 353 (304 unit + 49 E2E) | 372 (315 unit + 49 E2E + 8 MCP) |
+| NDCG@10 (self) | 0.719 | 0.723 |
+| NDCG@10 (external) | 0.410 | 0.486 (+18.5%) |
+| Benchmarks | 2 stubs | 8 real (search + chunking) |
+| Index files | 4 (meta, chunks, bm25, imports) | 5 (+embeddings.bin) |
+
 ## [0.2.0] - 2026-05-19
 
 Context Intelligence release. Conditional reads, read modes, and import graph proximity boost.
@@ -106,5 +165,6 @@ Initial release. 14 commands, 304 tests.
 - AGENTS.md with Karpathy coding guidelines
 - PRD, roadmap, architecture, CLI spec, output schema, benchmarks plan, implementation plan, testing plan, crate reference, competitive landscape, platform audit, contributing guide
 
+[0.3.0]: https://github.com/civitas-io/prx/releases/tag/v0.3.0
 [0.2.0]: https://github.com/civitas-io/prx/releases/tag/v0.2.0
 [0.1.0]: https://github.com/civitas-io/prx/releases/tag/v0.1.0

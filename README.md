@@ -149,7 +149,7 @@ prx exists "redis" src/
 prx combines three retrieval methods into a single ranked result:
 
 - **Literal** — regex matching at ripgrep speed
-- **Semantic** — 16M-parameter static embedding model (Model2Vec, float16, embedded in the binary; runs on CPU in milliseconds, no server required)
+- **Semantic** — 32M-parameter retrieval-optimized embedding model (Model2Vec potion-retrieval-32M, PCA-reduced to 256 dims, float16, embedded in the binary; runs on CPU in milliseconds, no server required)
 - **Structural** — AST pattern matching via tree-sitter, e.g. `fn $NAME($$$) { $$$ }` to find all function definitions
 
 Results are fused via Reciprocal Rank Fusion and reranked through a 6-stage pipeline: definition boost → identifier stem matching → file coherence → **import graph proximity** (files in the dependency neighborhood of top results) → noise penalties → saturation decay.
@@ -289,10 +289,10 @@ Single static binary. No runtime dependencies. No internet required after build.
 | | |
 |---|---|
 | Commands | 14 |
-| Tests | 372 (315 unit + 49 E2E + 8 MCP) |
+| Tests | 402 (319 unit + 75 E2E + 8 MCP) |
 | Languages | 14 (tree-sitter grammars) |
 | Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
-| Release binary | ~48 MB (float16 model embedded) |
+| Release binary | ~49 MB (float16 model embedded) |
 | CI | GitHub Actions (Linux x86_64, Linux aarch64, macOS arm64, Windows) |
 | Telemetry | Real-world token savings via `prx stats --compare` |
 
@@ -315,6 +315,15 @@ Methodology and ground truth in [`docs/design/SEARCH-QUALITY.md`](docs/design/SE
 External scores use a 49-query dataset on an 11k-file Python/TypeScript
 codebase (not written by the prx authors). This is the honest number — self-eval
 inflates scores by ~40% due to labeling bias.
+
+**Model evaluation (v0.3.0):** Evaluated 3 embedding models head-to-head:
+
+| Model | Type | Params | Fiddler NDCG@10 | Binary | Index (11k files) | Verdict |
+|---|---|---|---|---|---|---|
+| potion-code-16M | Static (Model2Vec) | 16M | 0.486 | 48MB | 33s | baseline |
+| CodeMalt | Static (Model2Vec) | 7.6M | 0.470 (-3%) | 31MB | 44s | rejected — smaller vocab hurts |
+| **potion-retrieval-32M** | **Static (Model2Vec)** | **32M** | **0.520 (+7%)** | **49MB** | **39s** | **selected** |
+| all-MiniLM-L6-v2 | Transformer (Candle) | 33M | not tested | 137MB | ~46min (CPU) | rejected — Metal missing LayerNorm, CPU too slow |
 
 For comparison: Semble reports 0.854 on their own benchmark. ripgrep scores
 ~0.13 on the same benchmark. Direct comparison requires running both tools on

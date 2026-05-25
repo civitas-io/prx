@@ -3,6 +3,7 @@ mod treesitter;
 use crate::parsing::languages::language_for_extension;
 
 const DEFAULT_CHUNK_SIZE: usize = 1500;
+const OVERLAP_BYTES: usize = 200;
 
 #[derive(Debug, Clone)]
 pub struct Chunk {
@@ -28,7 +29,9 @@ pub fn chunk_file(source: &str, file_path: &str, ext: Option<&str>) -> Vec<Chunk
         None => chunk_by_lines(source, DEFAULT_CHUNK_SIZE),
     };
 
-    boundaries
+    let with_overlap = add_overlap(&boundaries, source, OVERLAP_BYTES);
+
+    with_overlap
         .into_iter()
         .map(|(start_byte, end_byte)| {
             let content = source[start_byte..end_byte].to_string();
@@ -45,6 +48,29 @@ pub fn chunk_file(source: &str, file_path: &str, ext: Option<&str>) -> Vec<Chunk
             }
         })
         .collect()
+}
+
+fn add_overlap(boundaries: &[(usize, usize)], source: &str, overlap: usize) -> Vec<(usize, usize)> {
+    if boundaries.len() <= 1 || overlap == 0 {
+        return boundaries.to_vec();
+    }
+
+    let mut result = Vec::with_capacity(boundaries.len());
+    result.push(boundaries[0]);
+
+    for i in 1..boundaries.len() {
+        let (orig_start, end) = boundaries[i];
+        let prev_start = boundaries[i - 1].0;
+        let overlap_start = orig_start.saturating_sub(overlap);
+        let snapped = snap_to_newline(source, overlap_start.max(prev_start));
+        result.push((snapped, end));
+    }
+
+    result
+}
+
+fn snap_to_newline(source: &str, pos: usize) -> usize {
+    source[pos..].find('\n').map(|n| pos + n + 1).unwrap_or(pos)
 }
 
 fn chunk_by_lines(source: &str, target_size: usize) -> Vec<(usize, usize)> {
@@ -104,16 +130,16 @@ mod tests {
             chunks.len()
         );
 
-        // verify contiguous, non-overlapping
+        // verify ordering and overlap (chunks may overlap due to OVERLAP_BYTES)
         for window in chunks.windows(2) {
-            assert_eq!(
-                window[0].end_byte, window[1].start_byte,
-                "gap between chunks at bytes {}-{}",
-                window[0].end_byte, window[1].start_byte
+            assert!(
+                window[1].start_byte <= window[0].end_byte,
+                "chunk {} should start at or before end of chunk {} (overlap expected)",
+                window[1].start_byte,
+                window[0].end_byte
             );
         }
 
-        // verify covers entire source
         assert_eq!(chunks.first().unwrap().start_byte, 0);
         assert_eq!(chunks.last().unwrap().end_byte, src.len());
     }
@@ -130,7 +156,7 @@ mod tests {
         assert!(chunks.len() > 1);
 
         for window in chunks.windows(2) {
-            assert_eq!(window[0].end_byte, window[1].start_byte);
+            assert!(window[1].start_byte <= window[0].end_byte);
         }
     }
 

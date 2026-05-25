@@ -1,0 +1,409 @@
+{
+  "description": "NDCG@10 labeled relevance dataset for prx codebase. Relevance: 3=exact match, 2=highly relevant, 1=somewhat relevant, 0=irrelevant.",
+  "queries": [
+    {
+      "query": "BM25 scoring",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/index/sparse.rs", "relevance": 3},
+        {"file": "src/search/tokenize.rs", "relevance": 2},
+        {"file": "src/ranking/weighting.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does structural search work",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/search/structural.rs", "relevance": 3},
+        {"file": "src/commands/search.rs", "relevance": 2},
+        {"file": "src/parsing/languages.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "chunk_file",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/chunking/mod.rs", "relevance": 3},
+        {"file": "src/chunking/treesitter.rs", "relevance": 2},
+        {"file": "src/index/persist.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "JSON output envelope format",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/output.rs", "relevance": 3},
+        {"file": "src/commands/run.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "import graph proximity boost",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/ranking/proximity.rs", "relevance": 3},
+        {"file": "src/search/graph.rs", "relevance": 3},
+        {"file": "src/ranking/mod.rs", "relevance": 2},
+        {"file": "src/search/fusion.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "file walking and gitignore",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/walk.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "persistent index serialization",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/index/persist.rs", "relevance": 3},
+        {"file": "src/commands/index.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "detect_tool",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/runner/mod.rs", "relevance": 3},
+        {"file": "src/commands/run.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "tree-sitter language grammars",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/parsing/languages.rs", "relevance": 3},
+        {"file": "src/parsing/mod.rs", "relevance": 2},
+        {"file": "src/chunking/treesitter.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "token counting budget enforcement",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/tokens.rs", "relevance": 3},
+        {"file": "src/commands/search.rs", "relevance": 2},
+        {"file": "src/commands/read.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "hash_bytes",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/hash.rs", "relevance": 3},
+        {"file": "src/index/persist.rs", "relevance": 1},
+        {"file": "src/commands/search.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how are search results ranked",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/ranking/mod.rs", "relevance": 3},
+        {"file": "src/ranking/boosting.rs", "relevance": 3},
+        {"file": "src/ranking/penalties.rs", "relevance": 2},
+        {"file": "src/search/fusion.rs", "relevance": 2},
+        {"file": "src/ranking/weighting.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "MCP server tool registration",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/mcp.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "cargo test output parsing",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/runner/cargo_test.rs", "relevance": 3},
+        {"file": "src/runner/mod.rs", "relevance": 2},
+        {"file": "src/commands/run.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "edit command dry-run preview",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/edit.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "RRF fusion alpha weight",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/search/fusion.rs", "relevance": 3},
+        {"file": "src/ranking/weighting.rs", "relevance": 2},
+        {"file": "src/commands/search.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "bloom filter existence check",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/index/bloom.rs", "relevance": 3},
+        {"file": "src/commands/exists.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "diff command function attribution",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/diff.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "semantic embedding model inference",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/index/dense.rs", "relevance": 3},
+        {"file": "src/search/semantic.rs", "relevance": 2},
+        {"file": "src/commands/search.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "ParsedResult",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/runner/mod.rs", "relevance": 3},
+        {"file": "src/runner/cargo_test.rs", "relevance": 2},
+        {"file": "src/runner/cargo_build.rs", "relevance": 2},
+        {"file": "src/runner/pytest.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "skeleton mode signatures only",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/read.rs", "relevance": 3},
+        {"file": "src/parsing/outline.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "error handling strategy",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/output.rs", "relevance": 3},
+        {"file": "src/fallback.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "SparseIndex",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/index/sparse.rs", "relevance": 3},
+        {"file": "src/index/persist.rs", "relevance": 1},
+        {"file": "src/commands/search.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "comment stripping aggressive mode",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/parsing/strip.rs", "relevance": 3},
+        {"file": "src/commands/read.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "snap function boundary expansion",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/parsing/snap.rs", "relevance": 3},
+        {"file": "src/commands/read.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "batch command JSONL dispatch",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/batch.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "resolve_alpha",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/search/fusion.rs", "relevance": 3},
+        {"file": "src/commands/search.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "camelCase snake_case identifier splitting",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/search/tokenize.rs", "relevance": 3},
+        {"file": "src/index/sparse.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "definition boost stem matching",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/ranking/boosting.rs", "relevance": 3},
+        {"file": "src/ranking/mod.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "noise penalty saturation decay",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/ranking/penalties.rs", "relevance": 3},
+        {"file": "src/ranking/mod.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "find command changed-since",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/find.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how does the fallback system work",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/fallback.rs", "relevance": 3},
+        {"file": "src/output.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "outline symbol extraction",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/parsing/outline.rs", "relevance": 3},
+        {"file": "src/commands/outline.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "stats token savings dashboard",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/stats.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "content hashing xxh3",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/hash.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "init command agents-md",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/init.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "enrich_for_bm25",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/index/sparse.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "import extraction per-language regex",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/parsing/imports.rs", "relevance": 3},
+        {"file": "src/search/graph.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "WalkEntry",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/walk.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how are pytest results parsed",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/runner/pytest.rs", "relevance": 3},
+        {"file": "src/runner/mod.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "jest vitest output parser",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/runner/jest.rs", "relevance": 3},
+        {"file": "src/runner/mod.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "TypeScript compiler error parsing",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/runner/tsc.rs", "relevance": 3},
+        {"file": "src/runner/mod.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "eslint warning extraction",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/runner/eslint.rs", "relevance": 3},
+        {"file": "src/runner/mod.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "go test output format",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/runner/go_test.rs", "relevance": 3},
+        {"file": "src/runner/mod.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "what modules depend on the search layer",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/commands/search.rs", "relevance": 3},
+        {"file": "src/search/fusion.rs", "relevance": 2},
+        {"file": "src/search/structural.rs", "relevance": 2},
+        {"file": "src/index/persist.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "IndexMeta version check",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/index/persist.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "continuation token pagination",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/commands/search.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "RunOutput diagnostic failures",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/runner/mod.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "cosine similarity embedding search",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/index/dense.rs", "relevance": 3},
+        {"file": "src/search/semantic.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "binary file detection",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/walk.rs", "relevance": 3}
+      ]
+    }
+  ]
+}

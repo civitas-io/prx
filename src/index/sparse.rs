@@ -126,6 +126,9 @@ impl SparseIndex {
 pub fn enrich_for_bm25(content: &str, file_path: &str) -> String {
     let path = std::path::Path::new(file_path);
     let stem = path.file_stem().and_then(|s| s.to_str()).unwrap_or("");
+    let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+
+    let lang = crate::parsing::languages::language_name_for_extension(ext).unwrap_or("");
 
     let dir_parts: Vec<&str> = path
         .parent()
@@ -144,7 +147,15 @@ pub fn enrich_for_bm25(content: &str, file_path: &str) -> String {
         .collect::<Vec<_>>()
         .join(" ");
 
-    format!("{content} {stem} {stem} {dir_text}")
+    let stem_tokens = crate::search::tokenize::split_identifier(stem).join(" ");
+
+    let header = if lang.is_empty() {
+        format!("{file_path} {stem_tokens}")
+    } else {
+        format!("[{lang}] {file_path} {stem_tokens}")
+    };
+
+    format!("{header}\n{content} {stem} {dir_text}")
 }
 
 #[cfg(test)]
@@ -209,8 +220,9 @@ mod tests {
     #[test]
     fn enrich_adds_stem_and_dirs() {
         let enriched = enrich_for_bm25("fn auth()", "src/auth/handler.rs");
-        assert!(enriched.contains("handler handler"));
+        assert!(enriched.contains("handler"));
         assert!(enriched.contains("auth"));
+        assert!(enriched.contains("src/auth/handler.rs"));
     }
 
     #[test]

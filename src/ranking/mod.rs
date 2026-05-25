@@ -14,18 +14,76 @@ pub fn rerank(
     top_k: usize,
     graph: Option<&ImportGraph>,
 ) -> Vec<(usize, f32)> {
-    boosting::boost_file_coherence(scores, file_paths);
-    boosting::boost_definitions(scores, chunk_texts, file_paths, query);
-    boosting::boost_stem_matches(scores, file_paths, query);
-    if let Some(g) = graph {
-        proximity::boost_proximity(scores, file_paths, g);
+    rerank_with_config(
+        scores,
+        chunk_texts,
+        file_paths,
+        query,
+        top_k,
+        graph,
+        &RerankConfig::default(),
+    )
+}
+
+#[derive(Clone)]
+pub struct RerankConfig {
+    pub file_coherence: bool,
+    pub definitions: bool,
+    pub stem_matches: bool,
+    pub proximity: bool,
+    pub noise_penalties: bool,
+    pub saturation_decay: bool,
+}
+
+impl Default for RerankConfig {
+    fn default() -> Self {
+        Self {
+            file_coherence: true,
+            definitions: true,
+            stem_matches: true,
+            proximity: true,
+            noise_penalties: true,
+            saturation_decay: true,
+        }
     }
-    penalties::apply_noise_penalties(scores, file_paths);
+}
+
+pub fn rerank_with_config(
+    scores: &mut HashMap<usize, f32>,
+    chunk_texts: &[String],
+    file_paths: &[String],
+    query: &str,
+    top_k: usize,
+    graph: Option<&ImportGraph>,
+    config: &RerankConfig,
+) -> Vec<(usize, f32)> {
+    if config.file_coherence {
+        boosting::boost_file_coherence(scores, file_paths);
+    }
+    if config.definitions {
+        boosting::boost_definitions(scores, chunk_texts, file_paths, query);
+    }
+    if config.stem_matches {
+        boosting::boost_stem_matches(scores, file_paths, query);
+    }
+    if config.proximity {
+        if let Some(g) = graph {
+            proximity::boost_proximity(scores, file_paths, g);
+        }
+    }
+    if config.noise_penalties {
+        penalties::apply_noise_penalties(scores, file_paths);
+    }
 
     let mut ranked: Vec<(usize, f32)> = scores.iter().map(|(&id, &s)| (id, s)).collect();
     ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
-    penalties::apply_saturation_decay(&ranked, file_paths, top_k)
+    if config.saturation_decay {
+        penalties::apply_saturation_decay(&ranked, file_paths, top_k)
+    } else {
+        ranked.truncate(top_k);
+        ranked
+    }
 }
 
 #[cfg(test)]

@@ -72,6 +72,8 @@ pub struct SearchOutput {
     pub budget_used: usize,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub continuation_token: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub warning: Option<String>,
 }
 
 #[derive(Serialize, serde::Deserialize)]
@@ -242,12 +244,23 @@ fn hybrid_search(
     if all_chunks.is_empty() {
         return to_search_output(vec![], 0, false, 0);
     }
-    let bm25_results = bm25_index.query(query, top_k * 5);
+    let expanded = fusion::expand_synonyms(query);
+    let bm25_results = bm25_index.query(&expanded, top_k * 5);
 
-    let dense_index = build_dense_index(&chunk_texts);
-    let semantic_results = match &dense_index {
-        Some(idx) => idx.search(query, top_k * 5),
-        None => vec![],
+    let semantic_results = if let Some(embeddings) = persist::load_embeddings(root) {
+        let mut dense = build_dense_index_model_only();
+        if let Some(ref mut idx) = dense {
+            idx.set_embeddings(embeddings);
+            idx.search(query, top_k * 5)
+        } else {
+            vec![]
+        }
+    } else {
+        let dense_index = build_dense_index(&chunk_texts);
+        match &dense_index {
+            Some(idx) => idx.search(query, top_k * 5),
+            None => vec![],
+        }
     };
 
     let alpha = fusion::resolve_alpha(query, alpha_override);
@@ -388,57 +401,12 @@ fn build_index_in_memory(root: &Path) -> Result<InMemoryIndex, AgError> {
     Ok((all_chunks, chunk_texts, chunk_file_paths, bm25_index))
 }
 
+fn build_dense_index_model_only() -> Option<DenseIndex> {
+    crate::index::dense::load_model()
+}
+
 fn build_dense_index(chunk_texts: &[String]) -> Option<DenseIndex> {
-    let model_bytes: &[u8] = include_bytes!("../../models/potion-code-16M.safetensors");
-    if model_bytes.is_empty() {
-        return None;
-    }
-
-    let tensors = safetensors::SafeTensors::deserialize(model_bytes).ok()?;
-
-    let embedding_tensor = tensors
-        .tensor("embeddings")
-        .or_else(|_| tensors.tensor("model.embeddings"))
-        .or_else(|_| {
-            tensors
-                .names()
-                .into_iter()
-                .find(|n| n.contains("embed"))
-                .ok_or(safetensors::SafeTensorError::InvalidOffset(
-                    "no embedding tensor".into(),
-                ))
-                .and_then(|name| tensors.tensor(name))
-        })
-        .ok()?;
-
-    let shape = embedding_tensor.shape();
-    if shape.len() != 2 {
-        return None;
-    }
-    let (vocab_size, dim) = (shape[0], shape[1]);
-
-    let data = embedding_tensor.data();
-    let weights = match embedding_tensor.dtype() {
-        safetensors::Dtype::F32 => {
-            let floats: Vec<f32> = data
-                .chunks_exact(4)
-                .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
-                .collect();
-            ndarray::Array2::from_shape_vec((vocab_size, dim), floats).ok()?
-        }
-        safetensors::Dtype::F16 => {
-            let floats: Vec<f32> = data
-                .chunks_exact(2)
-                .map(|c| half::f16::from_le_bytes([c[0], c[1]]).to_f32())
-                .collect();
-            ndarray::Array2::from_shape_vec((vocab_size, dim), floats).ok()?
-        }
-        _ => return None,
-    };
-
-    let vocab = load_model2vec_vocab(vocab_size)?;
-
-    let mut index = DenseIndex::new(vocab, weights);
+    let mut index = crate::index::dense::load_model()?;
     let refs: Vec<&str> = chunk_texts.iter().map(|s| s.as_str()).collect();
     index.index_chunks(&refs);
     Some(index)
@@ -449,6 +417,16 @@ fn to_search_output(
     total_matches: usize,
     has_more: bool,
     next_skip: usize,
+) -> Result<serde_json::Value, AgError> {
+    to_search_output_with_warning(matches, total_matches, has_more, next_skip, None)
+}
+
+fn to_search_output_with_warning(
+    matches: Vec<SearchMatch>,
+    total_matches: usize,
+    has_more: bool,
+    next_skip: usize,
+    warning: Option<String>,
 ) -> Result<serde_json::Value, AgError> {
     let returned = matches.len();
     let budget_used = matches.iter().map(|m| m.snippet.len() / 4).sum();
@@ -463,6 +441,7 @@ fn to_search_output(
         returned,
         budget_used,
         continuation_token,
+        warning,
     };
     serde_json::to_value(output).map_err(|e| AgError::Internal {
         message: e.to_string(),
@@ -488,9 +467,10 @@ fn structural_search_cmd(
     top_k: usize,
     budget: Option<usize>,
 ) -> Result<serde_json::Value, AgError> {
-    let results = structural::structural_search(query, root, top_k * 5)?;
+    let result = structural::structural_search(query, root, top_k * 5)?;
 
-    let mut matches: Vec<SearchMatch> = results
+    let mut matches: Vec<SearchMatch> = result
+        .matches
         .into_iter()
         .map(|m| SearchMatch {
             file: m.file,
@@ -519,30 +499,7 @@ fn structural_search_cmd(
     }
 
     matches.truncate(top_k);
-    to_search_output(matches, total_matches, false, 0)
-}
-
-fn load_model2vec_vocab(expected_size: usize) -> Option<HashMap<String, usize>> {
-    let tokenizer_bytes: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
-    if tokenizer_bytes.is_empty() {
-        return Some(
-            (0..expected_size)
-                .map(|i| (format!("token_{i}"), i))
-                .collect(),
-        );
-    }
-
-    let tokenizer_json: serde_json::Value = serde_json::from_slice(tokenizer_bytes).ok()?;
-    let vocab_obj = tokenizer_json.get("model")?.get("vocab")?.as_object()?;
-
-    let mut vocab = HashMap::with_capacity(vocab_obj.len());
-    for (token, id_val) in vocab_obj {
-        if let Some(id) = id_val.as_u64() {
-            vocab.insert(token.clone(), id as usize);
-        }
-    }
-
-    Some(vocab)
+    to_search_output_with_warning(matches, total_matches, false, 0, result.warning)
 }
 
 fn build_snippet(content: &str, match_line: usize, context_lines: usize) -> String {

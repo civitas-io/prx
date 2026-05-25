@@ -14,6 +14,7 @@ const INDEX_DIR: &str = ".prx/index";
 const META_FILE: &str = "meta.json";
 const CHUNKS_FILE: &str = "chunks.bin";
 const BM25_FILE: &str = "bm25.bin";
+const EMBEDDINGS_FILE: &str = "embeddings.bin";
 
 #[derive(Serialize, Deserialize)]
 pub struct IndexMeta {
@@ -22,6 +23,8 @@ pub struct IndexMeta {
     pub file_count: usize,
     pub chunk_count: usize,
     pub file_hashes: HashMap<String, String>,
+    #[serde(default)]
+    pub embeddings_dim: usize,
 }
 
 #[derive(Serialize, Deserialize, Clone)]
@@ -68,13 +71,34 @@ pub struct IndexStats {
     pub files: usize,
     pub chunks: usize,
     pub languages: HashMap<String, usize>,
+    pub files_changed: usize,
+    pub files_unchanged: usize,
+}
+
+fn load_existing_index(root: &Path) -> Option<(IndexMeta, Vec<SerializedChunk>)> {
+    let index_dir = root.join(INDEX_DIR);
+    let meta_str = std::fs::read_to_string(index_dir.join(META_FILE)).ok()?;
+    let meta: IndexMeta = serde_json::from_str(&meta_str).ok()?;
+
+    if meta.version != env!("CARGO_PKG_VERSION") {
+        return None;
+    }
+
+    let chunks_bin = std::fs::read(index_dir.join(CHUNKS_FILE)).ok()?;
+    let chunks: Vec<SerializedChunk> = bincode::deserialize(&chunks_bin).ok()?;
+    Some((meta, chunks))
 }
 
 pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
     let entries = walk::walk(root, &WalkOpts::default());
+
+    let existing = load_existing_index(root);
+
     let mut all_chunks = Vec::new();
     let mut file_hashes = HashMap::new();
     let mut lang_counts: HashMap<String, usize> = HashMap::new();
+    let mut files_changed: usize = 0;
+    let mut files_unchanged: usize = 0;
 
     for entry in &entries {
         let content = match std::fs::read_to_string(&entry.path) {
@@ -89,24 +113,53 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
             .to_string_lossy()
             .to_string();
 
-        file_hashes.insert(rel_path.clone(), hash::hash_bytes(content.as_bytes()));
+        let current_hash = hash::hash_bytes(content.as_bytes());
 
         let ext = parsing::extension_from_path(&entry.path);
         if let Some(lang) = ext.and_then(parsing::languages::language_name_for_extension) {
             *lang_counts.entry(lang.to_string()).or_insert(0) += 1;
         }
 
-        let chunks = chunking::chunk_file(&content, &rel_path, ext);
-        all_chunks.extend(chunks);
+        let reuse = existing.as_ref().and_then(|(old_meta, old_chunks)| {
+            let old_hash = old_meta.file_hashes.get(&rel_path)?;
+            if *old_hash == current_hash {
+                let reused: Vec<SerializedChunk> = old_chunks
+                    .iter()
+                    .filter(|c| c.file_path == rel_path)
+                    .cloned()
+                    .collect();
+                if reused.is_empty() {
+                    None
+                } else {
+                    Some(reused)
+                }
+            } else {
+                None
+            }
+        });
+
+        file_hashes.insert(rel_path.clone(), current_hash);
+
+        if let Some(reused) = reuse {
+            files_unchanged += 1;
+            all_chunks.extend(reused.iter().map(Chunk::from));
+        } else {
+            files_changed += 1;
+            let chunks = chunking::chunk_file(&content, &rel_path, ext);
+            all_chunks.extend(chunks);
+        }
     }
 
     let serialized_chunks: Vec<SerializedChunk> =
         all_chunks.iter().map(SerializedChunk::from).collect();
 
+    // BM25 index is global — always rebuild from all chunks
     let enriched_texts: Vec<String> = all_chunks
         .iter()
         .map(|c| sparse::enrich_for_bm25(&c.content, &c.file_path))
         .collect();
+
+    let embeddings_dim = compute_and_save_embeddings(&enriched_texts, &root.join(INDEX_DIR));
 
     let meta = IndexMeta {
         version: env!("CARGO_PKG_VERSION").to_string(),
@@ -117,6 +170,7 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
         file_count: entries.len(),
         chunk_count: all_chunks.len(),
         file_hashes,
+        embeddings_dim,
     };
 
     let index_dir = root.join(INDEX_DIR);
@@ -153,7 +207,46 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
         files: entries.len(),
         chunks: all_chunks.len(),
         languages: lang_counts,
+        files_changed,
+        files_unchanged,
     })
+}
+
+fn compute_and_save_embeddings(enriched_texts: &[String], index_dir: &Path) -> usize {
+    let Some(mut model) = crate::index::dense::load_model() else {
+        return 0;
+    };
+    let refs: Vec<&str> = enriched_texts.iter().map(|s| s.as_str()).collect();
+    model.index_chunks(&refs);
+    let emb = model.embeddings();
+    let dim = emb.ncols();
+
+    let _ = std::fs::create_dir_all(index_dir);
+    let raw: Vec<u8> = emb.iter().flat_map(|f| f.to_le_bytes()).collect();
+    let _ = std::fs::write(index_dir.join(EMBEDDINGS_FILE), raw);
+    dim
+}
+
+pub fn load_embeddings(root: &Path) -> Option<ndarray::Array2<f32>> {
+    let index_dir = root.join(INDEX_DIR);
+    let meta_str = std::fs::read_to_string(index_dir.join(META_FILE)).ok()?;
+    let meta: IndexMeta = serde_json::from_str(&meta_str).ok()?;
+
+    if meta.embeddings_dim == 0 || meta.chunk_count == 0 {
+        return None;
+    }
+
+    let raw = std::fs::read(index_dir.join(EMBEDDINGS_FILE)).ok()?;
+    let expected = meta.chunk_count * meta.embeddings_dim * 4;
+    if raw.len() != expected {
+        return None;
+    }
+
+    let floats: Vec<f32> = raw
+        .chunks_exact(4)
+        .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+        .collect();
+    ndarray::Array2::from_shape_vec((meta.chunk_count, meta.embeddings_dim), floats).ok()
 }
 
 pub fn load(root: &Path) -> Result<(Vec<Chunk>, SparseIndex), AgError> {
@@ -308,5 +401,82 @@ mod tests {
         let stats = build_and_save(dir.path()).unwrap();
         assert!(stats.languages.contains_key("rust"));
         assert!(stats.languages.contains_key("python"));
+    }
+
+    #[test]
+    fn incremental_skips_unchanged_files() {
+        let dir = make_test_dir();
+        let stats1 = build_and_save(dir.path()).unwrap();
+        assert!(stats1.files_changed >= 2);
+        assert_eq!(stats1.files_unchanged, 0);
+
+        let stats2 = build_and_save(dir.path()).unwrap();
+        assert_eq!(stats2.files_unchanged, stats1.files);
+        assert_eq!(stats2.files_changed, 0);
+        assert_eq!(stats2.chunks, stats1.chunks);
+    }
+
+    #[test]
+    fn incremental_rechunks_changed_file() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+
+        std::fs::write(
+            dir.path().join("main.rs"),
+            "fn main() {\n    println!(\"changed\");\n}\nfn extra() {}\n",
+        )
+        .unwrap();
+
+        let stats = build_and_save(dir.path()).unwrap();
+        assert_eq!(stats.files_changed, 1);
+        assert_eq!(stats.files_unchanged, 1);
+    }
+
+    #[test]
+    fn incremental_handles_new_file() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+
+        std::fs::write(dir.path().join("new.rs"), "fn new_fn() {}\n").unwrap();
+
+        let stats = build_and_save(dir.path()).unwrap();
+        assert_eq!(stats.files_changed, 1);
+        assert_eq!(stats.files_unchanged, 2);
+        assert_eq!(stats.files, 3);
+    }
+
+    #[test]
+    fn incremental_handles_deleted_file() {
+        let dir = make_test_dir();
+        let stats1 = build_and_save(dir.path()).unwrap();
+
+        std::fs::remove_file(dir.path().join("lib.py")).unwrap();
+
+        let stats2 = build_and_save(dir.path()).unwrap();
+        assert_eq!(stats2.files, stats1.files - 1);
+        assert!(stats2.chunks < stats1.chunks);
+    }
+
+    #[test]
+    fn incremental_search_works_after_update() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+
+        std::fs::write(
+            dir.path().join("main.rs"),
+            "fn unique_searchable_term() {}\n",
+        )
+        .unwrap();
+
+        build_and_save(dir.path()).unwrap();
+        let (chunks, bm25) = load(dir.path()).unwrap();
+
+        let has_new_content = chunks
+            .iter()
+            .any(|c| c.content.contains("unique_searchable_term"));
+        assert!(has_new_content);
+
+        let results = bm25.query("unique_searchable_term", 5);
+        assert!(!results.is_empty());
     }
 }

@@ -40,6 +40,10 @@ pub fn walk(root: &Path, opts: &WalkOpts) -> Vec<WalkEntry> {
 
         let path = result.path().to_path_buf();
 
+        if path.components().any(|c| c.as_os_str() == ".prx") {
+            continue;
+        }
+
         let size = result.metadata().map(|m| m.len()).unwrap_or(0);
         if size > opts.max_file_size {
             continue;

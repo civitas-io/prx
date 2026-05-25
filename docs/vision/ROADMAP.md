@@ -128,11 +128,58 @@ Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
 | New features | 5 (--if-changed, 3 read modes, proximity boost) |
 | LOC added | ~1,400 |
 
-## v0.3.0 — Run Parsers & Project Intelligence
+## v0.3.0 — Reliability & Search Quality
+
+### Reliability & Testing [DONE]
+
+| Item | Priority | Status | Description |
+|---|---|---|---|
+| MCP server E2E tests | **High** | **Done** | 8 E2E tests covering initialize, tools/list, tools/call for all 6 MCP tools, plus invalid tool error handling. |
+| Incremental indexing | **High** | **Done** | Skip unchanged files via hash comparison. Reports files_changed/files_unchanged. Walker now excludes `.prx/` directory. |
+| Real criterion benchmarks | **High** | **Done** | 5 search benchmarks (BM25 build/query, literal search, index build, incremental noop) + 3 chunking benchmarks (Rust/Python/plaintext at multiple sizes). |
+| NDCG@10 measurement | **High** | **Done** | 50-query labeled dataset on prx (NDCG@10=0.719) + 49-query dataset on fiddler (NDCG@10=0.410). See `docs/design/SEARCH-QUALITY.md`. |
+| Structural search validation | Medium | **Done** | Warns when pattern compiles but matches 0 files, or when pattern fails to compile for all languages. |
+
+### Search Quality — Closing the Gap
+
+Measured NDCG@10: 0.719 (self), 0.410 (external). Target: 0.70+ on unfamiliar
+codebases. Full analysis and plan in `docs/design/SEARCH-QUALITY.md`.
+
+**Tier 1 — Structural fixes [DONE]:**
+
+| Item | Status | Description |
+|---|---|---|
+| Symbol-query ranking overhaul | **Done** | 12x definition boost for symbol queries, import-line penalty (0.2x), improved definition detection for Python/TS. |
+| Chunk header enrichment | **Done** | BM25 enrichment now prepends `[lang] file_path stem_tokens` to each chunk. Split identifiers indexed as separate tokens. |
+| Persistent dense index | **Done** | Embeddings computed at index time, stored as `embeddings.bin`. Loaded at query time for independent semantic retrieval. |
+
+**Tier 2 — Tune and expand [DONE]:**
+
+| Item | Status | Description |
+|---|---|---|
+| Sharper mode detection | **Done** | Symbol queries: alpha=0.1 (near-pure BM25). NL queries: alpha=0.6. Static synonym dict (18 pairs: auth→authentication, db→database, k8s→kubernetes, etc). Synonym expansion applied to BM25 queries. |
+| Reranker weight tuning | **Done** | Definition boost 3→4 (NL), 8→12 (symbol). Stem match 1.0→1.5. Coherence 0.2→0.15. Import penalty 0.3→0.2. Configurable RerankConfig added for ablation. |
+| Chunk overlap | **Done** | 200-byte overlap between chunks, snapped to line boundaries. |
+
+**Measured improvement:** NDCG@10 on fiddler: 0.410 → 0.486 (+18.5%). Semantic queries +21%, architecture +13%. 7 previously-missed queries recovered. 9 remaining misses are symbol queries requiring Tier 4.
+
+**Tier 3 — Model upgrade (deferred to v0.4.0):**
+
+| Item | Priority | Description |
+|---|---|---|
+| Upgrade embedding model | Medium | jina-embeddings-v2-base-code (161M) or nomic-embed-text-v1.5 (137M). Requires new model binary. Download-on-first-use to avoid binary bloat. |
+
+**Tier 4 — Symbol index (deferred to v0.4.0):**
+
+| Item | Priority | Description |
+|---|---|---|
+| Symbol index with reference counting | Medium | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Key to fixing remaining 9 misses. See `docs/design/SEARCH-QUALITY.md`. |
+
+## v0.4.0 — Run Parsers & Project Intelligence
 
 ### Run Parsers — Infrastructure & DevOps
 
-Prioritized by token waste × agent usage frequency. Each parser extracts
+Prioritized by token waste x agent usage frequency. Each parser extracts
 only failures, warnings, and summaries — dropping progress bars, cache hits,
 dependency resolution, and verbose defaults.
 
@@ -177,16 +224,6 @@ dependency resolution, and verbose defaults.
 | `prx blame` | Medium | Structured git blame per function (collapse same-SHA runs) |
 | `prx test` | Medium | Test discovery related to functions/files |
 
-### Reliability & Testing
-
-| Item | Priority | Description |
-|---|---|---|
-| MCP server E2E tests | **High** | No CI coverage for `prx mcp`. Need MCP client test harness to verify tool discovery, parameter validation, and response format. |
-| Incremental indexing | **High** | `prx index` rebuilds everything on every call. Should skip unchanged files (compare mtime+hash from meta.json), only re-chunk/re-index modified files. |
-| Real criterion benchmarks | **High** | Both `benches/search.rs` and `benches/chunking.rs` are placeholders. Need: NDCG@10 on a labeled dataset, search latency (p50/p95/p99), chunking throughput, index build time scaling. |
-| NDCG@10 measurement | **High** | Build a labeled relevance dataset from prx's own codebase (50+ queries with graded relevance). Measure actual NDCG@10 instead of claiming Semble's 0.854. |
-| Structural search validation | Medium | `fn $NAME($$$)` (incomplete pattern) silently returns 0 results. Consider: warn when a pattern compiles but matches nothing, or validate pattern completeness before search. |
-
 ### Intelligence Features
 
 | Item | Priority | Description |
@@ -197,7 +234,7 @@ dependency resolution, and verbose defaults.
 | Information bottleneck filter | Low | Task-conditioned line filtering for task-driven reads |
 | Custom embeddings | Low | Support for user-provided or fine-tuned models |
 
-## v0.4.0 — Distribution & Ecosystem
+## v0.5.0 — Distribution & Ecosystem
 
 | Item | Priority | Description |
 |---|---|---|

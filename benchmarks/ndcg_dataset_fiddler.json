@@ -1,0 +1,447 @@
+{
+  "description": "NDCG@10 labeled relevance dataset for fiddler codebase. Relevance: 3=exact match, 2=highly relevant, 1=somewhat relevant. Paths relative to fiddler repo root.",
+  "root": "/Users/jeryn/workspace/projects/fiddler",
+  "queries": [
+    {
+      "query": "OAuth login token exchange",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/libs/authn/providers/zitadel/zitadel.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/libs/authn/providers/zitadel/helpers_v2/oauth.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/services/metadata_api/authn/v3/apis/login.py", "relevance": 2},
+        {"file": "service/src/api/controllers/auth.controllers.js", "relevance": 1}
+      ]
+    },
+    {
+      "query": "RBAC authorization decorator",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/libs/authz/decorator_v2.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/libs/authz/authz.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/libs/authz/authz_enums.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "access key authentication with Redis caching",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/authorization/access_key_auth.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/libs/authz/authz_cache.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "ClickHouse event store query builder",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/query/ch_query.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/db/clickhouse.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/db/factory.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "sentiment analysis enrichment",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/sentiment.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enricher.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/base.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "enrichment DAG dependency resolution",
+      "category": "architecture",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/dag.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/concurrent_dag_executor.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enricher.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "SHAP feature importance computation",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/explainability/explanation/point_explanation/shapley_values/fiddler_shap.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/explainability/explanation/point_explanation/shapley_values/shapley_value_estimation.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/explainability/feature_importance.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/explainability/explain.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "Fiddler Query Language parser",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/custom_metrics/fql.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/custom_metrics/parser.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/custom_metrics/expression.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/custom_metrics/registry.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "monitoring engine metric computation",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/engine.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/metrics/metric.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/metrics/metrics_db.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "LLM gateway credential resolver",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/llm_gateway/credential_resolver.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/llm_gateway/llm_gateway.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/llm_gateway/model_config.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "auto_model LightGBM training",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/auto_model/auto_model.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/auto_model/auto_lightgbm.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/auto_model/data_processor.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "Kubernetes deployment manager",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/managers/deployment.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/k8s/client.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/managers/resource.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "S3 blob store factory",
+      "category": "semantic",
+      "relevant": [
+        {"file": "lib/blob_store/src/blob_store/factory.py", "relevance": 3},
+        {"file": "lib/blob_store/src/blob_store/s3_blob_store.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/object_store/factory.py", "relevance": 2},
+        {"file": "lib/blob_store/src/blob_store/base.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "Alembic database migration",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/meta_db/database.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/meta_db/configs.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/meta_db/migrate.sh", "relevance": 2}
+      ]
+    },
+    {
+      "query": "Redux store configuration",
+      "category": "semantic",
+      "relevant": [
+        {"file": "webapp/webapp-common/src/redux/store.ts", "relevance": 3},
+        {"file": "webapp/webapp-common/src/redux/hooks.ts", "relevance": 2},
+        {"file": "webapp/webapp-symphony/src/store/projects.ts", "relevance": 1}
+      ]
+    },
+    {
+      "query": "model health monitoring queries",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/queries/model_health.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/queries/monitoring_summary.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/engine.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "PII detection enrichment",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/pii.py", "relevance": 3},
+        {"file": "inference2/pipelines/token_classification/microsoft/presidio_analyzer/deployment.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enricher.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "vLLM chat completion deployment",
+      "category": "semantic",
+      "relevant": [
+        {"file": "inference2/pipelines/chat_completions/vllm_deployment.py", "relevance": 3},
+        {"file": "inference2/pipelines/chat_completions/vllm_chat_deployment.py", "relevance": 3},
+        {"file": "inference2/pipelines/deployment.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "binary classification accuracy aggregation",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/binary_accuracy.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/base_aggregator.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/aggregations_db.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "auto threshold standard deviation algorithm",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/auto_threshold/algorithms/std_dev_auto_threshold_algo.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/auto_threshold/auto_threshold_algo.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/auto_threshold/auto_threshold_algo_factory.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "ConfigurationManager",
+      "category": "symbol",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/config_manager/manager.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/config_manager/registry.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/config_manager/config_store.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "EventStore",
+      "category": "symbol",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/db/factory.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/db/clickhouse.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/db/base.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "feature_impact",
+      "category": "symbol",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/explainability/feature_impact.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/explainability/explanation/point_explanation/feature_impacts.py", "relevance": 3},
+        {"file": "webapp/webapp-symphony/src/store/featureImpact.ts", "relevance": 1}
+      ]
+    },
+    {
+      "query": "RedisStream",
+      "category": "symbol",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/redis_stream/base.py", "relevance": 3}
+      ]
+    },
+    {
+      "query": "K8sClient",
+      "category": "symbol",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/k8s/client.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/k8s/configs.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does the enrichment pipeline work",
+      "category": "architecture",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enricher.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/dag.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/concurrent_dag_executor.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichment_context.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/base.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how are models deployed to Kubernetes",
+      "category": "architecture",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/managers/deployment.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/k8s/client.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/deployment_validator.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/managers/resource.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does authorization work",
+      "category": "architecture",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/libs/authz/authz.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/libs/authz/decorator_v2.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/libs/authz/permission_mapping/authz_v1_mapping.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/authorization/handlers.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/libs/authz/authz_cache.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "data drift detection and monitoring",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/monitor/query/drift_metrics.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/queries/model_health.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/engine.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "LLM as a judge evaluation",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/llm_as_a_judge.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/utils/llm/client.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enricher.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "GenAI traces table schema",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/clickhouse/gen_ai/tables/traces.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/eventstore/clickhouse/gen_ai/dal/trace_accessor.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "model inference predict explain",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/model_serve/client.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/model_serve/base.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/surrogate.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "dashboard chart component",
+      "category": "semantic",
+      "relevant": [
+        {"file": "webapp/webapp-symphony/src/pages/Dashboards/pages/Dashboard/Items/ChartItem/SymphonyChartItem.tsx", "relevance": 3},
+        {"file": "webapp/webapp-symphony/src/store/charts.ts", "relevance": 2},
+        {"file": "webapp/webapp-symphony/src/store/dashboards.ts", "relevance": 2}
+      ]
+    },
+    {
+      "query": "histogram aggregation ClickHouse",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/numerical_histogram.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/categorical_histogram.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/agg_query.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "toxicity detection",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/toxicity.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/base.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "fiddlerAPIClient",
+      "category": "symbol",
+      "relevant": [
+        {"file": "webapp/webapp-common/src/api/fiddlerAPIClient.ts", "relevance": 3},
+        {"file": "webapp/webapp-common/src/api/apiClient.ts", "relevance": 2}
+      ]
+    },
+    {
+      "query": "SSO SAML provider",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/services/metadata_api/authn/zitadel/v3/apis/zitadel_sso_parser.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/libs/authn/providers/zitadel/zitadel.py", "relevance": 2},
+        {"file": "service/src/api/controllers/sso.controller.js", "relevance": 2}
+      ]
+    },
+    {
+      "query": "organization role management",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/services/metadata_api/v3/apis/organization_role.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/services/metadata_api/v3/serializers/organization_role.py", "relevance": 2},
+        {"file": "service/src/api/data/models/organizationroles.js", "relevance": 1}
+      ]
+    },
+    {
+      "query": "materialized view management",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/materialized_views.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/agg_query.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "surrogate model wrapper",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/surrogate.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/model_runtime/environment_predictions.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "text embedding enrichment",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/embedding.py", "relevance": 3},
+        {"file": "inference2/pipelines/feature_extraction/sentence_transformers/all_minilm_l6_v2/deployment.py", "relevance": 2}
+      ]
+    },
+    {
+      "query": "time series metric data structure",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/time_series.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/static_series.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/monitor2/query.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does the CI build pipeline work",
+      "category": "architecture",
+      "relevant": [
+        {"file": ".github/workflows/build.yaml", "relevance": 3},
+        {"file": ".github/workflows/build-pr.yaml", "relevance": 3},
+        {"file": ".github/workflows/reusable-build.yaml", "relevance": 2}
+      ]
+    },
+    {
+      "query": "Docker GPU inference container",
+      "category": "semantic",
+      "relevant": [
+        {"file": "inference2/Dockerfile.gpu", "relevance": 3},
+        {"file": "inference2/Dockerfile.cpu", "relevance": 2},
+        {"file": "inference2/pipelines/deployment.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "random ablation feature importance",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/explainability/explanation/global_explanation/random_ablation.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/explainability/feature_importance.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/explainability/explain.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "faithfulness coherence evaluation",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/faithfulness.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enrichments/coherence.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/enrichment/enricher.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "session management and authentication tokens",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/meta_db/orm_models/session.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/meta_db/orm_models/auth_token.py", "relevance": 3},
+        {"file": "service/src/api/session.js", "relevance": 2},
+        {"file": "service/src/api/data/models/session.js", "relevance": 1}
+      ]
+    },
+    {
+      "query": "model builder trained model serialization",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/model_builder/trained_model_builder.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/model_builder/model_builder.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/model_builder/constants.py", "relevance": 1}
+      ]
+    },
+    {
+      "query": "custom metric aggregate function",
+      "category": "semantic",
+      "relevant": [
+        {"file": "fiddler-v2/fiddler2/modules/custom_metrics/aggregate.py", "relevance": 3},
+        {"file": "fiddler-v2/fiddler2/modules/custom_metrics/function.py", "relevance": 2},
+        {"file": "fiddler-v2/fiddler2/modules/aggregations/ml/custom_metric.py", "relevance": 2}
+      ]
+    }
+  ]
+}

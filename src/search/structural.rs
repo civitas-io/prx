@@ -15,13 +15,20 @@ pub struct StructuralMatch {
     pub snippet: String,
 }
 
+pub struct StructuralSearchResult {
+    pub matches: Vec<StructuralMatch>,
+    pub warning: Option<String>,
+}
+
 pub fn structural_search(
     query: &str,
     root: &Path,
     top_k: usize,
-) -> Result<Vec<StructuralMatch>, AgError> {
+) -> Result<StructuralSearchResult, AgError> {
     let entries = walk::walk(root, &WalkOpts::default());
     let mut all_matches = Vec::new();
+    let mut pattern_compiled = false;
+    let mut files_searched = 0usize;
 
     for entry in &entries {
         let ext = match parsing::extension_from_path(&entry.path) {
@@ -51,6 +58,9 @@ pub fn structural_search(
             Err(_) => continue,
         };
 
+        pattern_compiled = true;
+        files_searched += 1;
+
         let doc = match StrDoc::try_new(&content, lang.clone()) {
             Ok(d) => d,
             Err(_) => continue,
@@ -75,12 +85,30 @@ pub fn structural_search(
             });
 
             if all_matches.len() >= top_k {
-                return Ok(all_matches);
+                return Ok(StructuralSearchResult {
+                    matches: all_matches,
+                    warning: None,
+                });
             }
         }
     }
 
-    Ok(all_matches)
+    let warning = if !pattern_compiled {
+        Some(format!(
+            "pattern `{query}` did not compile for any language in the search path"
+        ))
+    } else if all_matches.is_empty() {
+        Some(format!(
+            "pattern `{query}` compiled but matched 0 of {files_searched} files searched"
+        ))
+    } else {
+        None
+    };
+
+    Ok(StructuralSearchResult {
+        matches: all_matches,
+        warning,
+    })
 }
 
 #[derive(Clone)]
@@ -138,36 +166,47 @@ mod tests {
     #[test]
     fn finds_rust_let_bindings() {
         let dir = make_test_dir();
-        let matches = structural_search("let $X = $Y", dir.path(), 10).unwrap();
+        let result = structural_search("let $X = $Y", dir.path(), 10).unwrap();
         assert!(
-            matches.len() >= 3,
+            result.matches.len() >= 3,
             "should find 3 let bindings, got {}",
-            matches.len()
+            result.matches.len()
         );
+        assert!(result.warning.is_none());
     }
 
     #[test]
     fn top_k_limits() {
         let dir = make_test_dir();
-        let matches = structural_search("let $X = $Y", dir.path(), 1).unwrap();
-        assert!(matches.len() <= 1);
+        let result = structural_search("let $X = $Y", dir.path(), 1).unwrap();
+        assert!(result.matches.len() <= 1);
     }
 
     #[test]
-    fn no_matches_returns_empty() {
+    fn no_matches_returns_warning() {
         let dir = make_test_dir();
-        let matches = structural_search("class $NAME {}", dir.path(), 10).unwrap();
-        assert!(matches.is_empty());
+        let result = structural_search("class $NAME {}", dir.path(), 10).unwrap();
+        assert!(result.matches.is_empty());
+        assert!(result.warning.is_some());
+        assert!(result.warning.unwrap().contains("matched 0"));
     }
 
     #[test]
     fn match_has_correct_location() {
         let dir = make_test_dir();
-        let matches = structural_search("let $X = $Y", dir.path(), 1).unwrap();
-        if !matches.is_empty() {
-            assert_eq!(matches[0].file, "sample.rs");
-            assert!(matches[0].line >= 1);
-            assert!(matches[0].column >= 1);
+        let result = structural_search("let $X = $Y", dir.path(), 1).unwrap();
+        if !result.matches.is_empty() {
+            assert_eq!(result.matches[0].file, "sample.rs");
+            assert!(result.matches[0].line >= 1);
+            assert!(result.matches[0].column >= 1);
         }
+    }
+
+    #[test]
+    fn warns_on_nonsense_pattern() {
+        let dir = make_test_dir();
+        let result = structural_search("}{}{}{", dir.path(), 10).unwrap();
+        assert!(result.matches.is_empty());
+        assert!(result.warning.is_some());
     }
 }

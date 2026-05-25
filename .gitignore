@@ -23,3 +23,9 @@ target/coverage/
 .ag/
 **/.prx/
 **/.ag/
+
+# NDCG benchmark results (generated, not source)
+benchmarks/ndcg_results*.json
+
+# Handoff files
+HANDOFF.md

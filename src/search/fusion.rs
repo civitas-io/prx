@@ -49,10 +49,49 @@ pub fn resolve_alpha(query: &str, override_alpha: Option<f32>) -> f32 {
     if let Some(a) = override_alpha {
         return a.clamp(0.0, 1.0);
     }
-    if is_symbol_query(query) { 0.3 } else { 0.5 }
+    if is_symbol_query(query) {
+        0.1
+    } else {
+        let expanded = expand_synonyms(query);
+        if expanded != query { 0.5 } else { 0.6 }
+    }
 }
 
-fn is_symbol_query(query: &str) -> bool {
+static SYNONYMS: &[(&str, &str)] = &[
+    ("auth", "authentication"),
+    ("authn", "authentication"),
+    ("authz", "authorization"),
+    ("db", "database"),
+    ("k8s", "kubernetes"),
+    ("config", "configuration"),
+    ("deps", "dependencies"),
+    ("env", "environment"),
+    ("impl", "implementation"),
+    ("repo", "repository"),
+    ("msg", "message"),
+    ("req", "request"),
+    ("res", "response"),
+    ("err", "error"),
+    ("fn", "function"),
+    ("ctx", "context"),
+    ("cb", "callback"),
+    ("infra", "infrastructure"),
+];
+
+pub fn expand_synonyms(query: &str) -> String {
+    let mut result = query.to_string();
+    for (abbrev, full) in SYNONYMS {
+        if query
+            .split_whitespace()
+            .any(|w| w.eq_ignore_ascii_case(abbrev))
+        {
+            result = format!("{result} {full}");
+        }
+    }
+    result
+}
+
+pub fn is_symbol_query(query: &str) -> bool {
     let trimmed = query.trim();
     if trimmed.contains("::") {
         return true;
@@ -129,17 +168,29 @@ mod tests {
 
     #[test]
     fn resolve_alpha_symbol_queries() {
-        assert_eq!(resolve_alpha("Foo::bar", None), 0.3);
-        assert_eq!(resolve_alpha("_private", None), 0.3);
-        assert_eq!(resolve_alpha("getUserById", None), 0.3);
-        assert_eq!(resolve_alpha("HandlerStack", None), 0.3);
+        assert_eq!(resolve_alpha("Foo::bar", None), 0.1);
+        assert_eq!(resolve_alpha("_private", None), 0.1);
+        assert_eq!(resolve_alpha("getUserById", None), 0.1);
+        assert_eq!(resolve_alpha("HandlerStack", None), 0.1);
     }
 
     #[test]
     fn resolve_alpha_natural_language() {
+        assert_eq!(resolve_alpha("retry logic for api", None), 0.6);
+        assert_eq!(resolve_alpha("find the error handler", None), 0.6);
+    }
+
+    #[test]
+    fn resolve_alpha_synonym_expansion() {
         assert_eq!(resolve_alpha("how is auth handled", None), 0.5);
-        assert_eq!(resolve_alpha("retry logic for api", None), 0.5);
-        assert_eq!(resolve_alpha("find the error handler", None), 0.5);
+        assert_eq!(resolve_alpha("db migration", None), 0.5);
+    }
+
+    #[test]
+    fn synonym_expansion() {
+        let expanded = expand_synonyms("auth db handler");
+        assert!(expanded.contains("authentication"));
+        assert!(expanded.contains("database"));
     }
 
     #[test]

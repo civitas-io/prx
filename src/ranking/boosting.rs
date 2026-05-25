@@ -3,9 +3,11 @@ use std::path::Path;
 
 use crate::search::tokenize;
 
-const DEFINITION_BOOST_MULTIPLIER: f32 = 3.0;
-const FILE_COHERENCE_BOOST_FRAC: f32 = 0.2;
-const STEM_BOOST_MULTIPLIER: f32 = 1.0;
+const DEFINITION_BOOST_MULTIPLIER: f32 = 4.0;
+const SYMBOL_DEFINITION_BOOST_MULTIPLIER: f32 = 12.0;
+const FILE_COHERENCE_BOOST_FRAC: f32 = 0.15;
+const STEM_BOOST_MULTIPLIER: f32 = 1.5;
+const IMPORT_LINE_PENALTY: f32 = 0.2;
 
 const DEFINITION_KEYWORDS: &[&str] = &[
     "class",
@@ -74,7 +76,14 @@ pub fn boost_definitions(
     if max_score == 0.0 {
         return;
     }
-    let boost_unit = max_score * DEFINITION_BOOST_MULTIPLIER;
+
+    let is_symbol = crate::search::fusion::is_symbol_query(query);
+    let multiplier = if is_symbol {
+        SYMBOL_DEFINITION_BOOST_MULTIPLIER
+    } else {
+        DEFINITION_BOOST_MULTIPLIER
+    };
+    let boost_unit = max_score * multiplier;
 
     let query_tokens = tokenize::tokenize(query);
     let query_names: Vec<String> = query_tokens
@@ -92,6 +101,12 @@ pub fn boost_definitions(
             Some(t) => t.as_str(),
             None => continue,
         };
+
+        if chunk_is_mostly_imports(text) {
+            *score *= IMPORT_LINE_PENALTY;
+            continue;
+        }
+
         if chunk_defines_symbol(text, &query_names) {
             let stem_match = file_paths
                 .get(chunk_id)
@@ -113,7 +128,9 @@ pub fn boost_definitions(
 fn chunk_defines_symbol(text: &str, names: &[String]) -> bool {
     for line in text.lines() {
         let trimmed = line.trim();
-        let has_keyword = DEFINITION_KEYWORDS.iter().any(|kw| trimmed.starts_with(kw));
+        let has_keyword = DEFINITION_KEYWORDS
+            .iter()
+            .any(|kw| trimmed.starts_with(kw) && trimmed[kw.len()..].starts_with([' ', '(']));
         if has_keyword {
             let lower = trimmed.to_lowercase();
             if names.iter().any(|n| lower.contains(n.as_str())) {
@@ -122,6 +139,35 @@ fn chunk_defines_symbol(text: &str, names: &[String]) -> bool {
         }
     }
     false
+}
+
+const IMPORT_PREFIXES: &[&str] = &[
+    "import ",
+    "from ",
+    "use ",
+    "require(",
+    "require_relative",
+    "#include",
+    "extern crate",
+    "pub use ",
+    "pub(crate) use ",
+    "export {",
+    "export *",
+];
+
+fn chunk_is_mostly_imports(text: &str) -> bool {
+    let lines: Vec<&str> = text.lines().filter(|l| !l.trim().is_empty()).collect();
+    if lines.len() < 3 {
+        return false;
+    }
+    let import_count = lines
+        .iter()
+        .filter(|l| {
+            let t = l.trim();
+            IMPORT_PREFIXES.iter().any(|p| t.starts_with(p))
+        })
+        .count();
+    import_count as f32 / lines.len() as f32 > 0.6
 }
 
 pub fn boost_stem_matches(scores: &mut HashMap<usize, f32>, file_paths: &[String], query: &str) {
@@ -270,5 +316,46 @@ mod tests {
             "let x = authenticate();",
             &["authenticate".to_string()]
         ));
+    }
+
+    #[test]
+    fn chunk_defines_python_class() {
+        assert!(chunk_defines_symbol(
+            "class ConfigurationManager:\n    def __init__(self):\n        pass",
+            &["configurationmanager".to_string()]
+        ));
+        assert!(chunk_defines_symbol(
+            "def get_event_store(config):\n    return EventStore(config)",
+            &["get_event_store".to_string()]
+        ));
+    }
+
+    #[test]
+    fn import_chunk_detection() {
+        let import_heavy =
+            "import os\nimport sys\nimport json\nfrom pathlib import Path\nimport logging\n";
+        assert!(chunk_is_mostly_imports(import_heavy));
+
+        let mixed = "import os\n\ndef main():\n    print('hello')\n    return 0\n";
+        assert!(!chunk_is_mostly_imports(mixed));
+
+        let code_only = "def main():\n    x = 1\n    return x\n";
+        assert!(!chunk_is_mostly_imports(code_only));
+    }
+
+    #[test]
+    fn import_penalty_applied() {
+        let mut scores = HashMap::from([(0, 1.0), (1, 1.0)]);
+        let texts = vec![
+            "import os\nimport sys\nimport json\nfrom pathlib import Path\n".to_string(),
+            "class ConfigManager:\n    def get(self, key):\n        return self.store[key]\n"
+                .to_string(),
+        ];
+        let paths = vec!["src/imports.py".to_string(), "src/config.py".to_string()];
+        boost_definitions(&mut scores, &texts, &paths, "ConfigManager");
+        assert!(
+            scores[&1] > scores[&0],
+            "definition chunk should rank above import-heavy chunk"
+        );
     }
 }

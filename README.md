@@ -154,7 +154,7 @@ prx combines three retrieval methods into a single ranked result:
 
 Results are fused via Reciprocal Rank Fusion and reranked through a 6-stage pipeline: definition boost → identifier stem matching → file coherence → **import graph proximity** (files in the dependency neighborhood of top results) → noise penalties → saturation decay.
 
-Search quality baseline: NDCG@10 ≥ 0.85, matching [Semble's published results](https://github.com/MinishLab/semble) on which the retrieval architecture is based.
+Search quality is measured via NDCG@10 on labeled datasets — see [Search Quality Tracking](#search-quality-tracking) and [`docs/design/SEARCH-QUALITY.md`](docs/design/SEARCH-QUALITY.md) for methodology and improvement roadmap.
 
 ```bash
 prx search "authentication flow" src/          # semantic (auto-detected)
@@ -289,7 +289,7 @@ Single static binary. No runtime dependencies. No internet required after build.
 | | |
 |---|---|
 | Commands | 14 |
-| Tests | 353 (304 unit + 49 E2E) |
+| Tests | 372 (315 unit + 49 E2E + 8 MCP) |
 | Languages | 14 (tree-sitter grammars) |
 | Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
 | Release binary | ~48 MB (float16 model embedded) |
@@ -297,6 +297,27 @@ Single static binary. No runtime dependencies. No internet required after build.
 | Telemetry | Real-world token savings via `prx stats --compare` |
 
 See [ROADMAP](docs/vision/ROADMAP.md) for what's next.
+
+---
+
+## Search Quality Tracking
+
+NDCG@10 measured on two labeled datasets: prx's own codebase (50 queries,
+145 files) and an external production codebase (49 queries, 11k files).
+Methodology and ground truth in [`docs/design/SEARCH-QUALITY.md`](docs/design/SEARCH-QUALITY.md).
+
+| Version | prx (self) | External | Semantic | Symbol | Architecture | Notes |
+|---|---|---|---|---|---|---|
+| v0.2.0 | 0.719 | 0.410 | 0.417 | 0.239 | 0.562 | Baseline measurement |
+| v0.3.0 | 0.723 | 0.486 | 0.506 | 0.238 | 0.634 | +chunk headers, persistent dense index, symbol boost, synonym expansion, overlap |
+
+External scores use a 49-query dataset on an 11k-file Python/TypeScript
+codebase (not written by the prx authors). This is the honest number — self-eval
+inflates scores by ~40% due to labeling bias.
+
+For comparison: Semble reports 0.854 on their own benchmark. ripgrep scores
+~0.13 on the same benchmark. Direct comparison requires running both tools on
+the same dataset (planned).
 
 ---
 

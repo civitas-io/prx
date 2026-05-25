@@ -75,6 +75,14 @@ impl DenseIndex {
         self.chunk_embeddings = embeddings;
     }
 
+    pub fn set_embeddings(&mut self, embeddings: Array2<f32>) {
+        self.chunk_embeddings = embeddings;
+    }
+
+    pub fn embeddings(&self) -> &Array2<f32> {
+        &self.chunk_embeddings
+    }
+
     pub fn search(&self, query: &str, top_k: usize) -> Vec<(usize, f32)> {
         if self.chunk_embeddings.nrows() == 0 {
             return vec![];
@@ -93,6 +101,81 @@ impl DenseIndex {
         scores.truncate(top_k);
         scores
     }
+}
+
+pub fn load_model() -> Option<DenseIndex> {
+    let model_bytes: &[u8] = include_bytes!("../../models/potion-code-16M.safetensors");
+    if model_bytes.is_empty() {
+        return None;
+    }
+
+    let tensors = safetensors::SafeTensors::deserialize(model_bytes).ok()?;
+
+    let embedding_tensor = tensors
+        .tensor("embeddings")
+        .or_else(|_| tensors.tensor("model.embeddings"))
+        .or_else(|_| {
+            tensors
+                .names()
+                .into_iter()
+                .find(|n| n.contains("embed"))
+                .ok_or(safetensors::SafeTensorError::InvalidOffset(
+                    "no embedding tensor".into(),
+                ))
+                .and_then(|name| tensors.tensor(name))
+        })
+        .ok()?;
+
+    let shape = embedding_tensor.shape();
+    if shape.len() != 2 {
+        return None;
+    }
+    let (vocab_size, dim) = (shape[0], shape[1]);
+
+    let data = embedding_tensor.data();
+    let weights = match embedding_tensor.dtype() {
+        safetensors::Dtype::F32 => {
+            let floats: Vec<f32> = data
+                .chunks_exact(4)
+                .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                .collect();
+            ndarray::Array2::from_shape_vec((vocab_size, dim), floats).ok()?
+        }
+        safetensors::Dtype::F16 => {
+            let floats: Vec<f32> = data
+                .chunks_exact(2)
+                .map(|c| half::f16::from_le_bytes([c[0], c[1]]).to_f32())
+                .collect();
+            ndarray::Array2::from_shape_vec((vocab_size, dim), floats).ok()?
+        }
+        _ => return None,
+    };
+
+    let vocab = load_model_vocab(vocab_size)?;
+    Some(DenseIndex::new(vocab, weights))
+}
+
+fn load_model_vocab(expected_size: usize) -> Option<HashMap<String, usize>> {
+    let tokenizer_bytes: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
+    if tokenizer_bytes.is_empty() {
+        return Some(
+            (0..expected_size)
+                .map(|i| (format!("token_{i}"), i))
+                .collect(),
+        );
+    }
+
+    let tokenizer_json: serde_json::Value = serde_json::from_slice(tokenizer_bytes).ok()?;
+    let vocab_obj = tokenizer_json.get("model")?.get("vocab")?.as_object()?;
+
+    let mut vocab = HashMap::with_capacity(vocab_obj.len());
+    for (token, id_val) in vocab_obj {
+        if let Some(id) = id_val.as_u64() {
+            vocab.insert(token.clone(), id as usize);
+        }
+    }
+
+    Some(vocab)
 }
 
 fn tokenize_for_embedding(text: &str, vocab: &HashMap<String, usize>, use_hf: bool) -> Vec<usize> {

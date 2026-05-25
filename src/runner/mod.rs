@@ -1,4 +1,5 @@
 pub mod cargo_build;
+pub mod cargo_llvm_cov;
 pub mod cargo_test;
 pub mod eslint;
 pub mod fallback;
@@ -85,6 +86,9 @@ pub fn execute(command: &[String], _timeout_secs: u64) -> Result<RawOutput, AgEr
 pub fn detect_tool(command: &[String]) -> &'static str {
     let cmd = command.join(" ").to_lowercase();
 
+    if cmd.contains("cargo llvm-cov") || cmd.contains("cargo-llvm-cov") {
+        return "cargo_llvm_cov";
+    }
     if cmd.starts_with("cargo test") {
         return "cargo_test";
     }
@@ -122,6 +126,7 @@ pub fn parse_output(tool: &str, raw: &RawOutput) -> RunOutput {
     let raw_tokens = combined.len() / 4;
 
     let parsed = match tool {
+        "cargo_llvm_cov" => cargo_llvm_cov::parse(&combined),
         "cargo_test" => cargo_test::parse(&combined),
         "cargo_build" | "cargo_clippy" => cargo_build::parse(&combined),
         "pytest" => pytest::parse(&combined),
@@ -230,6 +235,12 @@ mod tests {
     fn detect_eslint() {
         let cmd = vec!["npx".into(), "eslint".into(), "src/".into()];
         assert_eq!(detect_tool(&cmd), "eslint");
+    }
+
+    #[test]
+    fn detect_cargo_llvm_cov() {
+        let cmd = vec!["cargo".into(), "llvm-cov".into(), "--lib".into()];
+        assert_eq!(detect_tool(&cmd), "cargo_llvm_cov");
     }
 
     #[test]

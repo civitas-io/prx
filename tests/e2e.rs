@@ -838,3 +838,386 @@ fn help_flag() {
         .stdout(predicate::str::contains("stats"))
         .stdout(predicate::str::contains("init"));
 }
+
+// ==================== prx find (coverage gaps) ====================
+
+#[test]
+fn find_tree_mode() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["find", "--tree", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert!(json["data"]["tree"].is_object());
+}
+
+#[test]
+fn find_flat_mode() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["find", "--flat", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert!(json["data"]["flat"].is_array());
+}
+
+#[test]
+fn find_with_outline() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "find",
+            "--outline",
+            "--pattern",
+            "*.rs",
+            dir.path().to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+}
+
+#[test]
+fn find_with_budget() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["find", "--budget", "100", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx outline (coverage gaps) ====================
+
+#[test]
+fn outline_directory_mode() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["outline", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+}
+
+#[test]
+fn outline_with_kind_filter() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "outline",
+            "--kind",
+            "function",
+            dir.path().join("main.rs").to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx init (coverage gaps) ====================
+
+#[test]
+fn init_agents_md_in_empty_dir() {
+    let dir = TempDir::new().unwrap();
+    let out = ag()
+        .args(["init", "--agents-md"])
+        .current_dir(dir.path())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx batch (coverage gaps) ====================
+
+#[test]
+fn batch_exists_and_read() {
+    let dir = test_dir();
+    let file = dir.path().join("main.rs");
+    let input = format!(
+        "{{\"cmd\":\"exists\",\"pattern\":\"fn main\",\"path\":\"{}\"}}\n\
+         {{\"cmd\":\"read\",\"file\":\"{}\"}}\n",
+        dir.path().to_string_lossy(),
+        file.to_string_lossy(),
+    );
+    let out = ag().arg("batch").write_stdin(input).output().unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    let results = json["data"]["results"].as_array().unwrap();
+    assert_eq!(results.len(), 2);
+}
+
+// ==================== prx stats (coverage gaps) ====================
+
+#[test]
+fn stats_empty() {
+    let dir = TempDir::new().unwrap();
+    let stats_file = dir.path().join("stats.jsonl");
+    let out = ag()
+        .args(["stats"])
+        .env("PRX_STATS_FILE", stats_file.to_str().unwrap())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx diff (coverage gaps) ====================
+
+#[test]
+fn diff_stat_only_on_untracked() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "diff",
+            "--stat-only",
+            dir.path().join("main.rs").to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx run (coverage parser) ====================
+
+#[test]
+fn run_detects_cargo_llvm_cov() {
+    let out = ag()
+        .args(["run", "echo", "TOTAL 100 5 95.00%"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["data"]["exit_code"], 0);
+}
+
+// ==================== error handling ====================
+
+#[test]
+fn read_nonexistent_returns_error_json() {
+    let out = ag()
+        .args(["read", "/nonexistent/file.rs"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "error");
+    assert_eq!(json["error"]["code"], "file_not_found");
+    assert!(json["error"]["suggestion"].is_string());
+}
+
+#[test]
+fn search_nonexistent_path_returns_error_json() {
+    let out = ag()
+        .args(["search", "test", "/nonexistent/dir"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "error");
+}
+
+// ==================== plain mode ====================
+
+#[test]
+fn read_plain_mode() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "read",
+            "--plain",
+            dir.path().join("main.rs").to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(!stdout.contains("\"version\""));
+}
+
+// ==================== prx bench (0% coverage) ====================
+
+#[test]
+fn bench_runs_on_directory() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["bench", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+    assert!(json["data"]["tasks"].is_array());
+}
+
+// ==================== prx find (additional coverage) ====================
+
+#[test]
+fn find_nonexistent_path_returns_error() {
+    let out = ag()
+        .args(["find", "/nonexistent/path/xyz"])
+        .output()
+        .unwrap();
+    assert!(!out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "error");
+}
+
+#[test]
+fn find_with_depth() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["find", "--depth", "1", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx stats (additional coverage) ====================
+
+#[test]
+fn stats_compare_mode() {
+    let dir = TempDir::new().unwrap();
+    let stats_file = dir.path().join("stats.jsonl");
+    let out = ag()
+        .args(["stats", "--compare"])
+        .env("PRX_STATS_FILE", stats_file.to_str().unwrap())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx init (additional coverage) ====================
+
+#[test]
+fn init_default_in_empty_dir() {
+    let dir = TempDir::new().unwrap();
+    let out = ag()
+        .args(["init"])
+        .current_dir(dir.path())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx diff (additional coverage) ====================
+
+#[test]
+fn diff_full_on_file() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["diff", dir.path().join("main.rs").to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+}
+
+// ==================== prx outline (additional coverage) ====================
+
+#[test]
+fn outline_with_depth() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["outline", "--depth", "1", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx find (tree + related-to coverage) ====================
+
+#[test]
+fn find_tree_with_pattern() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "find",
+            "--tree",
+            "--pattern",
+            "*.rs",
+            dir.path().to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert!(json["data"]["tree"].is_object());
+}
+
+#[test]
+fn find_related_to() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["find", "--related-to", "main", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx init (framework detection coverage) ====================
+
+#[test]
+fn init_in_rust_project() {
+    let dir = TempDir::new().unwrap();
+    std::fs::write(
+        dir.path().join("Cargo.toml"),
+        "[package]\nname = \"test\"\n",
+    )
+    .unwrap();
+    std::fs::write(dir.path().join("main.rs"), "fn main() {}").unwrap();
+    let out = ag()
+        .args(["init"])
+        .current_dir(dir.path())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+}
+
+// ==================== prx stats (log + compare coverage) ====================
+
+#[test]
+fn stats_after_search() {
+    let dir = test_dir();
+    let stats_dir = TempDir::new().unwrap();
+    let stats_file = stats_dir.path().join("stats.jsonl");
+
+    ag().args(["search", "fn main", dir.path().to_str().unwrap()])
+        .env("PRX_STATS_FILE", stats_file.to_str().unwrap())
+        .output()
+        .unwrap();
+
+    let out = ag()
+        .args(["stats"])
+        .env("PRX_STATS_FILE", stats_file.to_str().unwrap())
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+}
+
+// ==================== output modes (additional coverage) ====================
+
+#[test]
+fn read_meta_only() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "read",
+            "--meta",
+            dir.path().join("main.rs").to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert!(json["data"]["meta"].is_object());
+}

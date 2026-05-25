@@ -66,7 +66,7 @@ prx search "authenticate" src/
 
 **Not Python.** No runtime dependencies, no package manager, no internet at runtime. One static binary, 48MB, works in containers and sandboxes.
 
-**Embedded semantic model.** A 16M-parameter embedding model is compiled directly into the binary. Semantic search runs on CPU in milliseconds — no model server, no FAISS, no setup.
+**Embedded semantic model.** A 32M-parameter retrieval-optimized embedding model (potion-retrieval-32M, PCA-reduced to 256 dims) is compiled directly into the binary. Semantic search runs on CPU in milliseconds — no model server, no FAISS, no setup.
 
 ---
 
@@ -310,6 +310,7 @@ Methodology and ground truth in [`docs/design/SEARCH-QUALITY.md`](docs/design/SE
 |---|---|---|---|---|---|---|
 | v0.2.0 | 0.719 | 0.410 | 0.417 | 0.239 | 0.562 | Baseline measurement |
 | v0.3.0 | 0.723 | 0.486 | 0.506 | 0.238 | 0.634 | +chunk headers, persistent dense index, symbol boost, synonym expansion, overlap |
+| v0.3.0+ | 0.730 | 0.520 | 0.551 | 0.238 | 0.620 | +potion-retrieval-32M model (PCA→256), evaluated 3 models |
 
 External scores use a 49-query dataset on an 11k-file Python/TypeScript
 codebase (not written by the prx authors). This is the honest number — self-eval

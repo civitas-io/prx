@@ -177,6 +177,49 @@ codebases. Full analysis and plan in `docs/design/SEARCH-QUALITY.md`.
 
 ## v0.4.0 — Run Parsers & Project Intelligence
 
+### Public Benchmark Suite (CI-integrated)
+
+Automated NDCG@10 measurement against real public repositories, run as a
+GitHub Actions workflow before every release. Repos pinned by commit SHA.
+
+**Repository matrix:**
+
+| Size | LOC | Repos (examples) | Languages |
+|---|---|---|---|
+| Small | 1K-10K | fastify/fastify-cli, BurntSushi/ripgrep | JS, Rust |
+| Medium | 10K-100K | pallets/flask, golang/go (stdlib subset) | Python, Go |
+| Large | 100K-500K | django/django, rust-lang/cargo | Python, Rust |
+
+**Per-repo benchmark:**
+- 20-30 queries per repo (semantic, symbol, architecture mix)
+- Ground truth: Claude-annotated with human spot-check (10%)
+- Queries + ground truth checked into `benchmarks/repos/`
+
+**Metrics collected:**
+- NDCG@5, NDCG@10 per query category
+- Index time, query p50/p95 latency
+- Token efficiency (prx result tokens vs grep+cat baseline)
+
+**CI integration:**
+- `benchmark.yml` workflow triggered on release tags and `workflow_dispatch`
+- Clones repos at pinned SHAs, builds index, runs queries
+- Compares against baseline thresholds (NDCG regression > 0.02 = fail)
+- Uploads results as release artifacts
+
+| Item | Priority | Description |
+|---|---|---|
+| Benchmark repo selection + SHA pinning | **High** | Select 6-9 repos across 3 sizes x 3 languages, pin commit SHAs in `benchmarks/repos.json` |
+| Query + ground truth generation | **High** | 20-30 labeled queries per repo, Claude-annotated, human-verified subset |
+| `benchmark.yml` workflow | **High** | GitHub Actions: clone repos, build index, run NDCG, compare to baseline, upload artifacts |
+| Regression gate | High | Block release if NDCG drops > 0.02 from baseline on any repo size category |
+| Results dashboard | Medium | `benchmarks/results/` with per-release JSON, referenced from README |
+
+### Symbol Index (Search Quality Tier 4)
+
+| Item | Priority | Description |
+|---|---|---|
+| Symbol index with reference counting | **High** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Fixes remaining 11 NDCG misses. See `docs/design/SEARCH-QUALITY.md`. |
+
 ### Run Parsers — Infrastructure & DevOps
 
 Prioritized by token waste x agent usage frequency. Each parser extracts

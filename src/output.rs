@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn error_suggestion_absent_for_io() {
-        let err = AgError::Io(std::io::Error::new(std::io::ErrorKind::Other, "test"));
+        let err = AgError::Io(std::io::Error::other("test"));
         assert!(err.suggestion().is_none());
     }
 

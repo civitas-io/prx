@@ -1,9 +1,11 @@
 pub mod batch;
 pub mod bench;
+pub mod context;
 pub mod diff;
 pub mod edit;
 pub mod exists;
 pub mod find;
+pub mod impact;
 pub mod index;
 pub mod init;
 #[cfg(feature = "mcp")]
@@ -59,6 +61,10 @@ pub enum Commands {
     Run(run::RunArgs),
     /// Run synthetic benchmarks comparing prx vs grep+cat
     Bench(bench::BenchArgs),
+    /// Assemble context package for a module
+    Context(context::ContextArgs),
+    /// Analyze reverse dependencies for a file or symbol
+    Impact(impact::ImpactArgs),
     /// Start MCP server on stdio
     #[cfg(feature = "mcp")]
     Mcp(mcp::McpArgs),
@@ -80,6 +86,8 @@ impl Commands {
             Self::Init(_) => "init",
             Self::Run(_) => "run",
             Self::Bench(_) => "bench",
+            Self::Context(_) => "context",
+            Self::Impact(_) => "impact",
             #[cfg(feature = "mcp")]
             Self::Mcp(_) => "mcp",
         }

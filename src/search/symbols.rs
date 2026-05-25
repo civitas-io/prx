@@ -347,7 +347,7 @@ mod tests {
 
     #[test]
     fn nested_symbols_collected() {
-        let files = vec![(
+        let files = [(
             "src/app.py".to_string(),
             "class App:\n    def run(self):\n        pass\n    def stop(self):\n        pass\n"
                 .to_string(),

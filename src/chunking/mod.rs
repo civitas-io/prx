@@ -63,14 +63,33 @@ fn add_overlap(boundaries: &[(usize, usize)], source: &str, overlap: usize) -> V
         let prev_start = boundaries[i - 1].0;
         let overlap_start = orig_start.saturating_sub(overlap);
         let snapped = snap_to_newline(source, overlap_start.max(prev_start));
-        result.push((snapped, end));
+        let safe_start = snapped.min(end);
+        result.push((safe_start, end));
     }
 
     result
 }
 
 fn snap_to_newline(source: &str, pos: usize) -> usize {
-    source[pos..].find('\n').map(|n| pos + n + 1).unwrap_or(pos)
+    let safe_pos = snap_to_char_boundary(source, pos);
+    source[safe_pos..]
+        .find('\n')
+        .map(|n| safe_pos + n + 1)
+        .unwrap_or(safe_pos)
+}
+
+fn snap_to_char_boundary(source: &str, pos: usize) -> usize {
+    if pos >= source.len() {
+        return source.len();
+    }
+    if source.is_char_boundary(pos) {
+        return pos;
+    }
+    let mut p = pos;
+    while p < source.len() && !source.is_char_boundary(p) {
+        p += 1;
+    }
+    p
 }
 
 fn chunk_by_lines(source: &str, target_size: usize) -> Vec<(usize, usize)> {

@@ -106,6 +106,8 @@ prx bench .             # benchmark prx vs grep+cat on this repo
 | `prx run` | — | Structured test/build/lint output. 9 parsers. 95–99% token savings. |
 | `prx exists` | grep -q | O(1) bloom filter existence check. Sub-millisecond, near-zero tokens. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
+| `prx context` | — | Module context package: stats, docs, entrypoints, file skeletons, import edges. |
+| `prx impact` | — | Reverse dependency analysis: "what breaks if I change this file?" |
 | `prx index` | — | Persistent search index. 6x faster repeated searches. |
 | `prx mcp` | — | MCP server over stdio for direct agent integration. |
 | `prx batch` | xargs | Parallel JSONL batch execution. |
@@ -129,6 +131,12 @@ prx read src/auth.ts --lines 42 --snap function
 
 # Skip re-reading files that haven't changed (~50 bytes vs full content)
 prx read src/auth.ts --if-changed a3f9b2c1...
+
+# Understand a module in one call (replaces outline + find + cat README)
+prx context src/auth/
+
+# Check what depends on a file before refactoring
+prx impact src/auth.ts
 
 # Safe editing with preview before applying
 prx edit src/auth.ts --find "old_api()" --replace "new_api()"
@@ -288,10 +296,11 @@ Single static binary. No runtime dependencies. No internet required after build.
 
 | | |
 |---|---|
-| Commands | 14 |
-| Tests | 402 (319 unit + 75 E2E + 8 MCP) |
+| Commands | 16 |
+| Tests | 356 unit + 75 E2E + 8 MCP |
 | Languages | 14 (tree-sitter grammars) |
 | Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
+| Symbol index | Definition lookup + reference counting for symbol queries |
 | Release binary | ~49 MB (float16 model embedded) |
 | CI | GitHub Actions (Linux x86_64, Linux aarch64, macOS arm64, Windows) |
 | Telemetry | Real-world token savings via `prx stats --compare` |

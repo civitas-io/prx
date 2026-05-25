@@ -334,15 +334,17 @@ ag/
 │   │   ├── find.rs              # prx find
 │   │   ├── edit.rs              # prx edit
 │   │   ├── diff.rs              # prx diff
+│   │   ├── batch.rs             # prx batch
+│   │   ├── bench.rs             # prx bench (synthetic benchmarks)
+│   │   ├── context.rs           # prx context (module context package)
+│   │   ├── impact.rs            # prx impact (reverse dependency analysis)
 │   │   ├── index.rs             # prx index
+│   │   ├── init.rs              # prx init
+│   │   ├── mcp.rs               # prx mcp
 │   │   ├── outline.rs           # prx outline
 │   │   ├── exists.rs            # prx exists
-│   │   ├── batch.rs             # prx batch
 │   │   ├── stats.rs             # prx stats
-│   │   ├── mcp.rs               # prx mcp
-│   │   ├── init.rs              # prx init
 │   │   ├── run.rs               # prx run (structured command runner)
-│   │   └── bench.rs             # prx bench (synthetic benchmarks)
 │   │
 │   ├── search/                  # Search engine
 │   │   ├── mod.rs
@@ -351,7 +353,8 @@ ag/
 │   │   ├── semantic.rs          # Model2Vec embedding search
 │   │   ├── literal.rs           # Regex/literal search
 │   │   ├── structural.rs        # ast-grep pattern search
-│   │   └── tokenize.rs          # Identifier tokenization (camelCase/snake_case)
+│   │   ├── tokenize.rs          # Identifier tokenization (camelCase/snake_case)
+│   │   └── symbols.rs           # Symbol index (definition lookup, reference counting)
 │   │
 │   ├── chunking/                # Code chunking
 │   │   ├── mod.rs

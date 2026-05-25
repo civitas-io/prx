@@ -163,17 +163,17 @@ codebases. Full analysis and plan in `docs/design/SEARCH-QUALITY.md`.
 
 **Measured improvement:** NDCG@10 on fiddler: 0.410 → 0.486 (+18.5%). Semantic queries +21%, architecture +13%. 7 previously-missed queries recovered. 9 remaining misses are symbol queries requiring Tier 4.
 
-**Tier 3 — Model upgrade (deferred to v0.4.0):**
+**Tier 3 — Model upgrade [DONE]:**
+
+| Item | Status | Description |
+|---|---|---|
+| Upgrade embedding model | **Done** | Evaluated 3 models: CodeMalt (-3%, rejected), potion-retrieval-32M (+7%, selected), Candle all-MiniLM-L6-v2 (rejected — Metal missing LayerNorm, CPU 46min index). Fiddler NDCG@10: 0.486 → 0.520. |
+
+**Tier 4 — Symbol index (in v0.4.0):**
 
 | Item | Priority | Description |
 |---|---|---|
-| Upgrade embedding model | Medium | jina-embeddings-v2-base-code (161M) or nomic-embed-text-v1.5 (137M). Requires new model binary. Download-on-first-use to avoid binary bloat. |
-
-**Tier 4 — Symbol index (deferred to v0.4.0):**
-
-| Item | Priority | Description |
-|---|---|---|
-| Symbol index with reference counting | Medium | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Key to fixing remaining 9 misses. See `docs/design/SEARCH-QUALITY.md`. |
+| Symbol index with reference counting | **High** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Key to fixing remaining 11 misses (symbol NDCG stuck at 0.238). See `docs/design/SEARCH-QUALITY.md`. |
 
 ## v0.4.0 — Run Parsers & Project Intelligence
 

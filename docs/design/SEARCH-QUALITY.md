@@ -1,60 +1,66 @@
 # Search Quality: NDCG Analysis & Improvement Plan
 
-Measured May 2026. Updated after Tier 1+2 implementation.
+Measured May 2026. Updated after Tier 4 symbol index.
+
+All NDCG scores below use file-level deduplication (each file counted once,
+regardless of how many chunks matched). Earlier saved results were inflated
+by a measurement bug that counted duplicate file entries; corrected May 2026.
 
 ---
 
-## v0.3.0 Results (after Tier 1+2)
+## v0.4.0 Results (after Tier 4 symbol index)
 
-| Metric | Before | After | Delta |
+| Metric | v0.3.0 (corrected) | v0.4.0 | Delta |
 |---|---|---|---|
-| Fiddler NDCG@10 | 0.410 | 0.486 | +18.5% |
-| Fiddler semantic | 0.417 | 0.506 | +21.3% |
-| Fiddler architecture | 0.562 | 0.634 | +12.8% |
-| Fiddler symbol | 0.239 | 0.238 | ~0% |
-| Complete misses | 16 | 9 | -7 recovered |
-| prx NDCG@10 | 0.719 | 0.723 | +0.6% |
-| Tests | 353 | 372 | +19 |
+| Fiddler NDCG@10 | 0.451 | 0.494 | +9.5% |
+| Fiddler semantic | 0.470 | 0.470 | ~0% |
+| Fiddler architecture | 0.526 | 0.526 | ~0% |
+| Fiddler symbol | 0.263 | 0.619 | +135% |
+| Complete misses | 13 | 9 | -4 recovered |
+| prx NDCG@10 | 0.639 | 0.681 | +6.6% |
+| Tests | 402 | 333 (unit) | +7 |
 
-Recovered queries: sentiment analysis, PII detection, text embedding,
-ClickHouse event store, FQL parser, LLM-as-judge, session management.
+Recovered symbol queries: ConfigurationManager (0→0.798), EventStore
+(0→0.290), feature_impact (0→0.371), fiddlerAPIClient (0→0.787).
 
-Remaining misses (9): ConfigurationManager, EventStore, feature_impact,
-fiddlerAPIClient, data drift detection, toxicity detection, dashboard chart
-component, faithfulness coherence, time series metric. These require symbol
-index (Tier 4) — BM25 cannot surface the definition file.
+Remaining misses (9, all semantic): sentiment analysis enrichment,
+Fiddler Query Language parser, Alembic database migration, Redux store
+configuration, data drift detection, dashboard chart component, toxicity
+detection, time series metric, session management tokens.
 
 ---
 
-## Baseline Results
+## Corrected v0.3.0 Baseline
+
+All scores use file-level deduplication (corrected May 2026).
 
 ### prx codebase (self-evaluation)
 
-50 queries, 145 Rust files. Ground truth hand-labeled by the author.
+50 queries, 173 Rust files. Ground truth hand-labeled by the author.
 
 | Metric | Score |
 |---|---|
-| NDCG@5 | 0.591 |
-| NDCG@10 | 0.719 |
-| Semantic (n=34) | 0.726 |
-| Symbol (n=10) | 0.736 |
-| Architecture (n=6) | 0.654 |
+| NDCG@5 | 0.620 |
+| NDCG@10 | 0.639 |
+| Semantic (n=34) | 0.738 |
+| Symbol (n=10) | 0.372 |
+| Architecture (n=6) | 0.524 |
 
 Dataset: `benchmarks/ndcg_dataset.json`
-Results: `benchmarks/ndcg_results.json`
+Results: `benchmarks/ndcg_results_prx.json`
 
-### Fiddler codebase (external validation)
+### External codebase (validation)
 
 49 queries, 11,021 files (Python/TypeScript/JavaScript). Ground truth
 hand-labeled after codebase exploration.
 
 | Metric | Score |
 |---|---|
-| NDCG@5 | 0.389 |
-| NDCG@10 | 0.410 |
-| Semantic (n=38) | 0.417 |
-| Symbol (n=6) | 0.239 |
-| Architecture (n=5) | 0.562 |
+| NDCG@5 | 0.410 |
+| NDCG@10 | 0.451 |
+| Semantic (n=38) | 0.470 |
+| Symbol (n=6) | 0.263 |
+| Architecture (n=5) | 0.526 |
 
 Dataset: `benchmarks/ndcg_dataset_fiddler.json`
 Results: `benchmarks/ndcg_results_fiddler.json`
@@ -272,16 +278,13 @@ Total: 4-6 weeks for a production-quality symbol graph.
 
 ## Realistic ceiling
 
-| Scope | Expected NDCG@10 (fiddler) | Effort |
+| Scope | Expected NDCG@10 (external) | Status |
 |---|---|---|
-| Current | 0.410 | -- |
-| Tier 1 (structural fixes) | 0.60-0.62 | 5-6 days |
-| + Tier 2 (tune + expand) | 0.65-0.68 | +3-4 days |
-| + Tier 3 (model upgrade) | 0.70-0.73 | +2-3 days |
-| + Tier 4 (symbol index) | 0.70-0.75 | +1-2 weeks |
-| + Full symbol graph | 0.75-0.80 | +4-6 weeks |
-| + Cross-encoder reranker | 0.80+ | +2-3 weeks |
+| Tiers 1-3 (v0.3.0) | 0.451 | Done |
+| + Tier 4 (symbol index) | 0.494 | Done |
+| + Full symbol graph | 0.55-0.65 | Planned |
+| + Cross-encoder reranker | 0.70+ | Planned |
 
-Breaking 0.80 on unfamiliar large codebases likely requires a cross-encoder
+Breaking 0.70 on unfamiliar large codebases likely requires a cross-encoder
 reranker (~25M params, scores query+chunk jointly over top-50 candidates).
 This adds 20-80ms latency and a second model to the binary.

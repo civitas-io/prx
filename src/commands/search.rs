@@ -137,6 +137,10 @@ fn detect_mode(args: &SearchArgs) -> SearchMode {
         return SearchMode::Structural;
     }
 
+    if fusion::is_symbol_query(query) {
+        return SearchMode::Hybrid;
+    }
+
     let has_regex_meta = query.contains('[')
         || query.contains('(')
         || query.contains('{')
@@ -269,6 +273,11 @@ fn hybrid_search(
     let import_graph = load_or_build_graph(root, &fused, &chunk_file_paths);
 
     let mut score_map: HashMap<usize, f32> = fused.into_iter().collect();
+
+    if fusion::is_symbol_query(query) {
+        boost_symbol_definitions(root, query, &all_chunks, &mut score_map);
+    }
+
     let ranked = ranking::rerank(
         &mut score_map,
         &chunk_texts,
@@ -322,6 +331,38 @@ fn hybrid_search(
     let has_more = skip + matches.len() < total_matches;
     let next_skip = skip + matches.len();
     to_search_output(matches, total_matches, has_more, next_skip)
+}
+
+const SYMBOL_INDEX_BOOST: f32 = 50.0;
+
+fn boost_symbol_definitions(
+    root: &Path,
+    query: &str,
+    chunks: &[chunking::Chunk],
+    scores: &mut HashMap<usize, f32>,
+) {
+    let symbol_index = match persist::load_symbols(root) {
+        Some(idx) => idx,
+        None => return,
+    };
+
+    let symbol_name = query.trim().split("::").last().unwrap_or(query.trim());
+    let defs = symbol_index.lookup_flexible(symbol_name);
+    if defs.is_empty() {
+        return;
+    }
+
+    for def in &defs {
+        for (chunk_id, chunk) in chunks.iter().enumerate() {
+            if chunk.file_path == def.file
+                && chunk.start_line <= def.line
+                && def.line <= chunk.end_line
+            {
+                let existing = scores.get(&chunk_id).copied().unwrap_or(0.0);
+                scores.insert(chunk_id, existing + SYMBOL_INDEX_BOOST);
+            }
+        }
+    }
 }
 
 type InMemoryIndex = (Vec<chunking::Chunk>, Vec<String>, Vec<String>, SparseIndex);

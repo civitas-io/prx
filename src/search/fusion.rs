@@ -99,18 +99,21 @@ pub fn is_symbol_query(query: &str) -> bool {
     if trimmed.starts_with('_') && trimmed.len() > 1 {
         return true;
     }
-    // camelCase or PascalCase: has uppercase letter not at start, or starts uppercase followed by lowercase
+    let word_count = trimmed.split_whitespace().count();
+    if word_count != 1 {
+        return false;
+    }
     let chars: Vec<char> = trimmed.chars().collect();
     if chars.len() >= 2 {
         let has_internal_upper = chars[1..].iter().any(|c| c.is_uppercase());
         let starts_upper_then_lower =
             chars[0].is_uppercase() && chars.get(1).is_some_and(|c| c.is_lowercase());
         if has_internal_upper || starts_upper_then_lower {
-            let word_count = trimmed.split_whitespace().count();
-            if word_count == 1 {
-                return true;
-            }
+            return true;
         }
+    }
+    if trimmed.contains('_') && trimmed.chars().all(|c| c.is_alphanumeric() || c == '_') {
+        return true;
     }
     false
 }
@@ -172,6 +175,7 @@ mod tests {
         assert_eq!(resolve_alpha("_private", None), 0.1);
         assert_eq!(resolve_alpha("getUserById", None), 0.1);
         assert_eq!(resolve_alpha("HandlerStack", None), 0.1);
+        assert_eq!(resolve_alpha("feature_impact", None), 0.1);
     }
 
     #[test]

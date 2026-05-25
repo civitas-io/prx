@@ -137,12 +137,12 @@ Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
 | MCP server E2E tests | **High** | **Done** | 8 E2E tests covering initialize, tools/list, tools/call for all 6 MCP tools, plus invalid tool error handling. |
 | Incremental indexing | **High** | **Done** | Skip unchanged files via hash comparison. Reports files_changed/files_unchanged. Walker now excludes `.prx/` directory. |
 | Real criterion benchmarks | **High** | **Done** | 5 search benchmarks (BM25 build/query, literal search, index build, incremental noop) + 3 chunking benchmarks (Rust/Python/plaintext at multiple sizes). |
-| NDCG@10 measurement | **High** | **Done** | 50-query labeled dataset on prx (NDCG@10=0.719) + 49-query dataset on fiddler (NDCG@10=0.410). See `docs/design/SEARCH-QUALITY.md`. |
+| NDCG@10 measurement | **High** | **Done** | 50-query labeled dataset on prx (NDCG@10=0.639) + 49-query dataset on external codebase (NDCG@10=0.451). See `docs/design/SEARCH-QUALITY.md`. |
 | Structural search validation | Medium | **Done** | Warns when pattern compiles but matches 0 files, or when pattern fails to compile for all languages. |
 
 ### Search Quality — Closing the Gap
 
-Measured NDCG@10: 0.719 (self), 0.410 (external). Target: 0.70+ on unfamiliar
+Measured NDCG@10: 0.639 (self), 0.451 (external). Target: 0.70+ on unfamiliar
 codebases. Full analysis and plan in `docs/design/SEARCH-QUALITY.md`.
 
 **Tier 1 — Structural fixes [DONE]:**
@@ -161,19 +161,20 @@ codebases. Full analysis and plan in `docs/design/SEARCH-QUALITY.md`.
 | Reranker weight tuning | **Done** | Definition boost 3→4 (NL), 8→12 (symbol). Stem match 1.0→1.5. Coherence 0.2→0.15. Import penalty 0.3→0.2. Configurable RerankConfig added for ablation. |
 | Chunk overlap | **Done** | 200-byte overlap between chunks, snapped to line boundaries. |
 
-**Measured improvement:** NDCG@10 on fiddler: 0.410 → 0.486 (+18.5%). Semantic queries +21%, architecture +13%. 7 previously-missed queries recovered. 9 remaining misses are symbol queries requiring Tier 4.
+**Measured improvement:** 7 previously-missed queries recovered. Remaining
+misses are symbol queries requiring Tier 4.
 
 **Tier 3 — Model upgrade [DONE]:**
 
 | Item | Status | Description |
 |---|---|---|
-| Upgrade embedding model | **Done** | Evaluated 3 models: CodeMalt (-3%, rejected), potion-retrieval-32M (+7%, selected), Candle all-MiniLM-L6-v2 (rejected — Metal missing LayerNorm, CPU 46min index). Fiddler NDCG@10: 0.486 → 0.520. |
+| Upgrade embedding model | **Done** | Evaluated 3 models: CodeMalt (-3%, rejected), potion-retrieval-32M (+7%, selected), Candle all-MiniLM-L6-v2 (rejected — Metal missing LayerNorm, CPU 46min index). |
 
-**Tier 4 — Symbol index (in v0.4.0):**
+**Tier 4 — Symbol index [DONE]:**
 
-| Item | Priority | Description |
+| Item | Status | Description |
 |---|---|---|
-| Symbol index with reference counting | **High** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Key to fixing remaining 11 misses (symbol NDCG stuck at 0.238). See `docs/design/SEARCH-QUALITY.md`. |
+| Symbol index with reference counting | **Done** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Symbol NDCG: 0.263 → 0.619. 4 symbol misses recovered. |
 
 ## v0.4.0 — Run Parsers & Project Intelligence
 
@@ -214,11 +215,11 @@ GitHub Actions workflow before every release. Repos pinned by commit SHA.
 | Regression gate | High | Block release if NDCG drops > 0.02 from baseline on any repo size category |
 | Results dashboard | Medium | `benchmarks/results/` with per-release JSON, referenced from README |
 
-### Symbol Index (Search Quality Tier 4)
+### Symbol Index (Search Quality Tier 4) [DONE]
 
-| Item | Priority | Description |
+| Item | Status | Description |
 |---|---|---|
-| Symbol index with reference counting | **High** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Fixes remaining 11 NDCG misses. See `docs/design/SEARCH-QUALITY.md`. |
+| Symbol index with reference counting | **Done** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Symbol NDCG: 0.263 → 0.619 (+135%). 4 previously-complete-miss symbol queries recovered. |
 
 ### Run Parsers — Infrastructure & DevOps
 

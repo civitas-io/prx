@@ -59,10 +59,14 @@ indexing, persistent dense index, and search ranking improvements.
 | Metric | v0.2.0 | v0.3.0 |
 |---|---|---|
 | Tests | 353 (304 unit + 49 E2E) | 372 (315 unit + 49 E2E + 8 MCP) |
-| NDCG@10 (self) | 0.719 | 0.723 |
-| NDCG@10 (external) | 0.410 | 0.486 (+18.5%) |
+| NDCG@10 (self) | — | 0.639 |
+| NDCG@10 (external) | — | 0.451 |
 | Benchmarks | 2 stubs | 8 real (search + chunking) |
 | Index files | 4 (meta, chunks, bm25, imports) | 5 (+embeddings.bin) |
+
+Note: v0.2.0 NDCG scores omitted — measured with a buggy script that did not
+deduplicate files across chunks, producing inflated results. Corrected
+methodology applied from v0.3.0 onward.
 
 ## [0.2.0] - 2026-05-19
 

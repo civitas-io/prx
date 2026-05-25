@@ -303,27 +303,18 @@ See [ROADMAP](docs/vision/ROADMAP.md) for what's next.
 ## Search Quality Tracking
 
 NDCG@10 measured on two labeled datasets: prx's own codebase (50 queries,
-145 files) and an external production codebase (49 queries, 11k files).
-Methodology and ground truth in [`docs/design/SEARCH-QUALITY.md`](docs/design/SEARCH-QUALITY.md).
+173 files) and an external production codebase (49 queries, 11k files).
+Results use file-level deduplication (each file counted once regardless of
+chunk count). Methodology and ground truth in [`docs/design/SEARCH-QUALITY.md`](docs/design/SEARCH-QUALITY.md).
 
 | Version | prx (self) | External | Semantic | Symbol | Architecture | Notes |
 |---|---|---|---|---|---|---|
-| v0.2.0 | 0.719 | 0.410 | 0.417 | 0.239 | 0.562 | Baseline measurement |
-| v0.3.0 | 0.723 | 0.486 | 0.506 | 0.238 | 0.634 | +chunk headers, persistent dense index, symbol boost, synonym expansion, overlap |
-| v0.3.0+ | 0.730 | 0.520 | 0.551 | 0.238 | 0.620 | +potion-retrieval-32M model (PCA→256), evaluated 3 models |
+| v0.3.0 | 0.639 | 0.451 | 0.470 | 0.263 | 0.526 | Corrected baseline (Tiers 1-3) |
+| v0.4.0-dev | 0.681 | 0.494 | 0.470 | 0.619 | 0.526 | +symbol index (Tier 4) |
 
 External scores use a 49-query dataset on an 11k-file Python/TypeScript
 codebase (not written by the prx authors). This is the honest number — self-eval
-inflates scores by ~40% due to labeling bias.
-
-**Model evaluation (v0.3.0):** Evaluated 3 embedding models head-to-head:
-
-| Model | Type | Params | Fiddler NDCG@10 | Binary | Index (11k files) | Verdict |
-|---|---|---|---|---|---|---|
-| potion-code-16M | Static (Model2Vec) | 16M | 0.486 | 48MB | 33s | baseline |
-| CodeMalt | Static (Model2Vec) | 7.6M | 0.470 (-3%) | 31MB | 44s | rejected — smaller vocab hurts |
-| **potion-retrieval-32M** | **Static (Model2Vec)** | **32M** | **0.520 (+7%)** | **49MB** | **39s** | **selected** |
-| all-MiniLM-L6-v2 | Transformer (Candle) | 33M | not tested | 137MB | ~46min (CPU) | rejected — Metal missing LayerNorm, CPU too slow |
+inflates scores due to labeling bias.
 
 For comparison: Semble reports 0.854 on their own benchmark. ripgrep scores
 ~0.13 on the same benchmark. Direct comparison requires running both tools on

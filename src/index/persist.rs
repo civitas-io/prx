@@ -203,6 +203,14 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
     });
     let _ = import_graph.save(&index_dir);
 
+    let chunk_texts: Vec<String> = all_chunks.iter().map(|c| c.content.clone()).collect();
+    let symbol_index = crate::search::symbols::SymbolIndex::build(
+        &file_paths,
+        |path| std::fs::read_to_string(root.join(path)).ok(),
+        &chunk_texts,
+    );
+    let _ = symbol_index.save(&index_dir);
+
     Ok(IndexStats {
         files: entries.len(),
         chunks: all_chunks.len(),
@@ -333,6 +341,11 @@ pub fn is_valid(root: &Path) -> bool {
     }
 
     true
+}
+
+pub fn load_symbols(root: &Path) -> Option<crate::search::symbols::SymbolIndex> {
+    let index_dir = root.join(INDEX_DIR);
+    crate::search::symbols::SymbolIndex::load(&index_dir).ok()
 }
 
 pub fn index_path(root: &Path) -> PathBuf {

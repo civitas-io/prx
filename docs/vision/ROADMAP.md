@@ -257,13 +257,13 @@ Total parsers: 19 implemented (9 original + 10 new), 3 coverage parsers planned.
 
 ### Intelligence Features
 
-| Item | Priority | Description |
-|---|---|---|
-| Auto-detect `--json` flags | High | For tools that support structured output (kubectl, terraform, npm, aws, gcloud), auto-add the JSON flag and parse natively |
-| Generic log noise filter | High | Dedupe repeated lines, keep error context windows — shared by kubectl-logs, docker-logs, journalctl, CI output |
-| Bayesian mode predictor | Low | Learn optimal read mode per file signature over time |
-| Information bottleneck filter | Low | Task-conditioned line filtering for task-driven reads |
-| Custom embeddings | Low | Support for user-provided or fine-tuned models |
+| Item | Priority | Status | Description |
+|---|---|---|---|
+| JSON output detection | High | Planned | When user passes `--json`/`-o json` themselves, detect JSON response and parse structurally instead of regex. kubectl, terraform, npm, eslint. |
+| Generic log noise filter | High | **Done** | Shipped inline in kubectl_logs parser (dedup repeated lines, keep ERROR/WARN context). Shared module deferred until more log parsers added. |
+| Bayesian mode predictor | Low | Deferred | Learn optimal read mode per file signature over time |
+| Information bottleneck filter | Low | Deferred | Task-conditioned line filtering for task-driven reads |
+| Custom embeddings | Low | Deferred | Support for user-provided or fine-tuned models |
 
 ### Security CI
 
@@ -281,6 +281,8 @@ Total parsers: 19 implemented (9 original + 10 new), 3 coverage parsers planned.
 |---|---|---|
 | `cargo publish` | High | Publish to crates.io for `cargo install prx` |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
+| `prx run --auto-json` | High | Auto-inject `--json`/`-o json` flags for tools that support structured output (kubectl, terraform, npm, eslint). Rewrite command transparently, parse JSON response. v0.4.0 ships passive detection; this adds active injection. |
+| Migrate off bincode | High | Replace bincode (unmaintained, RUSTSEC-2025-0141) with postcard or bitcode for index serialization. |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
 | Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |

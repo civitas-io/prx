@@ -221,42 +221,29 @@ GitHub Actions workflow before every release. Repos pinned by commit SHA.
 |---|---|---|
 | Symbol index with reference counting | **Done** | Map each symbol to definition location + reference count at index time. Direct lookup for symbol queries. Symbol NDCG: 0.263 → 0.619 (+135%). 4 previously-complete-miss symbol queries recovered. |
 
-### Run Parsers — Infrastructure & DevOps
+### Run Parsers [DONE — 10 shipped, 3 planned]
 
-Prioritized by token waste x agent usage frequency. Each parser extracts
-only failures, warnings, and summaries — dropping progress bars, cache hits,
-dependency resolution, and verbose defaults.
+10 new parsers implemented. Each extracts only failures, warnings, and
+summaries — dropping progress bars, cache hits, dependency resolution,
+and verbose defaults. Design: `docs/design/RUN-PARSERS.md`.
 
-| Parser | Tool | Typical output | Noise | What to extract | Priority |
-|---|---|---|---|---|---|
-| terraform | `plan`, `apply` | 5-50k tokens | 75-85% | Changed resources only, drop `(known after apply)` + unchanged attrs | **High** |
-| kubectl | `describe`, `get -o yaml` | 2-30k tokens | 80-90% | Warning events, non-Ready pods, restart counts, error phases | **High** |
-| kubectl-logs | `logs` (+ docker logs) | 1-100k+ tokens | 70-90% | ERROR/WARN/FATAL lines, stack traces, deduplicate repeated lines | **High** |
-| docker-build | `build` | 500-10k tokens | 80% | Failed step + last 20 lines, final image ID/size, warnings | **High** |
-| mvn | `test`, `build` | 5-50k tokens | 90% | Surefire summary, compilation errors, drop "Downloading from" spam | **High** |
-| gradle | `build`, `test` | 5-30k tokens | 85% | Test failures, build errors, drop daemon/resolution noise | **High** |
-| dotnet | `test`, `build` | 2-50k tokens | 75-85% | CS-prefixed errors/warnings with file:line, test failures | **High** |
-| mypy | type check | 500-10k tokens | 50% | `file:line: error:` lines, note: context, error count | **High** |
-| npm-ls | `npm list` | 5-50k+ tokens | 95% | Top-level deps, version conflicts, peer dep warnings | **High** |
-| git-log | `log`, `log -p` | 2-100k+ tokens | 50-60% | Compact hash + subject + author table, condensed diff stats | **High** |
-| docker-ps | `ps` | 200-1k tokens | 50% | Unhealthy/Exited containers, recent restarts | Medium |
-| helm | `install`, `upgrade`, `status` | 200-5k tokens | 50-70% | Release status, NOTES, hook failures | Medium |
-| ruff | `check` | 100-2k tokens | 30% | Structured JSON parse (ruff supports --output-format=json) | Medium |
-| bun-test | `bun test` | 1-10k tokens | 70% | Reuse jest parser — similar output format | Medium |
-| deno-test | `deno test` | 1-10k tokens | 70% | Test failures + summary | Medium |
-| git-blame | `blame` | 1-20k tokens | 70% | Collapse runs of same SHA into ranges | Medium |
-| aws | `describe-*`, `s3 ls` | 5-50k tokens | 85% | Filter to state, tags, errors; drop nested defaults | Medium |
-| gcloud | `compute instances list` | 500-5k tokens | 60% | Similar to aws profile | Medium |
+| Parser | Tool | Status |
+|---|---|---|
+| terraform | `plan`, `apply` | **Done** |
+| kubectl | `describe`, `get` | **Done** |
+| kubectl-logs | `logs` (+ docker logs) | **Done** |
+| docker-build | `build` | **Done** |
+| mvn | `test`, `build` | **Done** |
+| gradle | `build`, `test` | **Done** |
+| dotnet | `test`, `build` | **Done** |
+| mypy | type check | **Done** |
+| npm-ls | `npm list` | **Done** |
+| git-log | `log` | **Done** |
+| pytest-cov | `pytest --cov`, `coverage report` | Planned |
+| go-cover | `go test -cover` | Planned |
+| jest-cov | `jest --coverage`, `c8` | Planned |
 
-**Implementation notes:**
-- kubectl, terraform, npm, aws, gcloud support `--output json` / `--format json` — auto-detect and parse structured output when available
-- kubectl-logs and docker-logs share a generic log noise filter (dedupe repeated lines, keep error context windows)
-- mvn + gradle share a JVM build parser (detect Surefire/Failsafe/Spock plugin variants)
-- bun test reuses the jest parser
-
-**Skipping** (output already small enough, parsing adds maintenance with little savings):
-- `ls -la` (use `prx find` instead), `df -h`, `env`, `pip list`, `git status`,
-  `kubectl apply`, `terraform output`
+Total parsers: 19 implemented (9 original + 10 new), 3 coverage parsers planned.
 
 ### Project Intelligence
 

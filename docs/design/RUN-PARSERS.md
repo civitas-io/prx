@@ -33,34 +33,63 @@ authenticate() at auth.rs:42") — deferred.
 
 ## Parser Catalog
 
-### Implemented (9 parsers)
+### Implemented (19 parsers)
+
+**Test runners:**
 
 | Parser | Commands | Extracts | Drops | Savings |
 |---|---|---|---|---|
 | `cargo_test` | `cargo test` | pass/fail counts, failed test names+output | passing test lines | 95-99% |
-| `cargo_build` | `cargo build`, `cargo check`, `cargo clippy` | errors+warnings with file:line:col | help text, notes, duplicate messages | 80-90% |
-| `cargo_llvm_cov` | `cargo llvm-cov` | coverage summary, low-coverage files | per-line coverage data | 90-95% |
 | `pytest` | `pytest`, `python -m pytest` | pass/fail/skip counts, failed test names | passing test dots, collection output | 95-99% |
 | `go_test` | `go test` | pass/fail counts, failed test output | passing `--- PASS` lines | 90-95% |
 | `jest` | `jest`, `vitest`, `npm test` | pass/fail/skip counts, failed test output | passing test lines, transform output | 90-95% |
+| `dotnet` | `dotnet test`, `dotnet build` | CS-prefixed errors/warnings, test failures | restore output, dependency noise | 75-85% |
+
+**Build/lint tools:**
+
+| Parser | Commands | Extracts | Drops | Savings |
+|---|---|---|---|---|
+| `cargo_build` | `cargo build`, `cargo check`, `cargo clippy` | errors+warnings with file:line:col | help text, notes, duplicate messages | 80-90% |
+| `mypy` | `mypy`, `python -m mypy` | `file:line: error:` lines, error count | notes without errors, success messages | 50% |
 | `tsc` | `tsc`, `npx tsc` | TS errors with file:line:col | help suggestions, project config noise | 70-80% |
 | `eslint` | `eslint` | lint errors/warnings with file:line | passing file notifications, fix suggestions | 60-80% |
+| `mvn` | `mvn`, `mvnw` | compilation errors, Surefire failures, build result | download spam, dependency resolution | 90% |
+| `gradle` | `gradle`, `gradlew` | FAILED tasks, compile errors, test summary | daemon startup, download progress | 85% |
+
+**Coverage tools:**
+
+| Parser | Commands | Extracts | Drops | Savings |
+|---|---|---|---|---|
+| `cargo_llvm_cov` | `cargo llvm-cov` | coverage summary, low-coverage files | per-line coverage data | 90-95% |
+
+**Infrastructure/DevOps:**
+
+| Parser | Commands | Extracts | Drops | Savings |
+|---|---|---|---|---|
+| `terraform` | `terraform plan`, `terraform apply` | changed resources, plan summary | `(known after apply)`, unchanged attrs | 75-85% |
+| `kubectl` | `kubectl describe`, `kubectl get` | warning events, non-Ready conditions | normal events, managed fields | 80-90% |
+| `kubectl_logs` | `kubectl logs`, `docker logs` | ERROR/WARN/FATAL + context, deduped | INFO/DEBUG lines, repeated lines | 70-90% |
+| `docker_build` | `docker build`, `docker buildx` | failed step + context, image info | layer cache, download progress | 80% |
+| `npm_ls` | `npm list`, `npm ls` | top-level deps, conflicts, warnings | nested transitive dependencies | 95% |
+| `git_log` | `git log` | compact hash+subject+author table | full messages, diffs, stats | 50-60% |
+
+**Fallback:**
+
+| Parser | Commands | Extracts | Drops | Savings |
+|---|---|---|---|---|
 | `fallback` | anything else | exit code, truncated tail (last 50/100 lines) | bulk of output | 50-90% |
 
-### Planned (10 parsers)
+### Planned — Coverage parsers
 
-| Parser | Commands | Extracts | Drops | Savings | Complexity | JSON native? |
-|---|---|---|---|---|---|---|
-| `mypy` | `mypy`, `python -m mypy` | `file:line: error:` lines, error count | notes without errors, success messages | 50% | Simple | No |
-| `git_log` | `git log` | Compact hash+subject+author table | Full commit messages, diffs, stats | 50-60% | Simple | `--format` available |
-| `docker_build` | `docker build`, `docker buildx build` | Failed step + last 20 lines, image ID | Layer cache output, download progress, intermediate steps | 80% | Moderate | No |
-| `terraform` | `terraform plan`, `terraform apply` | Changed resources, plan summary | `(known after apply)`, unchanged attrs, provider init | 75-85% | Moderate | `-json` available |
-| `kubectl` | `kubectl describe`, `kubectl get` | Warning events, non-Ready conditions, error phases | Normal events, managed fields, healthy status | 80-90% | Moderate | `-o json` available |
-| `kubectl_logs` | `kubectl logs`, `docker logs` | ERROR/WARN/FATAL + context, deduped | INFO/DEBUG lines, repeated identical lines | 70-90% | Moderate | No |
-| `mvn` | `mvn`, `mvnw`, `./mvnw` | Compilation errors, Surefire failures, build result | `Downloading from`, `Downloaded from`, resolution | 90% | Complex | No |
-| `gradle` | `gradle`, `gradlew`, `./gradlew` | Compilation errors, test failures, build result | Daemon startup, dependency resolution, download progress | 85% | Complex | No |
-| `dotnet` | `dotnet build`, `dotnet test` | CS-prefixed errors/warnings with file:line, test failures | Restore output, dependency noise | 75-85% | Simple | No |
-| `npm_ls` | `npm list`, `npm ls` | Top-level deps, version conflicts, peer dep warnings | Nested transitive dependencies | 95% | Simple | `--json` available |
+Coverage tools are a gap: we parse test output but not coverage reports.
+All follow the same pattern as `cargo_llvm_cov`: extract summary + low-coverage
+files, drop per-line detail.
+
+| Parser | Commands | Extracts | Drops | Savings | Complexity |
+|---|---|---|---|---|---|
+| `pytest_cov` | `pytest --cov`, `coverage report` | total %, low-coverage files | per-line miss data, branch detail | 80-90% | Simple |
+| `go_cover` | `go test -cover`, `go tool cover` | total %, per-package coverage | per-line annotations | 70-80% | Simple |
+| `jest_cov` | `jest --coverage`, `c8`, `istanbul` | total %, uncovered files table | per-line detail, branch maps | 80-90% | Simple |
 
 ## Shared Infrastructure
 
@@ -109,30 +138,26 @@ These are simple enough to be per-parser regexes, not a shared abstraction.
 
 ## Implementation Plan
 
-### Phase 1 — Easy wins (3 parsers, ~1 day)
+### Phases 1-3 — DONE (10 parsers shipped)
 
-| Parser | Why first | Effort |
+All 10 infrastructure/devops/build parsers implemented and tested.
+
+### Phase 4 — Coverage parsers (~0.5 day)
+
+| Parser | Pattern | Effort |
 |---|---|---|
-| `mypy` | Simple `file:line: error:` format, high agent usage | ~60 lines |
-| `dotnet` | Same `file(line,col): error CSxxxx:` pattern as cargo_build | ~70 lines |
-| `git_log` | Simple commit parsing, broadly useful | ~80 lines |
+| `pytest_cov` | `Name Stmts Miss Cover` table → summary + low-coverage files | ~80 lines |
+| `go_cover` | `coverage: N% of statements` line + per-package table | ~60 lines |
+| `jest_cov` | `% Stmts` table (same as istanbul/c8) → summary + uncovered | ~80 lines |
 
-### Phase 2 — Moderate (4 parsers, ~1.5 days)
+### Phase 5 — Future (not scheduled)
 
-| Parser | Notes | Effort |
-|---|---|---|
-| `docker_build` | Step detection, failure context window | ~90 lines |
-| `npm_ls` | Depth filtering, conflict detection | ~80 lines |
-| `terraform` | Plan summary extraction, resource change counting | ~100 lines |
-| `kubectl_logs` | Needs the generic log noise filter | ~120 lines (incl. filter) |
-
-### Phase 3 — Complex (3 parsers, ~1.5 days)
-
-| Parser | Notes | Effort |
-|---|---|---|
-| `kubectl` | Multiple subcommand formats (describe, get, events) | ~120 lines |
-| `mvn` | Surefire parsing, download noise filtering | ~110 lines |
-| `gradle` | Similar to mvn but different noise patterns | ~100 lines |
+| Parser | Notes |
+|---|---|
+| `ruff` | Python linter, supports `--output-format=json` |
+| `golangci_lint` | Go linter, similar to eslint format |
+| `bun_test` | Reuse jest parser — similar output |
+| `deno_test` | Test failures + summary |
 
 ## Testing Strategy
 
@@ -164,22 +189,25 @@ src/runner/
 ├── cargo_build.rs      # cargo build/clippy
 ├── cargo_llvm_cov.rs   # cargo llvm-cov
 ├── cargo_test.rs       # cargo test
-├── docker_build.rs     # docker build        [NEW]
-├── dotnet.rs           # dotnet build/test   [NEW]
+├── docker_build.rs     # docker build
+├── dotnet.rs           # dotnet build/test
 ├── eslint.rs           # eslint
 ├── fallback.rs         # unknown commands
-├── git_log.rs          # git log             [NEW]
+├── git_log.rs          # git log
+├── go_cover.rs         # go test -cover          [PLANNED]
 ├── go_test.rs          # go test
-├── gradle.rs           # gradle/gradlew      [NEW]
+├── gradle.rs           # gradle/gradlew
 ├── jest.rs             # jest/vitest
-├── kubectl.rs          # kubectl describe/get [NEW]
-├── kubectl_logs.rs     # kubectl/docker logs  [NEW]
-├── mvn.rs              # mvn/mvnw            [NEW]
-├── mypy.rs             # mypy                [NEW]
-├── npm_ls.rs           # npm list/ls         [NEW]
+├── jest_cov.rs         # jest --coverage / c8     [PLANNED]
+├── kubectl.rs          # kubectl describe/get
+├── kubectl_logs.rs     # kubectl/docker logs
+├── mvn.rs              # mvn/mvnw
+├── mypy.rs             # mypy
+├── npm_ls.rs           # npm list/ls
 ├── pytest.rs           # pytest
-├── terraform.rs        # terraform plan/apply [NEW]
+├── pytest_cov.rs       # pytest --cov / coverage  [PLANNED]
+├── terraform.rs        # terraform plan/apply
 └── tsc.rs              # tsc
 ```
 
-19 parsers total (9 existing + 10 new). Each 50-120 lines including tests.
+19 implemented + 3 planned coverage parsers.

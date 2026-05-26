@@ -265,6 +265,16 @@ Total parsers: 19 implemented (9 original + 10 new), 3 coverage parsers planned.
 | Information bottleneck filter | Low | Task-conditioned line filtering for task-driven reads |
 | Custom embeddings | Low | Support for user-provided or fine-tuned models |
 
+### Security CI
+
+| Item | Priority | Description |
+|---|---|---|
+| `cargo audit` in CI | **High** | Check dependencies against RustSec advisory database on every PR. Fast, zero config. |
+| `cargo deny` in CI | **High** | License compliance, duplicate dep detection, advisory checks. Superset of audit. |
+| Clippy restriction lints | Medium | Enable additional security-relevant clippy lints beyond `-D warnings`. |
+| Index deserialization fuzzing | Low | Fuzz `bincode::deserialize` on symbols.bin, imports.bin, chunks.bin to catch panic paths. |
+| Path traversal tests | Low | Verify `prx edit --apply` and `prx read` reject paths outside workspace root. |
+
 ## v0.5.0 — Distribution & Ecosystem
 
 | Item | Priority | Description |

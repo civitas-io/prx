@@ -47,11 +47,7 @@ fn search_literal_finds_match() {
 fn search_no_match_returns_empty() {
     let dir = test_dir();
     let out = ag()
-        .args([
-            "search",
-            "nonexistent_xyz_pattern",
-            dir.path().to_str().unwrap(),
-        ])
+        .args(["search", "zzzzqqqxxxnonesuch", dir.path().to_str().unwrap()])
         .output()
         .unwrap();
     assert!(out.status.success());

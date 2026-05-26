@@ -9,6 +9,7 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
   build-linux-x86:
@@ -17,7 +18,7 @@ jobs:
     timeout-minutes: 20
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - name: Download models
         run: bash scripts/download-models.sh
@@ -25,7 +26,7 @@ jobs:
         run: cargo build --release --target x86_64-unknown-linux-gnu
       - name: Package
         run: tar czf prx-x86_64-unknown-linux-gnu.tar.gz -C target/x86_64-unknown-linux-gnu/release prx
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: prx-x86_64-unknown-linux-gnu
           path: prx-x86_64-unknown-linux-gnu.tar.gz
@@ -36,7 +37,7 @@ jobs:
     timeout-minutes: 30
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
         with:
           targets: aarch64-unknown-linux-gnu
@@ -48,7 +49,7 @@ jobs:
         run: cross build --release --target aarch64-unknown-linux-gnu
       - name: Package
         run: tar czf prx-aarch64-unknown-linux-gnu.tar.gz -C target/aarch64-unknown-linux-gnu/release prx
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: prx-aarch64-unknown-linux-gnu
           path: prx-aarch64-unknown-linux-gnu.tar.gz
@@ -59,7 +60,7 @@ jobs:
     timeout-minutes: 25
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - name: Download models
         run: bash scripts/download-models.sh
@@ -67,7 +68,7 @@ jobs:
         run: cargo build --release --target aarch64-apple-darwin
       - name: Package
         run: tar czf prx-aarch64-apple-darwin.tar.gz -C target/aarch64-apple-darwin/release prx
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: prx-aarch64-apple-darwin
           path: prx-aarch64-apple-darwin.tar.gz
@@ -78,7 +79,7 @@ jobs:
     timeout-minutes: 25
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - uses: dtolnay/rust-toolchain@stable
       - name: Download models
         run: bash scripts/download-models.sh
@@ -86,7 +87,7 @@ jobs:
         run: cargo build --release --target x86_64-pc-windows-msvc
       - name: Package
         run: 7z a prx-x86_64-pc-windows-msvc.zip target/x86_64-pc-windows-msvc/release/prx.exe
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: prx-x86_64-pc-windows-msvc
           path: prx-x86_64-pc-windows-msvc.zip
@@ -97,9 +98,9 @@ jobs:
     if: always()
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           path: artifacts
           merge-multiple: true

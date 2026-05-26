@@ -36,6 +36,21 @@ jobs:
       - name: Clippy (all features)
         run: cargo clippy --features mcp,watch -- -D warnings
 
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install cargo-deny
+        run: cargo install cargo-deny --locked
+
+      - name: cargo deny check
+        run: cargo deny check
+
   test:
     name: Test (${{ matrix.os }})
     runs-on: ${{ matrix.os }}

@@ -1,4 +1,5 @@
 use regex::Regex;
+use serde_json;
 use std::sync::LazyLock;
 
 use super::{Diagnostic, ParsedResult};
@@ -11,7 +12,74 @@ static ISSUE_RE: LazyLock<Regex> = LazyLock::new(|| {
 static SUMMARY_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(\d+) problems? \((\d+) errors?, (\d+) warnings?\)").unwrap());
 
+fn parse_json(json: &serde_json::Value) -> ParsedResult {
+    let mut failures = Vec::new();
+    let mut warnings = Vec::new();
+
+    // eslint --format json outputs an array of file results
+    if let Some(files) = json.as_array() {
+        for file_result in files {
+            if let Some(file_path) = file_result.get("filePath").and_then(|f| f.as_str()) {
+                if let Some(messages) = file_result.get("messages").and_then(|m| m.as_array()) {
+                    for msg in messages {
+                        if let (
+                            Some(severity),
+                            Some(message),
+                            Some(line),
+                            Some(column),
+                            Some(rule_id),
+                        ) = (
+                            msg.get("severity").and_then(|s| s.as_u64()),
+                            msg.get("message").and_then(|m| m.as_str()),
+                            msg.get("line").and_then(|l| l.as_u64()),
+                            msg.get("column").and_then(|c| c.as_u64()),
+                            msg.get("ruleId").and_then(|r| r.as_str()),
+                        ) {
+                            let location = format!("{}:{}:{}", file_path, line, column);
+                            let diag = Diagnostic {
+                                name: rule_id.to_string(),
+                                location: Some(location),
+                                message: message.to_string(),
+                            };
+
+                            // severity 2 = error, 1 = warning
+                            if severity == 2 {
+                                failures.push(diag);
+                            } else {
+                                warnings.push(diag);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let summary = if failures.is_empty() && warnings.is_empty() {
+        "no issues".to_string()
+    } else {
+        format!("{} error(s), {} warning(s)", failures.len(), warnings.len())
+    };
+
+    ParsedResult {
+        summary,
+        passed: 0,
+        failed: failures.len(),
+        skipped: 0,
+        failures,
+        warnings,
+        tail: None,
+    }
+}
+
 pub fn parse(output: &str) -> ParsedResult {
+    let trimmed = output.trim();
+    if trimmed.starts_with('[') {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(trimmed) {
+            return parse_json(&json);
+        }
+    }
+
     let mut failures = Vec::new();
     let mut warnings = Vec::new();
     let mut current_file = String::new();
@@ -96,5 +164,45 @@ mod tests {
         let result = parse("");
         assert_eq!(result.failed, 0);
         assert!(result.summary.contains("no issues"));
+    }
+
+    #[test]
+    fn parse_eslint_json_output() {
+        let json_output = r#"[
+  {
+    "filePath": "/Users/user/project/src/auth.ts",
+    "messages": [
+      {
+        "severity": 2,
+        "message": "Unexpected any. Specify a different type",
+        "line": 42,
+        "column": 18,
+        "ruleId": "@typescript-eslint/no-explicit-any"
+      },
+      {
+        "severity": 1,
+        "message": "Missing return type",
+        "line": 55,
+        "column": 1,
+        "ruleId": "@typescript-eslint/explicit-function-return-type"
+      }
+    ]
+  }
+]
+"#;
+        let result = parse(json_output);
+        assert_eq!(result.failures.len(), 1);
+        assert_eq!(result.warnings.len(), 1);
+        assert_eq!(
+            result.failures[0].name,
+            "@typescript-eslint/no-explicit-any"
+        );
+        assert!(
+            result.failures[0]
+                .location
+                .as_ref()
+                .unwrap()
+                .contains("42:18")
+        );
     }
 }

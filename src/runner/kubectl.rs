@@ -1,4 +1,5 @@
 use regex::Regex;
+use serde_json;
 use std::sync::LazyLock;
 
 use super::{Diagnostic, ParsedResult};
@@ -18,7 +19,134 @@ static EVENT_RE: LazyLock<Regex> =
 static RESTART_RE: LazyLock<Regex> =
     LazyLock::new(|| Regex::new(r"(?i)restart\s*count:\s*(\d+)").unwrap());
 
+fn parse_json(json: &serde_json::Value) -> ParsedResult {
+    let mut failures = Vec::new();
+    let mut warnings = Vec::new();
+    let mut status: Option<String> = None;
+
+    // Handle kubectl get -o json format: {"items": [...]}
+    if let Some(items) = json.get("items").and_then(|v| v.as_array()) {
+        for item in items {
+            // Extract status phase
+            if let Some(phase) = item
+                .get("status")
+                .and_then(|s| s.get("phase"))
+                .and_then(|p| p.as_str())
+            {
+                status = Some(phase.to_string());
+                if matches!(
+                    phase.to_ascii_lowercase().as_str(),
+                    "failed" | "crashloopbackoff" | "error" | "pending"
+                ) {
+                    failures.push(Diagnostic {
+                        name: "kubectl/phase".to_string(),
+                        location: None,
+                        message: format!("status: {}", phase),
+                    });
+                }
+            }
+
+            // Extract conditions
+            if let Some(conditions) = item
+                .get("status")
+                .and_then(|s| s.get("conditions"))
+                .and_then(|c| c.as_array())
+            {
+                for cond in conditions {
+                    if let (Some(cond_type), Some(cond_status)) = (
+                        cond.get("type").and_then(|t| t.as_str()),
+                        cond.get("status").and_then(|s| s.as_str()),
+                    ) {
+                        if cond_status != "True" {
+                            failures.push(Diagnostic {
+                                name: format!("kubectl/condition/{}", cond_type),
+                                location: None,
+                                message: format!("{}={}", cond_type, cond_status),
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Extract warning events
+            if let Some(events) = item
+                .get("status")
+                .and_then(|s| s.get("events"))
+                .and_then(|e| e.as_array())
+            {
+                for event in events {
+                    if let (Some(event_type), Some(reason), Some(message)) = (
+                        event.get("type").and_then(|t| t.as_str()),
+                        event.get("reason").and_then(|r| r.as_str()),
+                        event.get("message").and_then(|m| m.as_str()),
+                    ) {
+                        if event_type == "Warning" {
+                            warnings.push(Diagnostic {
+                                name: format!("kubectl/event/{}", reason),
+                                location: None,
+                                message: message.to_string(),
+                            });
+                        }
+                    }
+                }
+            }
+
+            // Extract restart count
+            if let Some(containers) = item
+                .get("status")
+                .and_then(|s| s.get("containerStatuses"))
+                .and_then(|c| c.as_array())
+            {
+                for container in containers {
+                    if let Some(restart_count) =
+                        container.get("restartCount").and_then(|r| r.as_u64())
+                    {
+                        if restart_count > 0 {
+                            warnings.push(Diagnostic {
+                                name: "kubectl/restarts".to_string(),
+                                location: None,
+                                message: format!("restart count: {}", restart_count),
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    let summary = match status {
+        Some(s) => format!(
+            "status: {}, {} problem(s), {} warning(s)",
+            s,
+            failures.len(),
+            warnings.len()
+        ),
+        None => format!(
+            "{} problem(s), {} warning(s)",
+            failures.len(),
+            warnings.len()
+        ),
+    };
+
+    ParsedResult {
+        summary,
+        passed: 0,
+        failed: failures.len(),
+        skipped: 0,
+        failures,
+        warnings,
+        tail: None,
+    }
+}
+
 pub fn parse(output: &str) -> ParsedResult {
+    let trimmed = output.trim();
+    if trimmed.starts_with('{') || trimmed.starts_with('[') {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(trimmed) {
+            return parse_json(&json);
+        }
+    }
+
     let mut failures = Vec::new();
     let mut warnings = Vec::new();
     let mut status: Option<String> = None;
@@ -171,5 +299,40 @@ Status:       Running
                 .iter()
                 .any(|w| w.message.contains("restart count: 7"))
         );
+    }
+
+    #[test]
+    fn parse_kubectl_json_output() {
+        let json_output = r#"{
+  "items": [
+    {
+      "metadata": {"name": "myapp-xyz"},
+      "status": {
+        "phase": "Running",
+        "conditions": [
+          {"type": "Ready", "status": "False"},
+          {"type": "Initialized", "status": "True"}
+        ],
+        "containerStatuses": [
+          {"restartCount": 3}
+        ]
+      }
+    }
+  ]
+}"#;
+        let result = parse(json_output);
+        assert!(
+            result
+                .failures
+                .iter()
+                .any(|f| f.message.contains("Ready=False"))
+        );
+        assert!(
+            result
+                .warnings
+                .iter()
+                .any(|w| w.message.contains("restart count: 3"))
+        );
+        assert!(result.summary.contains("Running"));
     }
 }

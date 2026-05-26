@@ -259,7 +259,7 @@ Total parsers: 19 implemented (9 original + 10 new), 3 coverage parsers planned.
 
 | Item | Priority | Status | Description |
 |---|---|---|---|
-| JSON output detection | High | Planned | When user passes `--json`/`-o json` themselves, detect JSON response and parse structurally instead of regex. kubectl, terraform, npm, eslint. |
+| JSON output detection | High | **Done** | When user passes `--json`/`-o json` themselves, detect JSON response and parse structurally instead of regex. kubectl, terraform, npm, eslint. |
 | Generic log noise filter | High | **Done** | Shipped inline in kubectl_logs parser (dedup repeated lines, keep ERROR/WARN context). Shared module deferred until more log parsers added. |
 | Bayesian mode predictor | Low | Deferred | Learn optimal read mode per file signature over time |
 | Information bottleneck filter | Low | Deferred | Task-conditioned line filtering for task-driven reads |

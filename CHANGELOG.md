@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0] - 2026-05-26
+
+Project Intelligence & Run Parsers release. Symbol index for search quality,
+two new commands (context, impact), 13 new run parsers, security CI, and
+JSON output detection.
+
+### Added
+
+- **Symbol index** — maps symbol names to definition locations with reference
+  counts at index time. For symbol queries, boosts definition chunks directly
+  instead of relying on BM25. Symbol NDCG@10: 0.263 → 0.619 (+135%). 4
+  previously-complete-miss symbol queries recovered.
+- **`prx context`** — assembles a context package for a module in one call:
+  stats, documentation, entrypoints ranked by reference count, file skeletons,
+  and 1-hop import graph edges. Replaces outline + find + cat README + grep.
+- **`prx impact`** — reverse dependency analysis. Walks the import graph
+  backwards to find what depends on a file. Supports `--symbol` narrowing,
+  `--hops` control, fan-in protection, test file filtering.
+- **13 new run parsers** — mypy, dotnet, git-log, docker-build, npm-ls,
+  terraform, kubectl, kubectl-logs, mvn, gradle, pytest-cov, go-cover,
+  jest-coverage. Total: 22 parsers.
+- **JSON output detection** — kubectl, terraform, npm-ls, and eslint parsers
+  auto-detect JSON responses when user passes `--json`/`-o json` and parse
+  structurally instead of regex-matching text.
+- **Security CI** — `cargo-deny` runs on every push/PR checking advisories
+  (RustSec), license compliance, source origin, and dependency bans.
+- **`deny.toml`** — security policy configuration.
+- **`benchmarks/repos.json`** — 8 public repos pinned by SHA for NDCG
+  regression testing (flask, ripgrep, fastify, cargo, django, kafka,
+  terraform, vscode).
+- **`docs/design/RUN-PARSERS.md`** — design doc for the parser system.
+- **`is_symbol_query`** now detects snake_case identifiers (e.g. `feature_impact`).
+- Symbol queries routed to hybrid search instead of literal search.
+
+### Changed
+
+- **NDCG measurement corrected** — previous scores were inflated by a
+  deduplication bug. All docs updated with corrected numbers.
+- **`skills/agents.md`** rewritten with tool replacement table, new commands,
+  recommended workflow.
+
+### Stats
+
+| Metric | v0.3.0 | v0.4.0 |
+|---|---|---|
+| Commands | 14 | 16 |
+| Tests | 372 | 413 unit + 75 E2E + 8 MCP |
+| Run parsers | 9 | 22 |
+| Index files | 5 | 6 (+symbols.bin) |
+| NDCG@10 (self) | 0.639 | 0.681 |
+| NDCG@10 (external) | 0.451 | 0.494 |
+| Symbol NDCG@10 | 0.263 | 0.619 |
+
 ## [0.3.0] - 2026-05-25
 
 Reliability & Search Quality release. NDCG measurement infrastructure, incremental

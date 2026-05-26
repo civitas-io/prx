@@ -33,7 +33,7 @@ authenticate() at auth.rs:42") — deferred.
 
 ## Parser Catalog
 
-### Implemented (19 parsers)
+### Implemented (22 parsers)
 
 **Test runners:**
 
@@ -194,20 +194,20 @@ src/runner/
 ├── eslint.rs           # eslint
 ├── fallback.rs         # unknown commands
 ├── git_log.rs          # git log
-├── go_cover.rs         # go test -cover          [PLANNED]
+├── go_cover.rs         # go test -cover
 ├── go_test.rs          # go test
 ├── gradle.rs           # gradle/gradlew
 ├── jest.rs             # jest/vitest
-├── jest_cov.rs         # jest --coverage / c8     [PLANNED]
+├── jest_cov.rs         # jest --coverage / c8
 ├── kubectl.rs          # kubectl describe/get
 ├── kubectl_logs.rs     # kubectl/docker logs
 ├── mvn.rs              # mvn/mvnw
 ├── mypy.rs             # mypy
 ├── npm_ls.rs           # npm list/ls
 ├── pytest.rs           # pytest
-├── pytest_cov.rs       # pytest --cov / coverage  [PLANNED]
+├── pytest_cov.rs       # pytest --cov / coverage
 ├── terraform.rs        # terraform plan/apply
 └── tsc.rs              # tsc
 ```
 
-19 implemented + 3 planned coverage parsers.
+22 implemented parsers.

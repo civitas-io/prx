@@ -64,7 +64,7 @@ prx search "authenticate" src/
 
 **Not search-only.** Semble, Hypergrep, and FileSift solve retrieval well. Your agent still needs other tools to read, edit, and diff. prx covers the full loop.
 
-**Not Python.** No runtime dependencies, no package manager, no internet at runtime. One static binary, 48MB, works in containers and sandboxes.
+**Not Python.** No runtime dependencies, no package manager, no internet at runtime. One static binary, 49MB, works in containers and sandboxes.
 
 **Embedded semantic model.** A 32M-parameter retrieval-optimized embedding model (potion-retrieval-32M, PCA-reduced to 256 dims) is compiled directly into the binary. Semantic search runs on CPU in milliseconds — no model server, no FAISS, no setup.
 
@@ -195,7 +195,7 @@ prx run parses this and returns only what matters:
 }
 ```
 
-Supports 9 parsers: `cargo test`, `cargo build`, `cargo clippy`, `pytest`, `go test`, `jest`, `vitest`, `tsc`, `eslint`, plus a fallback for unknown commands.
+Supports 22 parsers: Rust, Python, Go, JavaScript/TypeScript, Java, .NET, Docker, Terraform, kubectl, Maven, Gradle, npm, mypy, git, plus coverage tools and a fallback for unknown commands.
 
 ---
 
@@ -271,7 +271,7 @@ First run takes ~2 minutes. Model weights are embedded into the binary at compil
 
 ```bash
 make build      # debug build
-make release    # optimized release build (~48MB)
+make release    # optimized release build (~49MB)
 make check      # fmt + clippy + all tests
 ```
 
@@ -297,7 +297,7 @@ Single static binary. No runtime dependencies. No internet required after build.
 | | |
 |---|---|
 | Commands | 16 |
-| Tests | 356 unit + 75 E2E + 8 MCP |
+| Tests | 413 unit + 75 E2E + 8 MCP |
 | Languages | 14 (tree-sitter grammars) |
 | Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
 | Symbol index | Definition lookup + reference counting for symbol queries |

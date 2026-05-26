@@ -65,7 +65,7 @@ All phases complete. Released at https://github.com/civitas-io/prx/releases/tag/
 | Tests | 300 |
 | Coverage | 84% |
 | Languages | 14 (tree-sitter grammars) |
-| Release binary | ~48 MB |
+| Release binary | ~49 MB |
 | Tool parsers (prx run) | 9 |
 | Repository | https://github.com/civitas-io/prx |
 
@@ -247,11 +247,11 @@ and verbose defaults. Design: `docs/design/RUN-PARSERS.md`.
 | mypy | type check | **Done** |
 | npm-ls | `npm list` | **Done** |
 | git-log | `log` | **Done** |
-| pytest-cov | `pytest --cov`, `coverage report` | Planned |
-| go-cover | `go test -cover` | Planned |
-| jest-cov | `jest --coverage`, `c8` | Planned |
+| pytest-cov | `pytest --cov`, `coverage report` | **Done** |
+| go-cover | `go test -cover` | **Done** |
+| jest-cov | `jest --coverage`, `c8` | **Done** |
 
-Total parsers: 19 implemented (9 original + 10 new), 3 coverage parsers planned.
+Total parsers: 22 (9 original + 10 infra/devops + 3 coverage).
 
 ### Project Intelligence
 

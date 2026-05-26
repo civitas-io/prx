@@ -6,15 +6,18 @@ pub mod dotnet;
 pub mod eslint;
 pub mod fallback;
 pub mod git_log;
+pub mod go_cover;
 pub mod go_test;
 pub mod gradle;
 pub mod jest;
+pub mod jest_cov;
 pub mod kubectl;
 pub mod kubectl_logs;
 pub mod mvn;
 pub mod mypy;
 pub mod npm_ls;
 pub mod pytest;
+pub mod pytest_cov;
 pub mod terraform;
 pub mod tsc;
 
@@ -108,8 +111,20 @@ pub fn detect_tool(command: &[String]) -> &'static str {
     if cmd.starts_with("cargo build") || cmd.starts_with("cargo check") {
         return "cargo_build";
     }
+    if cmd.contains("--coverage") || cmd.starts_with("c8 ") || cmd.starts_with("nyc ") {
+        return "jest_cov";
+    }
+    if cmd.contains("--cov")
+        || cmd.starts_with("coverage report")
+        || cmd.starts_with("coverage run")
+    {
+        return "pytest_cov";
+    }
     if cmd.contains("pytest") || cmd.contains("python -m pytest") {
         return "pytest";
+    }
+    if cmd.contains("-cover") || cmd.contains("-coverprofile") || cmd.starts_with("go tool cover") {
+        return "go_cover";
     }
     if cmd.starts_with("go test") {
         return "go_test";
@@ -169,8 +184,11 @@ pub fn parse_output(tool: &str, raw: &RawOutput) -> RunOutput {
         "cargo_llvm_cov" => cargo_llvm_cov::parse(&combined),
         "cargo_test" => cargo_test::parse(&combined),
         "cargo_build" | "cargo_clippy" => cargo_build::parse(&combined),
+        "pytest_cov" => pytest_cov::parse(&combined),
         "pytest" => pytest::parse(&combined),
+        "go_cover" => go_cover::parse(&combined),
         "go_test" => go_test::parse(&combined),
+        "jest_cov" => jest_cov::parse(&combined),
         "jest" => jest::parse(&combined),
         "tsc" => tsc::parse(&combined),
         "eslint" => eslint::parse(&combined),
@@ -246,15 +264,39 @@ mod tests {
     }
 
     #[test]
+    fn detect_pytest_cov() {
+        let cmd = vec!["pytest".into(), "--cov=src".into()];
+        assert_eq!(detect_tool(&cmd), "pytest_cov");
+    }
+
+    #[test]
     fn detect_pytest() {
         let cmd = vec!["pytest".into(), "-v".into()];
         assert_eq!(detect_tool(&cmd), "pytest");
     }
 
     #[test]
+    fn detect_go_cover() {
+        let cmd = vec!["go".into(), "test".into(), "-cover".into(), "./...".into()];
+        assert_eq!(detect_tool(&cmd), "go_cover");
+    }
+
+    #[test]
+    fn detect_coverage_report() {
+        let cmd = vec!["coverage".into(), "report".into()];
+        assert_eq!(detect_tool(&cmd), "pytest_cov");
+    }
+
+    #[test]
     fn detect_go_test() {
         let cmd = vec!["go".into(), "test".into(), "./...".into()];
         assert_eq!(detect_tool(&cmd), "go_test");
+    }
+
+    #[test]
+    fn detect_jest_cov() {
+        let cmd = vec!["jest".into(), "--coverage".into()];
+        assert_eq!(detect_tool(&cmd), "jest_cov");
     }
 
     #[test]

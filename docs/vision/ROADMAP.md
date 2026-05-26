@@ -183,13 +183,21 @@ misses are symbol queries requiring Tier 4.
 Automated NDCG@10 measurement against real public repositories, run as a
 GitHub Actions workflow before every release. Repos pinned by commit SHA.
 
-**Repository matrix:**
+**Repository matrix (finalized):**
 
-| Size | LOC | Repos (examples) | Languages |
-|---|---|---|---|
-| Small | 1K-10K | fastify/fastify-cli, BurntSushi/ripgrep | JS, Rust |
-| Medium | 10K-100K | pallets/flask, golang/go (stdlib subset) | Python, Go |
-| Large | 100K-500K | django/django, rust-lang/cargo | Python, Rust |
+| Size | Repo | Language | LOC | License |
+|---|---|---|---|---|
+| Small | `pallets/flask` | Python | 15K | BSD-3 |
+| Small | `BurntSushi/ripgrep` | Rust | 25K | MIT |
+| Small | `fastify/fastify` | TypeScript | 15K | MIT |
+| Medium | `rust-lang/cargo` | Rust | 150K | MIT/Apache-2.0 |
+| Medium | `django/django` | Python | 300K | BSD-3 |
+| Medium | `apache/kafka` | Java | 500K | Apache-2.0 |
+| Large | `hashicorp/terraform` | Go | 2M | BSL-1.1 |
+| Large | `microsoft/vscode` | TypeScript | 1M | MIT |
+
+8 repos, 6 languages, 3 size tiers. Selected based on knowing and Vera
+benchmark suites. All pinned by commit SHA in `benchmarks/repos.json`.
 
 **Per-repo benchmark:**
 - 20-30 queries per repo (semantic, symbol, architecture mix)

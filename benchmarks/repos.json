@@ -1,0 +1,77 @@
+{
+  "description": "Public benchmark repositories for NDCG@10 regression testing. Pinned by commit SHA.",
+  "repos": [
+    {
+      "name": "flask",
+      "repo": "pallets/flask",
+      "sha": "954f5684e484",
+      "branch": "main",
+      "language": "python",
+      "size": "small",
+      "loc": 15000
+    },
+    {
+      "name": "ripgrep",
+      "repo": "BurntSushi/ripgrep",
+      "sha": "f0cec341ab95",
+      "branch": "master",
+      "language": "rust",
+      "size": "small",
+      "loc": 25000
+    },
+    {
+      "name": "fastify",
+      "repo": "fastify/fastify",
+      "sha": "3e04cff92753",
+      "branch": "main",
+      "language": "typescript",
+      "size": "small",
+      "loc": 15000
+    },
+    {
+      "name": "cargo",
+      "repo": "rust-lang/cargo",
+      "sha": "03cb632e2473",
+      "branch": "master",
+      "language": "rust",
+      "size": "medium",
+      "loc": 150000
+    },
+    {
+      "name": "django",
+      "repo": "django/django",
+      "sha": "032549216074",
+      "branch": "main",
+      "language": "python",
+      "size": "medium",
+      "loc": 300000
+    },
+    {
+      "name": "kafka",
+      "repo": "apache/kafka",
+      "sha": "fa097fa593a2",
+      "branch": "trunk",
+      "language": "java",
+      "size": "medium",
+      "loc": 500000
+    },
+    {
+      "name": "terraform",
+      "repo": "hashicorp/terraform",
+      "sha": "a2ad11c4f14c",
+      "branch": "main",
+      "language": "go",
+      "size": "large",
+      "loc": 2000000
+    },
+    {
+      "name": "vscode",
+      "repo": "microsoft/vscode",
+      "sha": "183159e2b33b",
+      "branch": "main",
+      "language": "typescript",
+      "size": "large",
+      "loc": 1000000
+    }
+  ]
+}

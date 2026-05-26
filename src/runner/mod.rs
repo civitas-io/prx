@@ -1,11 +1,21 @@
 pub mod cargo_build;
 pub mod cargo_llvm_cov;
 pub mod cargo_test;
+pub mod docker_build;
+pub mod dotnet;
 pub mod eslint;
 pub mod fallback;
+pub mod git_log;
 pub mod go_test;
+pub mod gradle;
 pub mod jest;
+pub mod kubectl;
+pub mod kubectl_logs;
+pub mod mvn;
+pub mod mypy;
+pub mod npm_ls;
 pub mod pytest;
+pub mod terraform;
 pub mod tsc;
 
 use serde::Serialize;
@@ -116,6 +126,36 @@ pub fn detect_tool(command: &[String]) -> &'static str {
     if cmd.contains("eslint") {
         return "eslint";
     }
+    if cmd.contains("mypy") || cmd.contains("python -m mypy") {
+        return "mypy";
+    }
+    if cmd.starts_with("git log") {
+        return "git_log";
+    }
+    if cmd.starts_with("docker build") || cmd.starts_with("docker buildx") {
+        return "docker_build";
+    }
+    if cmd.starts_with("terraform") {
+        return "terraform";
+    }
+    if cmd.contains("kubectl logs") || cmd.contains("docker logs") {
+        return "kubectl_logs";
+    }
+    if cmd.starts_with("kubectl") {
+        return "kubectl";
+    }
+    if cmd.starts_with("mvn") || cmd.contains("mvnw") {
+        return "mvn";
+    }
+    if cmd.starts_with("gradle") || cmd.contains("gradlew") {
+        return "gradle";
+    }
+    if cmd.starts_with("dotnet") {
+        return "dotnet";
+    }
+    if cmd.starts_with("npm list") || cmd.starts_with("npm ls") {
+        return "npm_ls";
+    }
 
     "unknown"
 }
@@ -134,6 +174,16 @@ pub fn parse_output(tool: &str, raw: &RawOutput) -> RunOutput {
         "jest" => jest::parse(&combined),
         "tsc" => tsc::parse(&combined),
         "eslint" => eslint::parse(&combined),
+        "mypy" => mypy::parse(&combined),
+        "git_log" => git_log::parse(&combined),
+        "docker_build" => docker_build::parse(&combined),
+        "terraform" => terraform::parse(&combined),
+        "kubectl" => kubectl::parse(&combined),
+        "kubectl_logs" => kubectl_logs::parse(&combined),
+        "mvn" => mvn::parse(&combined),
+        "gradle" => gradle::parse(&combined),
+        "dotnet" => dotnet::parse(&combined),
+        "npm_ls" => npm_ls::parse(&combined),
         _ => fallback::parse(&combined, raw.exit_code),
     };
 
@@ -241,6 +291,71 @@ mod tests {
     fn detect_cargo_llvm_cov() {
         let cmd = vec!["cargo".into(), "llvm-cov".into(), "--lib".into()];
         assert_eq!(detect_tool(&cmd), "cargo_llvm_cov");
+    }
+
+    #[test]
+    fn detect_mypy() {
+        let cmd = vec!["mypy".into(), "src/".into()];
+        assert_eq!(detect_tool(&cmd), "mypy");
+    }
+
+    #[test]
+    fn detect_git_log() {
+        let cmd = vec!["git".into(), "log".into(), "--oneline".into()];
+        assert_eq!(detect_tool(&cmd), "git_log");
+    }
+
+    #[test]
+    fn detect_docker_build() {
+        let cmd = vec!["docker".into(), "build".into(), ".".into()];
+        assert_eq!(detect_tool(&cmd), "docker_build");
+    }
+
+    #[test]
+    fn detect_terraform() {
+        let cmd = vec!["terraform".into(), "plan".into()];
+        assert_eq!(detect_tool(&cmd), "terraform");
+    }
+
+    #[test]
+    fn detect_kubectl() {
+        let cmd = vec![
+            "kubectl".into(),
+            "describe".into(),
+            "pod".into(),
+            "myapp".into(),
+        ];
+        assert_eq!(detect_tool(&cmd), "kubectl");
+    }
+
+    #[test]
+    fn detect_kubectl_logs() {
+        let cmd = vec!["kubectl".into(), "logs".into(), "myapp".into()];
+        assert_eq!(detect_tool(&cmd), "kubectl_logs");
+    }
+
+    #[test]
+    fn detect_mvn() {
+        let cmd = vec!["mvn".into(), "test".into()];
+        assert_eq!(detect_tool(&cmd), "mvn");
+    }
+
+    #[test]
+    fn detect_gradle() {
+        let cmd = vec!["gradle".into(), "build".into()];
+        assert_eq!(detect_tool(&cmd), "gradle");
+    }
+
+    #[test]
+    fn detect_dotnet() {
+        let cmd = vec!["dotnet".into(), "build".into()];
+        assert_eq!(detect_tool(&cmd), "dotnet");
+    }
+
+    #[test]
+    fn detect_npm_ls() {
+        let cmd = vec!["npm".into(), "ls".into()];
+        assert_eq!(detect_tool(&cmd), "npm_ls");
     }
 
     #[test]

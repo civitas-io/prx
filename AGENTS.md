@@ -472,6 +472,7 @@ needed and why an existing dependency cannot serve the purpose.
 ```
 git checkout -b dev/v0.4.1 main   # cut branch
 # ... develop, commit, test ...
+# >>> GET HUMAN SIGN-OFF <<<       # mandatory before merge
 git checkout main && git merge --no-ff dev/v0.4.1   # merge
 git tag -a v0.4.1 -m "..."        # tag
 git push origin main && git push origin v0.4.1      # push + release

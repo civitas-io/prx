@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.1] - 2026-05-27
+
+### Fixed
+
+- **`is_valid` now detects new files** — previously, `prx index` reported
+  "up_to_date" when new files were added after indexing, because `is_valid()`
+  only checked that previously-indexed files hadn't changed. Now walks the
+  tree to detect both new and deleted files.
+
 ## [0.4.0] - 2026-05-26
 
 Project Intelligence & Run Parsers release. Symbol index for search quality,

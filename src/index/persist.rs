@@ -340,6 +340,23 @@ pub fn is_valid(root: &Path) -> bool {
         }
     }
 
+    let current_files = walk::walk(root, &WalkOpts::default());
+    if current_files.len() != meta.file_hashes.len() {
+        return false;
+    }
+
+    for entry in &current_files {
+        let rel = entry
+            .path
+            .strip_prefix(root)
+            .unwrap_or(&entry.path)
+            .to_string_lossy()
+            .to_string();
+        if !meta.file_hashes.contains_key(&rel) {
+            return false;
+        }
+    }
+
     true
 }
 
@@ -491,5 +508,25 @@ mod tests {
 
         let results = bm25.query("unique_searchable_term", 5);
         assert!(!results.is_empty());
+    }
+
+    #[test]
+    fn is_invalid_after_new_file_added() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+        assert!(is_valid(dir.path()));
+
+        std::fs::write(dir.path().join("new.rs"), "fn new_fn() {}\n").unwrap();
+        assert!(!is_valid(dir.path()));
+    }
+
+    #[test]
+    fn is_invalid_after_file_deleted() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+        assert!(is_valid(dir.path()));
+
+        std::fs::remove_file(dir.path().join("lib.py")).unwrap();
+        assert!(!is_valid(dir.path()));
     }
 }

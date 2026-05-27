@@ -529,4 +529,15 @@ mod tests {
         std::fs::remove_file(dir.path().join("lib.py")).unwrap();
         assert!(!is_valid(dir.path()));
     }
+
+    #[test]
+    fn is_invalid_after_file_swapped() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+        assert!(is_valid(dir.path()));
+
+        std::fs::remove_file(dir.path().join("lib.py")).unwrap();
+        std::fs::write(dir.path().join("other.rs"), "fn other() {}\n").unwrap();
+        assert!(!is_valid(dir.path()));
+    }
 }

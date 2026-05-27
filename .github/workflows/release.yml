@@ -108,13 +108,28 @@ jobs:
       - name: List available binaries
         run: ls -lh artifacts/ 2>/dev/null || echo "No artifacts"
 
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          NOTES=$(sed -n "/^## \[${VERSION}\]/,/^## \[/p" CHANGELOG.md | sed '1d;$d')
+          if [ -z "$NOTES" ]; then
+            NOTES="Release ${GITHUB_REF_NAME}. See CHANGELOG.md for details."
+          fi
+          echo "RELEASE_NOTES<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$NOTES" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
-          generate_release_notes: true
           files: artifacts/*
           body: |
-            ## prx ${{ github.ref_name }}
+            ${{ steps.notes.outputs.RELEASE_NOTES }}
+
+            ---
+
+            ## Install
 
             Download the binary for your platform. No dependencies required.
 
@@ -125,4 +140,4 @@ jobs:
             | macOS Apple Silicon | `prx-aarch64-apple-darwin.tar.gz` |
             | Windows x86_64 | `prx-x86_64-pc-windows-msvc.zip` |
 
-            > Some binaries may be absent if a build timed out. Build from source: `git clone https://github.com/civitas-io/prx && cd prx && make setup && make release`
+            > Build from source: `git clone https://github.com/civitas-io/prx && cd prx && make setup && make release`

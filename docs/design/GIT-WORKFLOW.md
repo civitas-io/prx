@@ -48,8 +48,16 @@ Everything for that release version:
 - Bug fixes
 - Test additions
 - Doc updates
-- CHANGELOG entry
+- CHANGELOG entry (this becomes the GitHub release notes)
 - Version bump in Cargo.toml (last commit before merge)
+
+### Release notes
+
+The CHANGELOG.md entry for each version IS the release notes. The
+release workflow extracts the entry matching the tag version and uses
+it as the GitHub release body. Write CHANGELOG entries as if they will
+be read by users on the releases page — include what changed, what
+was fixed, and any breaking changes.
 
 ### Pre-merge checklist
 
@@ -60,7 +68,7 @@ Before requesting sign-off on `dev/vX.Y.Z`:
 - [ ] `cargo test` passes (unit + E2E)
 - [ ] `cargo deny check` passes
 - [ ] `cargo build --release` succeeds
-- [ ] CHANGELOG.md has entry for this version
+- [ ] CHANGELOG.md has entry for this version (used as release notes)
 - [ ] Cargo.toml version bumped
 - [ ] All acceptance criteria from PATCH-PLAN.md or ROADMAP.md met
 - [ ] No `unwrap()` in non-test code

@@ -495,5 +495,5 @@ Full workflow: `docs/design/GIT-WORKFLOW.md`.
 - [ ] Public functions have `///` doc comments
 - [ ] JSON output matches schemas in docs/design/OUTPUT.md
 - [ ] AGENTS.md updated if layout or conventions changed
-- [ ] CHANGELOG.md updated for user-visible changes
+- [ ] CHANGELOG.md updated for user-visible changes (used as GitHub release notes)
 - [ ] Cargo.toml version bumped

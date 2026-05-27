@@ -283,14 +283,29 @@ Total parsers: 22 (9 original + 10 infra/devops + 3 coverage).
 | Index deserialization fuzzing | Low | Fuzz `bincode::deserialize` on symbols.bin, imports.bin, chunks.bin to catch panic paths. |
 | Path traversal tests | Low | Verify `prx edit --apply` and `prx read` reject paths outside workspace root. |
 
+## v0.4.x — Patch Releases (Correctness & Quality)
+
+From independent code review. Detailed plan: `docs/design/PATCH-PLAN.md`.
+
+| Release | Issue | Fix | Priority |
+|---|---|---|---|
+| v0.4.1 | `is_valid` ignores new files | Walk tree in `is_valid()` to detect files not in hash map | **P2 — correctness** |
+| v0.4.2 | Silent embedding degradation | Warn when `load_model()` fails; surface in `prx index` output | **P2 — observability** |
+| v0.4.3 | Import resolution bail-out at >3 | Replace bail-out with proximity-based disambiguation | **P1 — quality** |
+| v0.4.4 | Full embedding rebuild every run | Incremental embeddings: hash per chunk, re-embed only changed | **P2 — perf** |
+| v0.4.5 | Doc/code inconsistencies | Align doc claims with actual implementation | **P3 — docs** |
+
 ## v0.5.0 — Distribution & Ecosystem
 
 | Item | Priority | Description |
 |---|---|---|
-| `cargo publish` | High | Publish to crates.io for `cargo install prx` |
+| Self-contained build (`build.rs`) | **High** | Move model download + F16 conversion into `build.rs`. Eliminate Python build dep. Pin artifacts by SHA-256. Offline escape hatch via `PRX_MODELS_DIR`. Unblocks `cargo publish`. |
+| Tree-sitter import extraction | **High** | Replace regex import extraction with tree-sitter AST queries for all supported languages. Captures multi-line, aliased, re-export, dynamic imports. Fixes Issue 2 fully. |
+| `cargo publish` | High | Publish to crates.io for `cargo install prx`. Blocked on self-contained build. |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
-| `prx run --auto-json` | High | Auto-inject `--json`/`-o json` flags for tools that support structured output (kubectl, terraform, npm, eslint). Rewrite command transparently, parse JSON response. v0.4.0 ships passive detection; this adds active injection. |
+| `prx run --auto-json` | High | Auto-inject `--json`/`-o json` flags for tools that support structured output. v0.4.0 ships passive detection; this adds active injection. |
 | Migrate off bincode | High | Replace bincode (unmaintained, RUSTSEC-2025-0141) with postcard or bitcode for index serialization. |
+| Import language coverage | Medium | Extend import extraction to all registered grammars (currently 7 of 15). Depends on tree-sitter imports. |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
 | Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |

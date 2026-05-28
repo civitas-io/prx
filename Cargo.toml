@@ -111,3 +111,13 @@ harness = false
 [[bench]]
 name = "chunking"
 harness = false
+
+[build-dependencies]
+# HTTP downloads for model weights — minimal blocking client, no async runtime
+ureq = "3"
+# SHA-256 verification of downloaded artifacts (pinned hashes)
+sha2 = "0.10"
+# F32 -> F16 conversion for safetensors embeddings (reuses regular dependency)
+half = "2"
+# Parse/rewrite the safetensors JSON header during F32 -> F16 conversion
+serde_json = "1"

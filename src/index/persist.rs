@@ -73,6 +73,7 @@ pub struct IndexStats {
     pub languages: HashMap<String, usize>,
     pub files_changed: usize,
     pub files_unchanged: usize,
+    pub warnings: Vec<String>,
 }
 
 fn load_existing_index(root: &Path) -> Option<(IndexMeta, Vec<SerializedChunk>)> {
@@ -159,7 +160,12 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
         .map(|c| sparse::enrich_for_bm25(&c.content, &c.file_path))
         .collect();
 
-    let embeddings_dim = compute_and_save_embeddings(&enriched_texts, &root.join(INDEX_DIR));
+    let mut warnings: Vec<String> = Vec::new();
+    let (embeddings_dim, emb_warning) =
+        compute_and_save_embeddings(&enriched_texts, &root.join(INDEX_DIR));
+    if let Some(w) = emb_warning {
+        warnings.push(w);
+    }
 
     let meta = IndexMeta {
         version: env!("CARGO_PKG_VERSION").to_string(),
@@ -217,12 +223,22 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
         languages: lang_counts,
         files_changed,
         files_unchanged,
+        warnings,
     })
 }
 
-fn compute_and_save_embeddings(enriched_texts: &[String], index_dir: &Path) -> usize {
+fn compute_and_save_embeddings(
+    enriched_texts: &[String],
+    index_dir: &Path,
+) -> (usize, Option<String>) {
     let Some(mut model) = crate::index::dense::load_model() else {
-        return 0;
+        return (
+            0,
+            Some(
+                "embedding model failed to load; search will use BM25 only (no semantic search)"
+                    .to_string(),
+            ),
+        );
     };
     let refs: Vec<&str> = enriched_texts.iter().map(|s| s.as_str()).collect();
     model.index_chunks(&refs);
@@ -232,7 +248,7 @@ fn compute_and_save_embeddings(enriched_texts: &[String], index_dir: &Path) -> u
     let _ = std::fs::create_dir_all(index_dir);
     let raw: Vec<u8> = emb.iter().flat_map(|f| f.to_le_bytes()).collect();
     let _ = std::fs::write(index_dir.join(EMBEDDINGS_FILE), raw);
-    dim
+    (dim, None)
 }
 
 pub fn load_embeddings(root: &Path) -> Option<ndarray::Array2<f32>> {

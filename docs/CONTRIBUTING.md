@@ -44,7 +44,7 @@ a test build. Takes about 2 minutes on first run.
 ## What `make setup` Does
 
 1. Downloads three files into `models/` (gitignored):
-   - `potion-code-16M.safetensors` — Model2Vec embedding weights (61MB float32 from HuggingFace)
+   - `potion-retrieval-32M.safetensors` — Model2Vec embedding weights (61MB float32 from HuggingFace, converted to float16)
    - `model2vec_tokenizer.json` — Model2Vec vocabulary (1MB, 61,826 tokens)
    - `cl100k_base.json` — cl100k tokenizer for `--budget` enforcement (4MB)
 2. Converts the model from float32 to float16 (61MB -> 31MB)
@@ -84,7 +84,7 @@ stats, init), you can skip the model download:
 
 ```bash
 mkdir -p models
-touch models/potion-code-16M.safetensors
+touch models/potion-retrieval-32M.safetensors
 touch models/model2vec_tokenizer.json
 touch models/cl100k_base.json
 cargo build --no-default-features

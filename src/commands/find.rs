@@ -203,7 +203,7 @@ pub fn run(args: FindArgs) -> Result<serde_json::Value, AgError> {
 }
 
 fn score_file_relevance(entries: &mut [FileEntry], root: &Path, query: &str) {
-    let model_bytes: &[u8] = include_bytes!("../../models/potion-code-16M.safetensors");
+    let model_bytes: &[u8] = include_bytes!("../../models/potion-retrieval-32M.safetensors");
     if model_bytes.is_empty() {
         return;
     }

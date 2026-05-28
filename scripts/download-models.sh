@@ -4,7 +4,7 @@ set -e
 mkdir -p models
 
 echo "Downloading model weights..."
-curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-code-16M.safetensors
+curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/model.safetensors -o models/potion-retrieval-32M.safetensors
 
 echo "Downloading Model2Vec tokenizer..."
 curl -L --silent https://huggingface.co/minishlab/potion-code-16M/resolve/main/tokenizer.json -o models/model2vec_tokenizer.json
@@ -15,7 +15,7 @@ curl -L --silent https://huggingface.co/Xenova/gpt-4/resolve/main/tokenizer.json
 echo "Converting model to float16..."
 python3 -c "
 import struct, json
-with open('models/potion-code-16M.safetensors', 'rb') as f:
+with open('models/potion-retrieval-32M.safetensors', 'rb') as f:
     hs = struct.unpack('<Q', f.read(8))[0]
     hj = f.read(hs)
     header = json.loads(hj)
@@ -40,7 +40,7 @@ if ei['dtype'] == 'F32':
     if '__metadata__' in header: nh['__metadata__'] = header['__metadata__']
     hb = json.dumps(nh).encode()
     while len(hb) % 8: hb += b' '
-    with open('models/potion-code-16M.safetensors', 'wb') as f:
+    with open('models/potion-retrieval-32M.safetensors', 'wb') as f:
         f.write(struct.pack('<Q', len(hb)))
         f.write(hb)
         f.write(bytes(td))

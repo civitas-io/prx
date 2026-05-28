@@ -19,7 +19,9 @@ allow = [
     "Zlib",
     "Unicode-3.0",
     "BSD-2-Clause",
+    "BSD-3-Clause",
     "OpenSSL",
+    "CDLA-Permissive-2.0",
 ]
 
 [[licenses.clarify]]

@@ -25,9 +25,6 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Download models
-        run: bash scripts/download-models.sh
-
       - name: Format check
         run: cargo fmt --check
 
@@ -67,9 +64,6 @@ jobs:
 
       - uses: Swatinem/rust-cache@v2
 
-      - name: Download models
-        run: bash scripts/download-models.sh
-
       - name: Unit tests
         run: cargo test --no-default-features --lib
 
@@ -98,9 +92,6 @@ jobs:
           targets: ${{ matrix.target }}
 
       - uses: Swatinem/rust-cache@v2
-
-      - name: Download models
-        run: bash scripts/download-models.sh
 
       - name: Build release
         run: cargo build --release --target ${{ matrix.target }}

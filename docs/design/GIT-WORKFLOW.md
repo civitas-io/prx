@@ -52,6 +52,14 @@ Never ship new features in a patch release.
 | Tag only on `main` after merge | Tags trigger release pipeline |
 | Delete dev branch after merge | Keep branch list clean |
 
+### Development discipline
+
+- **One feature at a time.** Implement, test, review, commit. Do not
+  start the next feature until the current one is committed and verified.
+- **Dogfood prx.** Use `prx search`, `prx read`, `prx context`,
+  `prx impact`, `prx run` instead of raw grep/cat/find. Note any
+  friction or limitations encountered for later evaluation.
+
 ### What goes in a dev branch
 
 Everything for that release version:

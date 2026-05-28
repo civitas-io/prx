@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.0] - 2026-05-27
+
+Tree-sitter imports & auto-JSON release. Import extraction rewritten from
+regex to AST queries, extended to all languages with import concepts.
+
+### Added
+
+- **`prx run --auto-json`** — auto-injects `--json`/`-o json` flags for
+  tools that support structured output (kubectl, terraform, npm, eslint,
+  mypy). Existing JSON detection in parsers handles the output side.
+- **Import extraction for bash, CSS, HTML** — `source`/`.` commands,
+  `@import` rules, `<script src>`/`<link href>` attributes.
+- **Tree-sitter import forms** — multi-path `use` (Rust), multiline
+  imports (Python), re-exports and dynamic `import()` (JS/TS), type
+  imports (TS).
+
+### Changed
+
+- **Import extraction rewritten from regex to tree-sitter** — all 10
+  language families now use AST queries instead of line-by-line regex
+  matching. Captures forms that regex cannot: multi-line imports, aliased
+  imports, re-exports, dynamic `import()` calls.
+
+### Stats
+
+| Metric | v0.4.5 | v0.5.0 |
+|---|---|---|
+| Tests | 421 | 435 |
+| Import languages | 7 (regex) | 10 (tree-sitter) |
+| Import forms captured | basic only | multi-line, aliased, re-export, dynamic |
+
 ## [0.4.5] - 2026-05-27
 
 ### Fixed

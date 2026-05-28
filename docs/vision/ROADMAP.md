@@ -303,8 +303,7 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 |---|---|---|
 | `prx run --auto-json` | **High** | Auto-inject `--json` flags for tools with structured output. kubectl, terraform, npm, eslint, mypy. |
 | Tree-sitter import extraction | **High** | Replace regex imports with tree-sitter AST queries. Captures multi-line, aliased, re-export, dynamic forms. |
-| Import language coverage | Medium | Extend imports to all 15 registered grammars. Depends on tree-sitter imports. |
-| Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir. |
+| Import language coverage | Medium | **Done** — bash, CSS, HTML import extraction added. |
 
 ## v0.5.1 — Improvements (build & security)
 
@@ -321,6 +320,16 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
+
+## v0.5.3 — Additional Grammars
+
+| Item | Priority | Description |
+|---|---|---|
+| Kotlin grammar | Medium | tree-sitter-kotlin + import/outline extraction |
+| Swift grammar | Medium | tree-sitter-swift + import/outline extraction |
+| C# grammar | Medium | tree-sitter-c-sharp + import/outline extraction |
+| PHP grammar | Medium | tree-sitter-php + import/outline extraction |
+| Elixir grammar | Medium | tree-sitter-elixir + import/outline extraction |
 
 ---
 

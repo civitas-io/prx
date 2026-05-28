@@ -238,6 +238,7 @@ impl AgMcpServer {
             command: p.command,
             raw: false,
             full: false,
+            auto_json: false,
             timeout: 300,
         };
         match super::run::run(args) {

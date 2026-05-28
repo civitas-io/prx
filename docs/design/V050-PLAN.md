@@ -64,12 +64,7 @@ New user-facing capabilities only:
    - JSON has no imports (document as intentionally edge-less)
    - Tests for each new language
 
-4. **Additional grammars** (~2-3 days)
-   - Add tree-sitter grammars: Kotlin, Swift, C#, PHP, Elixir
-   - Add to `parsing/languages.rs` grammar registry
-   - Add import extraction queries for each
-   - Add outline extraction support for each
-   - Tests: outline + import for each language
+~~4. **Additional grammars** — deferred to v0.5.3 (adds ~5 Cargo deps + binary size)~~
 
 ### v0.5.1 — Build & Security Improvements
 

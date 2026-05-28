@@ -142,6 +142,28 @@ Typical path for a search query:
 
 ---
 
+## Import Graph & Project Intelligence
+
+The import graph (`search/graph.rs`) captures file-level dependency edges
+extracted via per-language regex (`parsing/imports.rs`, 7 languages). Edges
+are resolved by suffix matching with proximity-based disambiguation.
+Persisted as `imports.bin`.
+
+Two commands consume the import graph:
+
+- **`prx context`** (`commands/context.rs`) — assembles a module context
+  package: stats, documentation, entrypoints, file skeletons, and 1-hop
+  import edges. Uses symbol index for entrypoint ranking.
+
+- **`prx impact`** (`commands/impact.rs`) — reverse dependency analysis.
+  Walks import graph backwards to find dependents. Supports symbol-level
+  narrowing and fan-in protection.
+
+Both commands work without a persisted index (build graph on-the-fly with
+warning).
+
+---
+
 ## Feature Flags
 
 Defined in `Cargo.toml`:

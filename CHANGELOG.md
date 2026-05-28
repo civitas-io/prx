@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.5] - 2026-05-27
+
+### Fixed
+
+- **Documentation consistency** — softened "tree-sitter for all structural
+  awareness" claim to reflect that import extraction uses regex. Added build
+  prerequisites (Python 3, network) to README. Added context/impact to
+  architecture docs. Added import graph proximity stage to search pipeline docs.
+
 ## [0.4.4] - 2026-05-27
 
 ### Changed

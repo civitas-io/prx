@@ -419,7 +419,7 @@ These are settled decisions. Do not revisit without discussion.
 | 2 | **Model weights embedded in binary** | `include_bytes!` with float16 potion-retrieval-32M model (file: potion-code-16M.safetensors, ~32 MB). No internet required, works in sandboxes and air-gapped environments. |
 | 3 | **Pure Rust Model2Vec inference** | No ONNX Runtime dependency. Inference is tokenize + lookup + mean pool + normalize (~50 lines). ONNX Runtime dropped x86_64 macOS support; pure Rust works everywhere. |
 | 4 | **JSON output by default** | Agents parse structured data, not column-aligned text. `--plain` flag for human fallback. Errors in stdout, never stderr. |
-| 5 | **Tree-sitter for all structural awareness** | Powers chunking, --snap, --skeleton, --outline, syntax validation, structural search. 15 language grammars compiled into binary (v0.1). No LSP server required. |
+| 5 | **Tree-sitter for structural code parsing** | Powers chunking, --snap, --skeleton, --outline, syntax validation, structural search. Import extraction uses per-language regex (7 languages). No LSP server required. |
 | 6 | **Token budgets, not truncation** | `--budget N` returns the best N tokens of results, ranked by relevance. Not `head -N` arbitrary cutoff. |
 | 7 | **Dry-run edits by default** | `prx edit` previews changes. `--apply` commits. Agents see what will change before it happens. |
 | 8 | **Content hashes in every response** | Enables cheap "has this changed?" checks. Eliminates ~50% of redundant file re-reads. |

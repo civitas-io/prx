@@ -114,7 +114,11 @@ boost = max_score * 0.2 * (file_aggregate / max_file_aggregate)
 
 Chunks that define a queried symbol receive a 3x score multiplier. Detection uses a keyword list: `class`, `def`, `fn`, `func`, `struct`, `enum`, `trait`, `interface`, and equivalents across languages. If the file stem also matches the symbol name, an additional 1.5x multiplier applies.
 
-**3. Identifier stem matching**
+**3. Import graph proximity**
+
+Files in the dependency neighborhood of top results get a 0.25x additive boost with hop decay. Uses `ranking/proximity.rs` with BFS 2-hop traversal of the import graph.
+
+**4. Identifier stem matching**
 
 Query keywords are matched against file path components (stem and immediate parent directory) via prefix matching. If at least 10% of query keywords match path components, a boost is applied:
 
@@ -122,7 +126,7 @@ Query keywords are matched against file path components (stem and immediate pare
 boost = max_score * match_ratio
 ```
 
-**4. Noise penalties**
+**5. Noise penalties**
 
 Certain file categories receive multiplicative score penalties. Penalties compound when multiple conditions apply.
 
@@ -136,7 +140,7 @@ Certain file categories receive multiplicative score penalties. Penalties compou
 
 A file matching both "test" and "compat" receives a combined 0.09x multiplier.
 
-**5. File saturation decay**
+**6. File saturation decay**
 
 To prevent a single file from dominating results, chunks beyond the first from the same file are penalized during greedy selection:
 

@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.1] - 2026-05-27
+
+### Fixed
+
+- **Renamed model file** — `potion-code-16M.safetensors` renamed to
+  `potion-retrieval-32M.safetensors` to match the actual model (upgraded
+  in v0.3.0 but file never renamed). Updated `include_bytes!` references,
+  download script, and all documentation.
+
+### NDCG (v0.5.0 tree-sitter imports)
+
+- prx self-benchmark: NDCG@10 = 0.673 (stable, was 0.681 in v0.4.0)
+- Fiddler benchmark: pending (run takes >10 min, deferred to async)
+
 ## [0.5.0] - 2026-05-27
 
 Tree-sitter imports & auto-JSON release. Import extraction rewritten from

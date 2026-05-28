@@ -1,6 +1,6 @@
 [package]
 name = "prx"
-version = "0.5.1"
+version = "0.5.2"
 edition = "2024"
 rust-version = "1.85"
 description = "Praxis — agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff for AI coding agents."
@@ -55,7 +55,8 @@ regex = "1"
 dirs-next = "2"
 
 # Binary serialization for persistent index
-bincode = "1"
+# postcard: compact serde serialization for index files (replaces unmaintained bincode, RUSTSEC-2025-0141)
+postcard = { version = "1", features = ["alloc"] }
 
 # f16 support for loading float16 model weights
 half = "2"
@@ -110,3 +111,13 @@ harness = false
 [[bench]]
 name = "chunking"
 harness = false
+
+[build-dependencies]
+# HTTP downloads for model weights — minimal blocking client, no async runtime
+ureq = "3"
+# SHA-256 verification of downloaded artifacts (pinned hashes)
+sha2 = "0.10"
+# F32 -> F16 conversion for safetensors embeddings (reuses regular dependency)
+half = "2"
+# Parse/rewrite the safetensors JSON header during F32 -> F16 conversion
+serde_json = "1"

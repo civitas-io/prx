@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.2] - 2026-05-27
+
+### Changed
+
+- **Self-contained build** — `cargo build` now works without `make models`
+  or Python. The build script (`build.rs`) downloads model weights from
+  HuggingFace, verifies SHA-256 hashes, and converts F32→F16 in pure Rust.
+  Set `PRX_MODELS_DIR` for offline/air-gapped builds.
+- **Migrated bincode → postcard** — replaced unmaintained `bincode`
+  (RUSTSEC-2025-0141) with `postcard` for all index serialization.
+  Existing `.prx/index/` directories will auto-rebuild on version mismatch.
+
 ## [0.5.1] - 2026-05-27
 
 ### Fixed

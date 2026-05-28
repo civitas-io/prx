@@ -1,4 +1,10 @@
 #!/bin/bash
+# Manual fetcher for the embedded model artifacts.
+#
+# Not required for `cargo build` — `build.rs` handles download, SHA-256
+# verification, and F32->F16 conversion automatically. Use this script for
+# manual fetches, CI cache warming, or to populate a directory for offline
+# builds: `PRX_MODELS_DIR=$(pwd)/models cargo build`.
 set -e
 
 mkdir -p models

@@ -87,7 +87,7 @@ fn load_existing_index(root: &Path) -> Option<(IndexMeta, Vec<SerializedChunk>)>
     }
 
     let chunks_bin = std::fs::read(index_dir.join(CHUNKS_FILE)).ok()?;
-    let chunks: Vec<SerializedChunk> = bincode::deserialize(&chunks_bin).ok()?;
+    let chunks: Vec<SerializedChunk> = postcard::from_bytes(&chunks_bin).ok()?;
     Some((meta, chunks))
 }
 
@@ -188,13 +188,13 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
     })?;
     std::fs::write(index_dir.join(META_FILE), meta_json).map_err(AgError::Io)?;
 
-    let chunks_bin = bincode::serialize(&serialized_chunks).map_err(|e| AgError::Internal {
+    let chunks_bin = postcard::to_allocvec(&serialized_chunks).map_err(|e| AgError::Internal {
         message: format!("serialize chunks: {e}"),
     })?;
     std::fs::write(index_dir.join(CHUNKS_FILE), chunks_bin).map_err(AgError::Io)?;
 
     let bm25_data = SerializedBm25 { enriched_texts };
-    let bm25_bin = bincode::serialize(&bm25_data).map_err(|e| AgError::Internal {
+    let bm25_bin = postcard::to_allocvec(&bm25_data).map_err(|e| AgError::Internal {
         message: format!("serialize bm25: {e}"),
     })?;
     std::fs::write(index_dir.join(BM25_FILE), bm25_bin).map_err(AgError::Io)?;
@@ -276,7 +276,7 @@ fn compute_and_save_embeddings(
     let raw: Vec<u8> = result.iter().flat_map(|f| f.to_le_bytes()).collect();
     let _ = std::fs::write(index_dir.join(EMBEDDINGS_FILE), raw);
 
-    let hashes_bin = bincode::serialize(&current_hashes).unwrap_or_default();
+    let hashes_bin = postcard::to_allocvec(&current_hashes).unwrap_or_default();
     let _ = std::fs::write(index_dir.join(EMBEDDING_HASHES_FILE), hashes_bin);
 
     if embedded_count < enriched_texts.len() {
@@ -296,7 +296,7 @@ fn load_embedding_cache(
 ) -> (Vec<String>, Option<ndarray::Array2<f32>>) {
     let hashes = std::fs::read(index_dir.join(EMBEDDING_HASHES_FILE))
         .ok()
-        .and_then(|bytes| bincode::deserialize::<Vec<String>>(&bytes).ok())
+        .and_then(|bytes| postcard::from_bytes::<Vec<String>>(&bytes).ok())
         .unwrap_or_default();
 
     let embeddings = std::fs::read(index_dir.join(EMBEDDINGS_FILE))
@@ -369,7 +369,7 @@ pub fn load(root: &Path) -> Result<(Vec<Chunk>, SparseIndex), AgError> {
             reason: "chunks.bin not found".to_string(),
         })?;
     let serialized_chunks: Vec<SerializedChunk> =
-        bincode::deserialize(&chunks_bin).map_err(|e| AgError::IndexCorrupted {
+        postcard::from_bytes(&chunks_bin).map_err(|e| AgError::IndexCorrupted {
             path: index_dir.to_string_lossy().to_string(),
             reason: format!("invalid chunks.bin: {e}"),
         })?;
@@ -380,7 +380,7 @@ pub fn load(root: &Path) -> Result<(Vec<Chunk>, SparseIndex), AgError> {
             reason: "bm25.bin not found".to_string(),
         })?;
     let bm25_data: SerializedBm25 =
-        bincode::deserialize(&bm25_bin).map_err(|e| AgError::IndexCorrupted {
+        postcard::from_bytes(&bm25_bin).map_err(|e| AgError::IndexCorrupted {
             path: index_dir.to_string_lossy().to_string(),
             reason: format!("invalid bm25.bin: {e}"),
         })?;
@@ -629,7 +629,7 @@ mod tests {
 
         let index_dir = dir.path().join(".prx").join("index");
         let hashes_before: Vec<String> =
-            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+            postcard::from_bytes(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
                 .unwrap();
         let emb_before = std::fs::read(index_dir.join("embeddings.bin")).unwrap();
 
@@ -639,7 +639,7 @@ mod tests {
         build_and_save(dir.path()).unwrap();
 
         let hashes_after: Vec<String> =
-            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+            postcard::from_bytes(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
                 .unwrap();
         let emb_after = std::fs::read(index_dir.join("embeddings.bin")).unwrap();
 
@@ -654,7 +654,7 @@ mod tests {
 
         let index_dir = dir.path().join(".prx").join("index");
         let hashes_before: Vec<String> =
-            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+            postcard::from_bytes(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
                 .unwrap();
 
         std::fs::write(
@@ -666,7 +666,7 @@ mod tests {
         build_and_save(dir.path()).unwrap();
 
         let hashes_after: Vec<String> =
-            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+            postcard::from_bytes(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
                 .unwrap();
 
         assert_ne!(hashes_before, hashes_after);

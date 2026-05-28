@@ -261,6 +261,8 @@ Download from [GitHub Releases](https://github.com/civitas-io/prx/releases).
 
 Requires Rust ≥ 1.85 and a C compiler (for tree-sitter grammars).
 
+Also requires network access and Python 3 for initial model weight download and conversion (`make setup` handles this).
+
 ```bash
 git clone https://github.com/civitas-io/prx.git
 cd prx

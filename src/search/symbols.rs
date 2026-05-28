@@ -119,7 +119,7 @@ impl SymbolIndex {
                 .collect(),
         };
         let bytes =
-            bincode::serialize(&serialized).map_err(|e| std::io::Error::other(e.to_string()))?;
+            postcard::to_allocvec(&serialized).map_err(|e| std::io::Error::other(e.to_string()))?;
         std::fs::write(dir.join(SYMBOLS_FILE), bytes)
     }
 
@@ -127,7 +127,7 @@ impl SymbolIndex {
     pub fn load(dir: &Path) -> Result<Self, std::io::Error> {
         let bytes = std::fs::read(dir.join(SYMBOLS_FILE))?;
         let serialized: SerializedSymbolIndex =
-            bincode::deserialize(&bytes).map_err(|e| std::io::Error::other(e.to_string()))?;
+            postcard::from_bytes(&bytes).map_err(|e| std::io::Error::other(e.to_string()))?;
 
         Ok(SymbolIndex {
             defs: serialized.defs.into_iter().collect(),

@@ -55,7 +55,8 @@ regex = "1"
 dirs-next = "2"
 
 # Binary serialization for persistent index
-bincode = "1"
+# postcard: compact serde serialization for index files (replaces unmaintained bincode, RUSTSEC-2025-0141)
+postcard = { version = "1", features = ["alloc"] }
 
 # f16 support for loading float16 model weights
 half = "2"

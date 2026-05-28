@@ -133,14 +133,14 @@ impl ImportGraph {
             edges,
         };
         let bytes =
-            bincode::serialize(&serialized).map_err(|e| std::io::Error::other(e.to_string()))?;
+            postcard::to_allocvec(&serialized).map_err(|e| std::io::Error::other(e.to_string()))?;
         std::fs::write(dir.join("imports.bin"), bytes)
     }
 
     pub fn load(dir: &Path) -> Result<Self, std::io::Error> {
         let bytes = std::fs::read(dir.join("imports.bin"))?;
         let serialized: SerializedGraph =
-            bincode::deserialize(&bytes).map_err(|e| std::io::Error::other(e.to_string()))?;
+            postcard::from_bytes(&bytes).map_err(|e| std::io::Error::other(e.to_string()))?;
 
         let n = serialized.paths.len();
         let mut forward = vec![Vec::new(); n];

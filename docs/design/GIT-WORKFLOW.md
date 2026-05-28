@@ -15,6 +15,17 @@ dev/v1.0.0       # major release work
 One branch per release. All features, fixes, and docs for that release
 go into the same branch.
 
+### Version semantics
+
+```
+v0.X.0    — features (new commands, new capabilities, new parsers)
+v0.X.Y    — fixes and improvements (bugs, perf, doc fixes, quality)
+```
+
+Minor releases (`.0`) introduce new user-facing functionality.
+Patch releases (`.1`, `.2`, ...) fix issues and improve existing features.
+Never ship new features in a patch release.
+
 ### Workflow
 
 ```

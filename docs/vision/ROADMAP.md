@@ -295,20 +295,32 @@ From independent code review. Detailed plan: `docs/design/PATCH-PLAN.md`.
 | v0.4.4 | Full embedding rebuild every run | Incremental embeddings: hash per chunk, re-embed only changed | **P2 — perf** |
 | v0.4.5 | Doc/code inconsistencies | Align doc claims with actual implementation | **P3 — docs** |
 
-## v0.5.0 — Distribution & Ecosystem
+## v0.5.0 — Features (new capabilities)
+
+Detailed plan: `docs/design/V050-PLAN.md`.
 
 | Item | Priority | Description |
 |---|---|---|
-| Self-contained build (`build.rs`) | **High** | Move model download + F16 conversion into `build.rs`. Eliminate Python build dep. Pin artifacts by SHA-256. Offline escape hatch via `PRX_MODELS_DIR`. Unblocks `cargo publish`. |
-| Tree-sitter import extraction | **High** | Replace regex import extraction with tree-sitter AST queries for all supported languages. Captures multi-line, aliased, re-export, dynamic imports. Fixes Issue 2 fully. |
-| `cargo publish` | High | Publish to crates.io for `cargo install prx`. Blocked on self-contained build. |
+| `prx run --auto-json` | **High** | Auto-inject `--json` flags for tools with structured output. kubectl, terraform, npm, eslint, mypy. |
+| Tree-sitter import extraction | **High** | Replace regex imports with tree-sitter AST queries. Captures multi-line, aliased, re-export, dynamic forms. |
+| Import language coverage | Medium | Extend imports to all 15 registered grammars. Depends on tree-sitter imports. |
+| Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir. |
+
+## v0.5.1 — Improvements (build & security)
+
+| Item | Priority | Description |
+|---|---|---|
+| Self-contained build (`build.rs`) | **High** | `cargo build` works without `make models` or Python. SHA-256 pinned artifacts. Offline via `PRX_MODELS_DIR`. |
+| Migrate off bincode | **High** | Replace bincode (RUSTSEC-2025-0141) with postcard for all index serialization. |
+
+## v0.5.2 — Distribution
+
+| Item | Priority | Description |
+|---|---|---|
+| `cargo publish` | **High** | `cargo install prx`. Blocked on build.rs. |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
-| `prx run --auto-json` | High | Auto-inject `--json`/`-o json` flags for tools that support structured output. v0.4.0 ships passive detection; this adds active injection. |
-| Migrate off bincode | High | Replace bincode (unmaintained, RUSTSEC-2025-0141) with postcard or bitcode for index serialization. |
-| Import language coverage | Medium | Extend import extraction to all registered grammars (currently 7 of 15). Depends on tree-sitter imports. |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
-| Additional grammars | Medium | Kotlin, Swift, C#, PHP, Elixir |
 
 ---
 

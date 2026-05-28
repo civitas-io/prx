@@ -469,6 +469,8 @@ needed and why an existing dependency cannot serve the purpose.
 
 **No direct pushes to `main`.** All work happens on `dev/vX.Y.Z` branches.
 
+**Version semantics:** `v0.X.0` = features (new capabilities). `v0.X.Y` = fixes/improvements only.
+
 ```
 git checkout -b dev/v0.4.1 main   # cut branch
 # ... develop, commit, test ...

@@ -244,6 +244,7 @@ mod tests {
             command: vec!["cargo".into(), "test".into()],
             raw: false,
             full: false,
+            auto_json: false,
             timeout: 300,
         };
         let cli = Commands::Run(args);

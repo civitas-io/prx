@@ -17,13 +17,22 @@ pub struct RunArgs {
     #[arg(long)]
     pub full: bool,
 
+    /// Auto-inject --json/-o json for tools that support structured output
+    #[arg(long)]
+    pub auto_json: bool,
+
     /// Command timeout in seconds
     #[arg(long, default_value = "300")]
     pub timeout: u64,
 }
 
 pub fn run(args: RunArgs) -> Result<serde_json::Value, AgError> {
-    let raw = runner::execute(&args.command, args.timeout)?;
+    let command = if args.auto_json {
+        runner::inject_json_flag(&args.command)
+    } else {
+        args.command.clone()
+    };
+    let raw = runner::execute(&command, args.timeout)?;
 
     if args.raw {
         let combined = format!("{}\n{}", raw.stdout, raw.stderr);
@@ -46,7 +55,7 @@ pub fn run(args: RunArgs) -> Result<serde_json::Value, AgError> {
         });
     }
 
-    let tool = runner::detect_tool(&args.command);
+    let tool = runner::detect_tool(&command);
     let mut output = runner::parse_output(tool, &raw);
 
     if args.full {
@@ -69,6 +78,7 @@ mod tests {
             command: vec!["echo".into(), "hello".into()],
             raw: false,
             full: false,
+            auto_json: false,
             timeout: 10,
         };
         let result = run(args).unwrap();
@@ -83,6 +93,7 @@ mod tests {
             command: vec!["echo".into(), "hello".into()],
             raw: true,
             full: false,
+            auto_json: false,
             timeout: 10,
         };
         let result = run(args).unwrap();
@@ -97,6 +108,7 @@ mod tests {
             command: vec!["false".into()],
             raw: false,
             full: false,
+            auto_json: false,
             timeout: 10,
         };
         let result = run(args).unwrap();
@@ -110,6 +122,7 @@ mod tests {
             command: vec!["ag_nonexistent_cmd_xyz".into()],
             raw: false,
             full: false,
+            auto_json: false,
             timeout: 10,
         };
         assert!(run(args).is_err());

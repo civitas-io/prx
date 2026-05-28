@@ -175,6 +175,29 @@ pub fn detect_tool(command: &[String]) -> &'static str {
     "unknown"
 }
 
+pub fn inject_json_flag(command: &[String]) -> Vec<String> {
+    let tool = detect_tool(command);
+    let flag = match tool {
+        "kubectl" => Some("-o=json"),
+        "terraform" => Some("-json"),
+        "npm_ls" => Some("--json"),
+        "eslint" => Some("--format=json"),
+        "mypy" => Some("--output=json"),
+        _ => None,
+    };
+
+    match flag {
+        Some(f) => {
+            let mut cmd = command.to_vec();
+            if !cmd.iter().any(|a| a.contains("json")) {
+                cmd.push(f.to_string());
+            }
+            cmd
+        }
+        None => command.to_vec(),
+    }
+}
+
 pub fn parse_output(tool: &str, raw: &RawOutput) -> RunOutput {
     let combined = format!("{}\n{}", raw.stdout, raw.stderr);
     let output_lines = combined.lines().count();
@@ -456,6 +479,46 @@ mod tests {
         let output = parse_output("cargo_test", &raw);
         assert_eq!(output.passed, 5);
         assert_eq!(output.failed, 0);
+    }
+
+    #[test]
+    fn inject_json_kubectl() {
+        let cmd = vec!["kubectl".into(), "get".into(), "pods".into()];
+        let result = inject_json_flag(&cmd);
+        assert!(result.iter().any(|a| a.contains("json")));
+    }
+
+    #[test]
+    fn inject_json_terraform() {
+        let cmd = vec!["terraform".into(), "plan".into()];
+        let result = inject_json_flag(&cmd);
+        assert!(result.contains(&"-json".to_string()));
+    }
+
+    #[test]
+    fn inject_json_npm_ls() {
+        let cmd = vec!["npm".into(), "ls".into()];
+        let result = inject_json_flag(&cmd);
+        assert!(result.contains(&"--json".to_string()));
+    }
+
+    #[test]
+    fn inject_json_unknown_tool_unchanged() {
+        let cmd = vec!["echo".into(), "hello".into()];
+        let result = inject_json_flag(&cmd);
+        assert_eq!(result, cmd);
+    }
+
+    #[test]
+    fn inject_json_skips_if_already_present() {
+        let cmd = vec![
+            "kubectl".into(),
+            "get".into(),
+            "pods".into(),
+            "-o=json".into(),
+        ];
+        let result = inject_json_flag(&cmd);
+        assert_eq!(result.iter().filter(|a| a.contains("json")).count(), 1);
     }
 
     #[test]

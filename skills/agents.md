@@ -127,7 +127,7 @@ prx read src/auth.rs --if-changed a3f9b2c1...
 
 ## Structured Command Runner
 
-`prx run` parses output from 9 tools, returning only failures/warnings:
+`prx run` parses output from 22 tools, returning only failures/warnings. Use `--auto-json` to auto-inject JSON flags for kubectl, terraform, npm, eslint, mypy.
 
 | Tool | What prx extracts |
 |---|---|

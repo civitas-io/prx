@@ -103,7 +103,7 @@ prx bench .             # benchmark prx vs grep+cat on this repo
 | `prx find` | find, ls, tree | Codebase mapping. Tree + flat output, inline metadata, semantic scoring. |
 | `prx edit` | sed, awk | Safe edits. Literal matching, dry-run default, tree-sitter syntax validation. |
 | `prx diff` | diff, git diff | Semantic diffs. Function-level attribution, natural language summaries. |
-| `prx run` | — | Structured test/build/lint output. 9 parsers. 95–99% token savings. |
+| `prx run` | — | Structured test/build/lint output. 22 parsers, --auto-json for structured output tools. 95–99% token savings. |
 | `prx exists` | grep -q | O(1) bloom filter existence check. Sub-millisecond, near-zero tokens. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
 | `prx context` | — | Module context package: stats, docs, entrypoints, file skeletons, import edges. |
@@ -299,9 +299,9 @@ Single static binary. No runtime dependencies. No internet required after build.
 | | |
 |---|---|
 | Commands | 16 |
-| Tests | 413 unit + 75 E2E + 8 MCP |
-| Languages | 14 (tree-sitter grammars) |
-| Import graph | 7 languages (Rust, Python, JS/TS, Go, Java, C/C++, Ruby) |
+| Tests | 435 unit + 75 E2E + 8 MCP |
+| Languages | 15 (tree-sitter grammars) |
+| Import graph | 10 language families (tree-sitter AST extraction) |
 | Symbol index | Definition lookup + reference counting for symbol queries |
 | Release binary | ~49 MB (float16 model embedded) |
 | CI | GitHub Actions (Linux x86_64, Linux aarch64, macOS arm64, Windows) |

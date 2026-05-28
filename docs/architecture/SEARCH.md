@@ -20,7 +20,7 @@ Chunks do not overlap. A character belongs to exactly one chunk.
 
 **Fallback:** Files in unsupported languages fall back to line-based chunking, splitting on newline boundaries with the same character budget.
 
-**Supported languages:** 15 languages in v0.1 via tree-sitter grammars compiled directly into the binary. No runtime grammar loading. Additional grammars can be added as crate dependencies.
+**Supported languages:** 15 languages via tree-sitter grammars compiled directly into the binary. No runtime grammar loading. Additional grammars can be added as crate dependencies. Import extraction uses tree-sitter AST queries for 10 language families.
 
 ---
 

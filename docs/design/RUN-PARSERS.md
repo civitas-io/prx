@@ -122,10 +122,7 @@ Several tools support structured output natively:
 - `npm ls --json`
 - `eslint --format json` (already exists but we parse text)
 
-**Decision:** Do NOT auto-inject `--json` flags. The user typed a specific
-command; we parse what they asked for. If they pass `--json` themselves, our
-parser should detect the JSON and extract from it. But a future `--auto-json`
-flag on `prx run` could add this.
+**Decision:** The `--auto-json` flag on `prx run` actively injects JSON flags for kubectl, terraform, npm, eslint, mypy. The user typed a specific command; without the flag, we parse what they asked for. If they pass `--json` themselves, our parser should detect the JSON and extract from it.
 
 ### Common regex patterns
 

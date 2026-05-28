@@ -12,10 +12,10 @@ by a measurement bug that counted duplicate file entries; corrected May 2026.
 
 | Metric | v0.3.0 (corrected) | v0.4.0 | Delta |
 |---|---|---|---|
-| Fiddler NDCG@10 | 0.451 | 0.494 | +9.5% |
-| Fiddler semantic | 0.470 | 0.470 | ~0% |
-| Fiddler architecture | 0.526 | 0.526 | ~0% |
-| Fiddler symbol | 0.263 | 0.619 | +135% |
+| External NDCG@10 | 0.451 | 0.494 | +9.5% |
+| External semantic | 0.470 | 0.470 | ~0% |
+| External architecture | 0.526 | 0.526 | ~0% |
+| External symbol | 0.263 | 0.619 | +135% |
 | Complete misses | 13 | 9 | -4 recovered |
 | prx NDCG@10 | 0.639 | 0.681 | +6.6% |
 | Tests | 402 | 333 (unit) | +7 |
@@ -32,10 +32,10 @@ detection, time series metric, session management tokens.
 
 | Metric | v0.4.0 | v0.5.1 | Delta |
 |---|---|---|---|
-| Fiddler NDCG@10 | 0.494 | 0.494 | ~0% (no regression) |
-| Fiddler semantic | 0.470 | 0.470 | ~0% |
-| Fiddler architecture | 0.526 | 0.526 | ~0% |
-| Fiddler symbol | 0.619 | 0.617 | ~0% (noise) |
+| External NDCG@10 | 0.494 | 0.494 | ~0% (no regression) |
+| External semantic | 0.470 | 0.470 | ~0% |
+| External architecture | 0.526 | 0.526 | ~0% |
+| External symbol | 0.619 | 0.617 | ~0% (noise) |
 | Complete misses | 9 | 9 | unchanged |
 | prx NDCG@10 | 0.681 | 0.673 | -1.2% (noise) |
 
@@ -43,7 +43,7 @@ Tree-sitter import rewrite produced no regression. The 9 remaining
 misses are all semantic queries unrelated to import extraction.
 Improvements from tree-sitter imports will show on repos with complex
 import patterns (re-exports, dynamic imports, multiline), which the
-current fiddler dataset doesn't specifically test.
+current external dataset doesn't specifically test.
 
 ---
 
@@ -79,8 +79,8 @@ hand-labeled after codebase exploration.
 | Symbol (n=6) | 0.263 |
 | Architecture (n=5) | 0.526 |
 
-Dataset: `benchmarks/ndcg_dataset_fiddler.json`
-Results: `benchmarks/ndcg_results_fiddler.json`
+Dataset: `benchmarks/ndcg_dataset_external.json`
+Results: `benchmarks/ndcg_results_external.json`
 
 ### Competitor reference points
 
@@ -162,7 +162,7 @@ field-weight the header separately or strip common prefixes.
 
 **Item 3: Persistent dense index**
 
-Pre-compute and store all chunk embeddings at index time. For fiddler's 55k
+Pre-compute and store all chunk embeddings at index time. For the external codebase's 55k
 chunks x 256-dim x 4 bytes = 56 MB. Flat inner-product search is fine at
 this scale.
 
@@ -183,13 +183,13 @@ a low ceiling.
 For multi-word NL: alpha ~0.6. Add a static synonym dict for common domains
 (auth/authentication, db/database, k8s/kubernetes). No LLM, no latency hit.
 
-**Item 5**: Run leave-one-out NDCG over the 49 fiddler queries per rerank
+**Item 5**: Run leave-one-out NDCG over the 49 external queries per rerank
 stage. On 11k-file codebases, import-graph proximity and file coherence may
 add noise. Grid-tune weights on a held-out split.
 
 **Item 6**: 1500 chars with no overlap loses signal at boundaries. Add
 150-200 char overlap. Benchmark 800/1500/2500 char variants on the same
-49 queries.
+49 external queries.
 
 ### Tier 3: Model upgrade (2-3 days, target ~0.70-0.73, gated on Tier 1 #3)
 
@@ -272,7 +272,7 @@ trees, or PageRank.
 
 A full weighted graph (call edges, inheritance, type references) is justified
 only if:
-1. Symbol index + Tiers 1-3 plateau below 0.65 on fiddler
+1. Symbol index + Tiers 1-3 plateau below 0.65 on the external codebase
 2. Users request impact analysis (`prx impact "what breaks if I change X?"`)
 3. Users request entity queries ("find all callers of function X")
 
@@ -295,7 +295,7 @@ Total: 4-6 weeks for a production-quality symbol graph.
 
 ## Realistic ceiling
 
-| Scope | Expected NDCG@10 (external) | Status |
+| Scope | Expected NDCG@10 (external codebase) | Status |
 |---|---|---|
 | Tiers 1-3 (v0.3.0) | 0.451 | Done |
 | + Tier 4 (symbol index) | 0.494 | Done |

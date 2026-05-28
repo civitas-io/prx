@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### NDCG (v0.5.0 tree-sitter imports)
 
-- Fiddler NDCG@10: 0.494 (stable, no regression from v0.4.0)
+- External NDCG@10: 0.494 (stable, no regression from v0.4.0)
 - prx self-benchmark: NDCG@10 = 0.673 (stable, was 0.681 in v0.4.0)
 - 9 complete misses unchanged (all semantic, unrelated to imports)
 
@@ -186,7 +186,7 @@ indexing, persistent dense index, and search ranking improvements.
 - `docs/design/SEARCH-QUALITY.md` — full NDCG analysis, failure mode diagnosis, improvement
   roadmap, and symbol graph feasibility assessment.
 - `benchmarks/ndcg_dataset.json` — 50 labeled queries for prx codebase.
-- `benchmarks/ndcg_dataset_fiddler.json` — 49 labeled queries for external codebase.
+- `benchmarks/ndcg_dataset_external.json` — 49 labeled queries for external codebase.
 
 ### Changed
 

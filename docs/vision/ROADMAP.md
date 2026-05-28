@@ -97,7 +97,7 @@ Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
 
 | Item | Priority | Status | Description |
 |---|---|---|---|
-| `--mode aggressive` | High | **Done** | Tree-sitter comment stripping + blank line collapse. 1-19% savings (real-world: tested on fiddler). |
+| `--mode aggressive` | High | **Done** | Tree-sitter comment stripping + blank line collapse. 1-19% savings (real-world: tested on external codebase). |
 | `--mode diff` | High | **Done** | Changed lines vs git HEAD only. 80-97% savings on modified files. |
 | `--mode entropy` | Medium | **Done** | Pattern-based repetitive line filter. 5-87% savings (86% on generated structs). |
 | Auto mode for read | Medium | Planned | Auto-select best read mode based on file size, type, and cache state. |
@@ -137,12 +137,12 @@ Informed by LeanCTX research. Adopt the best techniques, keep the prx philosophy
 | MCP server E2E tests | **High** | **Done** | 8 E2E tests covering initialize, tools/list, tools/call for all 6 MCP tools, plus invalid tool error handling. |
 | Incremental indexing | **High** | **Done** | Skip unchanged files via hash comparison. Reports files_changed/files_unchanged. Walker now excludes `.prx/` directory. |
 | Real criterion benchmarks | **High** | **Done** | 5 search benchmarks (BM25 build/query, literal search, index build, incremental noop) + 3 chunking benchmarks (Rust/Python/plaintext at multiple sizes). |
-| NDCG@10 measurement | **High** | **Done** | 50-query labeled dataset on prx (NDCG@10=0.639) + 49-query dataset on external codebase (NDCG@10=0.451). See `docs/design/SEARCH-QUALITY.md`. |
+| NDCG@10 measurement | **High** | **Done** | 50-query labeled dataset on prx (NDCG@10=0.639) + 49-query dataset on external production codebase (NDCG@10=0.451). See `docs/design/SEARCH-QUALITY.md`. |
 | Structural search validation | Medium | **Done** | Warns when pattern compiles but matches 0 files, or when pattern fails to compile for all languages. |
 
 ### Search Quality — Closing the Gap
 
-Measured NDCG@10: 0.639 (self), 0.451 (external). Target: 0.70+ on unfamiliar
+Measured NDCG@10: 0.639 (self), 0.451 (external production codebase). Target: 0.70+ on unfamiliar
 codebases. Full analysis and plan in `docs/design/SEARCH-QUALITY.md`.
 
 **Tier 1 — Structural fixes [DONE]:**

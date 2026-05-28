@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.4] - 2026-05-27
+
+### Changed
+
+- **Incremental embeddings** — `prx index` now caches per-chunk content
+  hashes alongside embeddings. On re-index, only chunks whose content
+  changed are re-embedded; unchanged chunks reuse cached embeddings.
+  For a 1-file change in an 11k-file repo, this reduces embedding time
+  from ~300s (full re-embed) to seconds.
+
 ## [0.4.3] - 2026-05-27
 
 ### Fixed

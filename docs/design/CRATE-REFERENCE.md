@@ -145,7 +145,7 @@ for m in cursor.matches(&query, tree.root_node(), source.as_bytes()) {
 ```rust
 use safetensors::SafeTensors;
 
-static MODEL_BYTES: &[u8] = include_bytes!("../models/potion-code-16M.safetensors");
+static MODEL_BYTES: &[u8] = include_bytes!("../models/potion-retrieval-32M.safetensors");
 let tensors = SafeTensors::deserialize(MODEL_BYTES)?;
 let weight = tensors.tensor("weight")?;
 let shape = weight.shape();  // &[usize]

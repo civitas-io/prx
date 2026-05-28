@@ -104,7 +104,7 @@ impl DenseIndex {
 }
 
 pub fn load_model() -> Option<DenseIndex> {
-    let model_bytes: &[u8] = include_bytes!("../../models/potion-code-16M.safetensors");
+    let model_bytes: &[u8] = include_bytes!("../../models/potion-retrieval-32M.safetensors");
     if model_bytes.is_empty() {
         return None;
     }

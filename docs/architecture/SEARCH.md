@@ -26,7 +26,7 @@ Chunks do not overlap. A character belongs to exactly one chunk.
 
 ## Embedding Model (Model2Vec)
 
-Model: **potion-code-16M** (MinishLab). Embedded in the binary via `include_bytes!`. No network access, no filesystem reads at runtime.
+Model: **potion-retrieval-32M** (MinishLab, PCA→256 dims, float16). Embedded in the binary via `include_bytes!`. No network access, no filesystem reads at runtime.
 
 **Architecture: static embeddings.** This is not a neural network in the transformer sense. There is no forward pass, no attention mechanism, no matrix multiplication through hidden layers.
 

@@ -143,7 +143,7 @@ embed_text(text: &str,
 embed_chunks(chunks: &[Chunk], ...) -> Array2<f32>
 ```
 
-`potion-code-16M.safetensors` embedded via `include_bytes!`. `load_model` deserializes safetensors, extracts `"embeddings"` tensor, converts float16 to float32, extracts vocabulary. `embed_text` tokenizes against vocabulary, looks up rows, mean pools, L2 normalizes.
+`potion-retrieval-32M.safetensors` embedded via `include_bytes!`. `load_model` deserializes safetensors, extracts `"embeddings"` tensor, converts float16 to float32, extracts vocabulary. `embed_text` tokenizes against vocabulary, looks up rows, mean pools, L2 normalizes.
 
 **Acceptance:** Embed two semantically similar chunks. Verify cosine similarity > 0.5.
 

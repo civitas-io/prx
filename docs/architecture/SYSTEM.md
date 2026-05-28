@@ -67,7 +67,7 @@ Hybrid retrieval engine implemented in pure Rust. Supports three retrieval modes
 
 ### Dense Index (`src/index/dense.rs`)
 
-- Model2Vec static embeddings using the `potion-code-16M` model
+- Model2Vec static embeddings using the `potion-retrieval-32M` model
 - Model weights embedded in the binary via `include_bytes!`
 - 256-dimensional float16 vectors
 - Inference pipeline: tokenize input, lookup token embeddings, mean pool, L2 normalize

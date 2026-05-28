@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.3] - 2026-05-27
+
+### Fixed
+
+- **Import resolution no longer bails on common filenames** — previously,
+  `resolve_import` gave up (returned no edge) when a name matched >3 files.
+  Common names like `index.ts`, `utils.py`, `mod.rs` triggered this in large
+  repos, making the import graph sparser as repos grew. Now uses directory
+  proximity to pick the closest 1-2 candidates instead of giving up. Threshold
+  raised from 3 to 5, with proximity-based disambiguation above that.
+
 ## [0.4.2] - 2026-05-27
 
 ### Fixed

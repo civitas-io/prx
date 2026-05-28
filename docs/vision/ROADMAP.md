@@ -312,16 +312,40 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | Self-contained build (`build.rs`) | **High** | `cargo build` works without `make models` or Python. SHA-256 pinned artifacts. Offline via `PRX_MODELS_DIR`. |
 | Migrate off bincode | **High** | Replace bincode (RUSTSEC-2025-0141) with postcard for all index serialization. |
 
-## v0.5.2 — Distribution
+## v0.5.4 — Index Performance
 
 | Item | Priority | Description |
 |---|---|---|
-| `cargo publish` | **High** | `cargo install prx`. Blocked on build.rs. |
+| Parallel embedding (rayon) | **High** | Embed chunks in parallel during indexing. ~300s → ~100s on 4-core for 55k chunks. Each `embed_text` is independent. |
+| Parallel chunking | **High** | Parse and chunk files in parallel during indexing. Each file is independent. Rayon `par_iter` over walk entries. |
+| Parallel import extraction | Medium | Extract imports per-file in parallel during `ImportGraph::build_full`. Each file's imports are independent. |
+
+## v0.5.5 — Memory-Mapped Index
+
+| Item | Priority | Description |
+|---|---|---|
+| Memory-mapped index files | **High** | Use mmap instead of read-to-vec for chunks.bin, bm25.bin, embeddings.bin. OS handles caching — index stays in memory across queries. Critical for `prx bench-ndcg` performance (currently re-reads ~200MB per query). |
+| `bench-ndcg --plain` | Medium | Human-readable table output for terminal use. |
+| `bench-ndcg` load-once | Medium | Load index once, query N times. Depends on mmap or refactored search API. |
+
+## v0.5.6 — Public Benchmark Suite
+
+| Item | Priority | Description |
+|---|---|---|
+| Query generation for 8 pinned repos | **High** | 20-30 labeled queries per repo (flask, ripgrep, fastify, cargo, django, kafka, terraform, vscode). |
+| `benchmark.yml` CI workflow | **High** | Clone repos at pinned SHAs, build index, run NDCG, compare to baseline, fail on regression >0.02. |
+| Results dashboard | Medium | `benchmarks/results/` with per-release JSON. |
+
+## v0.5.7 — Distribution
+
+| Item | Priority | Description |
+|---|---|---|
+| `cargo publish` | **High** | `cargo install prx`. |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
 
-## v0.5.3 — Additional Grammars
+## v0.5.8 — Additional Grammars
 
 | Item | Priority | Description |
 |---|---|---|

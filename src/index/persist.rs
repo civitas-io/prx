@@ -15,6 +15,7 @@ const META_FILE: &str = "meta.json";
 const CHUNKS_FILE: &str = "chunks.bin";
 const BM25_FILE: &str = "bm25.bin";
 const EMBEDDINGS_FILE: &str = "embeddings.bin";
+const EMBEDDING_HASHES_FILE: &str = "embedding_hashes.bin";
 
 #[derive(Serialize, Deserialize)]
 pub struct IndexMeta {
@@ -231,7 +232,7 @@ fn compute_and_save_embeddings(
     enriched_texts: &[String],
     index_dir: &Path,
 ) -> (usize, Option<String>) {
-    let Some(mut model) = crate::index::dense::load_model() else {
+    let Some(model) = crate::index::dense::load_model() else {
         return (
             0,
             Some(
@@ -240,15 +241,79 @@ fn compute_and_save_embeddings(
             ),
         );
     };
-    let refs: Vec<&str> = enriched_texts.iter().map(|s| s.as_str()).collect();
-    model.index_chunks(&refs);
-    let emb = model.embeddings();
-    let dim = emb.ncols();
+
+    let dim = model.dim();
+    let current_hashes: Vec<String> = enriched_texts
+        .iter()
+        .map(|t| hash::hash_bytes(t.as_bytes()))
+        .collect();
+
+    let (old_hashes, old_embeddings) = load_embedding_cache(index_dir, dim);
+    let old_lookup: HashMap<&str, usize> = old_hashes
+        .iter()
+        .enumerate()
+        .map(|(i, h)| (h.as_str(), i))
+        .collect();
+
+    let mut result = ndarray::Array2::zeros((enriched_texts.len(), dim));
+    let mut embedded_count = 0usize;
+
+    for (i, h) in current_hashes.iter().enumerate() {
+        if let Some(&old_idx) = old_lookup.get(h.as_str()) {
+            if let Some(old_emb) = old_embeddings.as_ref() {
+                if old_idx < old_emb.nrows() {
+                    result.row_mut(i).assign(&old_emb.row(old_idx));
+                    continue;
+                }
+            }
+        }
+        let emb = model.embed_text(&enriched_texts[i]);
+        result.row_mut(i).assign(&emb);
+        embedded_count += 1;
+    }
 
     let _ = std::fs::create_dir_all(index_dir);
-    let raw: Vec<u8> = emb.iter().flat_map(|f| f.to_le_bytes()).collect();
+    let raw: Vec<u8> = result.iter().flat_map(|f| f.to_le_bytes()).collect();
     let _ = std::fs::write(index_dir.join(EMBEDDINGS_FILE), raw);
+
+    let hashes_bin = bincode::serialize(&current_hashes).unwrap_or_default();
+    let _ = std::fs::write(index_dir.join(EMBEDDING_HASHES_FILE), hashes_bin);
+
+    if embedded_count < enriched_texts.len() {
+        eprintln!(
+            "embeddings: {embedded_count}/{} recomputed, {} reused",
+            enriched_texts.len(),
+            enriched_texts.len() - embedded_count
+        );
+    }
+
     (dim, None)
+}
+
+fn load_embedding_cache(
+    index_dir: &Path,
+    dim: usize,
+) -> (Vec<String>, Option<ndarray::Array2<f32>>) {
+    let hashes = std::fs::read(index_dir.join(EMBEDDING_HASHES_FILE))
+        .ok()
+        .and_then(|bytes| bincode::deserialize::<Vec<String>>(&bytes).ok())
+        .unwrap_or_default();
+
+    let embeddings = std::fs::read(index_dir.join(EMBEDDINGS_FILE))
+        .ok()
+        .and_then(|bytes| {
+            if dim == 0 || bytes.len() % (dim * 4) != 0 {
+                return None;
+            }
+            let n = bytes.len() / (dim * 4);
+            let floats: Vec<f32> = bytes
+                .chunks_exact(4)
+                .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                .collect();
+            ndarray::Array2::from_shape_vec((n, dim), floats).ok()
+        });
+
+    (hashes, embeddings)
 }
 
 pub fn load_embeddings(root: &Path) -> Option<ndarray::Array2<f32>> {
@@ -555,5 +620,55 @@ mod tests {
         std::fs::remove_file(dir.path().join("lib.py")).unwrap();
         std::fs::write(dir.path().join("other.rs"), "fn other() {}\n").unwrap();
         assert!(!is_valid(dir.path()));
+    }
+
+    #[test]
+    fn incremental_embeddings_reuse_cache() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+
+        let index_dir = dir.path().join(".prx").join("index");
+        let hashes_before: Vec<String> =
+            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+                .unwrap();
+        let emb_before = std::fs::read(index_dir.join("embeddings.bin")).unwrap();
+
+        assert!(!hashes_before.is_empty());
+        assert!(!emb_before.is_empty());
+
+        build_and_save(dir.path()).unwrap();
+
+        let hashes_after: Vec<String> =
+            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+                .unwrap();
+        let emb_after = std::fs::read(index_dir.join("embeddings.bin")).unwrap();
+
+        assert_eq!(hashes_before, hashes_after);
+        assert_eq!(emb_before, emb_after);
+    }
+
+    #[test]
+    fn incremental_embeddings_update_on_change() {
+        let dir = make_test_dir();
+        build_and_save(dir.path()).unwrap();
+
+        let index_dir = dir.path().join(".prx").join("index");
+        let hashes_before: Vec<String> =
+            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+                .unwrap();
+
+        std::fs::write(
+            dir.path().join("main.rs"),
+            "fn totally_different_content() {\n    new_stuff();\n}\n",
+        )
+        .unwrap();
+
+        build_and_save(dir.path()).unwrap();
+
+        let hashes_after: Vec<String> =
+            bincode::deserialize(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
+                .unwrap();
+
+        assert_ne!(hashes_before, hashes_after);
     }
 }

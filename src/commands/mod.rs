@@ -1,5 +1,6 @@
 pub mod batch;
 pub mod bench;
+pub mod bench_ndcg;
 pub mod context;
 pub mod diff;
 pub mod edit;
@@ -61,6 +62,8 @@ pub enum Commands {
     Run(run::RunArgs),
     /// Run synthetic benchmarks comparing prx vs grep+cat
     Bench(bench::BenchArgs),
+    /// Run NDCG benchmark against a labeled dataset
+    BenchNdcg(bench_ndcg::BenchNdcgArgs),
     /// Assemble context package for a module
     Context(context::ContextArgs),
     /// Analyze reverse dependencies for a file or symbol
@@ -86,6 +89,7 @@ impl Commands {
             Self::Init(_) => "init",
             Self::Run(_) => "run",
             Self::Bench(_) => "bench",
+            Self::BenchNdcg(_) => "bench-ndcg",
             Self::Context(_) => "context",
             Self::Impact(_) => "impact",
             #[cfg(feature = "mcp")]

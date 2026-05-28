@@ -134,11 +134,9 @@ v0.5.2 distribution (sequential, blocked on build.rs):
 | v0.5.1 | ~3-4 days development | 1 week |
 | v0.5.2 | ~2 days development | 2-3 days |
 
-### v0.5.5 — Public Benchmark Suite
+### v0.5.5 — Public Benchmark Suite (query generation + CI gate)
 
-1. **`prx bench-ndcg` subcommand** — Rust-native NDCG measurement.
-   Loads index once, runs all queries in parallel, 5-10x faster than
-   the Python script. Reusable for CI regression gate.
+`prx bench-ndcg` shipped in v0.5.3. Remaining work:
 
 2. **Query + ground truth generation** for 8 pinned repos
    (flask, ripgrep, fastify, cargo, django, kafka, terraform, vscode).
@@ -146,6 +144,17 @@ v0.5.2 distribution (sequential, blocked on build.rs):
 
 3. **`benchmark.yml` GitHub Actions workflow** — clone repos at pinned
    SHAs, build index, run NDCG, compare to baseline, fail on regression.
+
+### Future improvements for bench-ndcg
+
+- **`--plain` flag for human-readable output** — currently JSON-only.
+  Add formatted table output with per-query scores, category summaries,
+  and miss list for terminal use.
+- **Load-once-query-many** — currently each query re-loads the index via
+  `search::run()`. Refactoring to load chunks/BM25/embeddings once and
+  query N times would cut fiddler benchmark from ~10min to ~1-2min.
+- **Parallel query execution** — once load-once is implemented, queries
+  are independent and can run in parallel via rayon.
 
 ## What's NOT in v0.5.x
 

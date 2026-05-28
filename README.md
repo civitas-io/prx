@@ -322,7 +322,8 @@ NDCG@10 measured on two labeled datasets: prx's own codebase (50 queries, 173 fi
 | Version | prx (self) | External | Notes |
 |---|---|---|---|
 | v0.3.0 | 0.639 | 0.451 | Corrected baseline |
-| v0.4.0-dev | 0.681 | 0.494 | Added symbol index |
+| v0.4.0 | 0.681 | 0.494 | Added symbol index |
+| v0.5.1 | 0.673 | 0.494 | Tree-sitter imports (no regression) |
 
 The external score is the honest one — self-evaluation inflates results through labeling bias, so we report both and lead with the external number when comparing. A direct head-to-head against other tools on a shared dataset is planned; until that exists, we don't claim a ranking against them.
 

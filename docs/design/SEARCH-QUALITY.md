@@ -28,6 +28,23 @@ Fiddler Query Language parser, Alembic database migration, Redux store
 configuration, data drift detection, dashboard chart component, toxicity
 detection, time series metric, session management tokens.
 
+## v0.5.1 Results (after tree-sitter imports)
+
+| Metric | v0.4.0 | v0.5.1 | Delta |
+|---|---|---|---|
+| Fiddler NDCG@10 | 0.494 | 0.494 | ~0% (no regression) |
+| Fiddler semantic | 0.470 | 0.470 | ~0% |
+| Fiddler architecture | 0.526 | 0.526 | ~0% |
+| Fiddler symbol | 0.619 | 0.617 | ~0% (noise) |
+| Complete misses | 9 | 9 | unchanged |
+| prx NDCG@10 | 0.681 | 0.673 | -1.2% (noise) |
+
+Tree-sitter import rewrite produced no regression. The 9 remaining
+misses are all semantic queries unrelated to import extraction.
+Improvements from tree-sitter imports will show on repos with complex
+import patterns (re-exports, dynamic imports, multiline), which the
+current fiddler dataset doesn't specifically test.
+
 ---
 
 ## Corrected v0.3.0 Baseline

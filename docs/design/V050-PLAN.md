@@ -134,6 +134,19 @@ v0.5.2 distribution (sequential, blocked on build.rs):
 | v0.5.1 | ~3-4 days development | 1 week |
 | v0.5.2 | ~2 days development | 2-3 days |
 
+### v0.5.5 — Public Benchmark Suite
+
+1. **`prx bench-ndcg` subcommand** — Rust-native NDCG measurement.
+   Loads index once, runs all queries in parallel, 5-10x faster than
+   the Python script. Reusable for CI regression gate.
+
+2. **Query + ground truth generation** for 8 pinned repos
+   (flask, ripgrep, fastify, cargo, django, kafka, terraform, vscode).
+   20-30 queries per repo, Claude-annotated with human spot-check.
+
+3. **`benchmark.yml` GitHub Actions workflow** — clone repos at pinned
+   SHAs, build index, run NDCG, compare to baseline, fail on regression.
+
 ## What's NOT in v0.5.x
 
 Deferred to v0.6.0+:

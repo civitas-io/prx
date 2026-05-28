@@ -32,6 +32,9 @@ fn collect_imports(node: Node, source: &str, ext: &str, imports: &mut Vec<String
         "java" => extract_java(node, source, imports),
         "c" | "h" | "cpp" | "hpp" | "cc" | "hxx" | "cxx" | "hh" => extract_c(node, source, imports),
         "rb" => extract_ruby(node, source, imports),
+        "sh" | "bash" | "zsh" => extract_bash(node, source, imports),
+        "css" => extract_css(node, source, imports),
+        "html" | "htm" => extract_html(node, source, imports),
         _ => false,
     };
     if consumed {
@@ -192,6 +195,83 @@ fn extract_ruby(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
     false
 }
 
+fn extract_bash(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "command" {
+        if let Some(name) = node.child_by_field_name("name") {
+            let cmd = name.utf8_text(source.as_bytes()).unwrap_or("");
+            if cmd == "source" || cmd == "." {
+                if let Some(arg) = node.child_by_field_name("argument") {
+                    push_text(arg, source, imports);
+                    return true;
+                }
+                let mut cursor = node.walk();
+                for child in node.children(&mut cursor) {
+                    if child.kind() == "word" && child.id() != name.id() {
+                        push_text(child, source, imports);
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
+fn extract_css(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "import_statement" {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() == "string_value" || child.kind() == "call_expression" {
+                push_string_literal(child, source, imports);
+                return true;
+            }
+        }
+    }
+    false
+}
+
+fn extract_html(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "script_element" || node.kind() == "style_element" || node.kind() == "element"
+    {
+        let mut is_relevant = node.kind() == "script_element" || node.kind() == "style_element";
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() == "start_tag" || child.kind() == "self_closing_tag" {
+                let mut tag_cursor = child.walk();
+                for attr in child.children(&mut tag_cursor) {
+                    if attr.kind() == "tag_name" {
+                        let tag = attr.utf8_text(source.as_bytes()).unwrap_or("");
+                        if tag == "link" || tag == "script" {
+                            is_relevant = true;
+                        }
+                    }
+                    if attr.kind() == "attribute" && is_relevant {
+                        let mut ac = attr.walk();
+                        let mut name = "";
+                        let mut val_node = None;
+                        for a in attr.children(&mut ac) {
+                            if a.kind() == "attribute_name" {
+                                name = a.utf8_text(source.as_bytes()).unwrap_or("");
+                            }
+                            if a.kind() == "quoted_attribute_value" || a.kind() == "attribute_value"
+                            {
+                                val_node = Some(a);
+                            }
+                        }
+                        if name == "src" || name == "href" {
+                            if let Some(val) = val_node {
+                                push_string_literal(val, source, imports);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return is_relevant;
+    }
+    false
+}
+
 fn push_text(node: Node, source: &str, imports: &mut Vec<String>) {
     if let Ok(text) = node.utf8_text(source.as_bytes()) {
         if !text.is_empty() {
@@ -323,5 +403,35 @@ mod tests {
         let src = "import type { Foo } from './types';\n";
         let imports = extract_imports(src, "ts");
         assert_eq!(imports, vec!["./types"]);
+    }
+
+    #[test]
+    fn bash_source() {
+        let src = "source ./config.sh\n. /etc/profile\n";
+        let imports = extract_imports(src, "sh");
+        assert!(!imports.is_empty());
+        assert!(imports.iter().any(|i| i.contains("config")));
+    }
+
+    #[test]
+    fn css_import() {
+        let src = "@import 'reset.css';\n@import \"theme.css\";\n";
+        let imports = extract_imports(src, "css");
+        assert!(!imports.is_empty());
+    }
+
+    #[test]
+    fn html_script_src() {
+        let src =
+            "<script src=\"app.js\"></script>\n<link href=\"style.css\" rel=\"stylesheet\">\n";
+        let imports = extract_imports(src, "html");
+        assert!(!imports.is_empty());
+    }
+
+    #[test]
+    fn json_no_imports() {
+        let src = "{\"key\": \"value\"}\n";
+        let imports = extract_imports(src, "json");
+        assert!(imports.is_empty());
     }
 }

@@ -35,6 +35,8 @@ struct IndexOutput {
     languages: std::collections::HashMap<String, usize>,
     valid: bool,
     duration_ms: u64,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    warnings: Vec<String>,
 }
 
 pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
@@ -95,6 +97,7 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
         languages: stats.languages,
         valid: true,
         duration_ms,
+        warnings: stats.warnings,
     };
 
     serde_json::to_value(output).map_err(|e| AgError::Internal {

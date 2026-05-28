@@ -29,7 +29,7 @@ impl ImportGraph {
             if let Some(source) = reader(path) {
                 let raw_imports = imports::extract_imports(&source, ext);
                 for imp in raw_imports {
-                    for &target in resolve_import(&imp, &suffix_index).iter() {
+                    for &target in resolve_import(&imp, &suffix_index, &paths, i as u32).iter() {
                         if target != i as u32 {
                             forward[i].push(target);
                         }
@@ -67,7 +67,7 @@ impl ImportGraph {
             if let Some(source) = reader(seed) {
                 let raw_imports = imports::extract_imports(&source, ext);
                 for imp in raw_imports {
-                    for &target in resolve_import(&imp, &suffix_index).iter() {
+                    for &target in resolve_import(&imp, &suffix_index, &paths, id).iter() {
                         if target != id {
                             forward[id as usize].push(target);
                         }
@@ -216,13 +216,19 @@ fn normalize_import(raw: &str) -> String {
     result
 }
 
-fn resolve_import(raw: &str, suffix_index: &HashMap<String, Vec<u32>>) -> Vec<u32> {
+fn resolve_import(
+    raw: &str,
+    suffix_index: &HashMap<String, Vec<u32>>,
+    paths: &[String],
+    importer_id: u32,
+) -> Vec<u32> {
     let normalized = normalize_import(raw);
 
     if let Some(ids) = suffix_index.get(&normalized) {
-        if ids.len() <= 3 {
+        if ids.len() <= 5 {
             return ids.clone();
         }
+        return pick_closest(ids, paths, importer_id);
     }
 
     let trimmed = match normalized.rfind('/') {
@@ -230,12 +236,43 @@ fn resolve_import(raw: &str, suffix_index: &HashMap<String, Vec<u32>>) -> Vec<u3
         None => return vec![],
     };
     if let Some(ids) = suffix_index.get(trimmed) {
-        if ids.len() <= 3 {
+        if ids.len() <= 5 {
             return ids.clone();
         }
+        return pick_closest(ids, paths, importer_id);
     }
 
     vec![]
+}
+
+fn pick_closest(candidates: &[u32], paths: &[String], importer_id: u32) -> Vec<u32> {
+    let importer_dir = paths
+        .get(importer_id as usize)
+        .and_then(|p| p.rfind('/').map(|i| &p[..i]))
+        .unwrap_or("");
+
+    let mut scored: Vec<(u32, usize)> = candidates
+        .iter()
+        .map(|&id| {
+            let candidate_dir = paths
+                .get(id as usize)
+                .and_then(|p| p.rfind('/').map(|i| &p[..i]))
+                .unwrap_or("");
+            let shared = common_prefix_len(importer_dir, candidate_dir);
+            (id, shared)
+        })
+        .collect();
+
+    scored.sort_by_key(|s| std::cmp::Reverse(s.1));
+    scored.truncate(2);
+    scored.into_iter().map(|(id, _)| id).collect()
+}
+
+fn common_prefix_len(a: &str, b: &str) -> usize {
+    a.split('/')
+        .zip(b.split('/'))
+        .take_while(|(x, y)| x == y)
+        .count()
 }
 
 fn build_reverse(forward: &[Vec<u32>], n: usize) -> Vec<Vec<u32>> {
@@ -376,5 +413,45 @@ mod tests {
         let graph = ImportGraph::build_full(&[], |_| None);
         assert!(graph.paths.is_empty());
         assert!(graph.neighbors_within(&[], 2).is_empty());
+    }
+
+    #[test]
+    fn resolve_picks_closest_when_ambiguous() {
+        let paths = vec![
+            "src/components/index.ts".to_string(),
+            "src/utils/index.ts".to_string(),
+            "src/api/index.ts".to_string(),
+            "src/models/index.ts".to_string(),
+            "src/components/button.ts".to_string(),
+        ];
+        let (_, _, suffix_index) = build_path_index(&paths);
+
+        let result = resolve_import("./index", &suffix_index, &paths, 4);
+        assert!(!result.is_empty());
+        assert!(
+            result.contains(&0),
+            "should resolve to src/components/index.ts (same dir as importer)"
+        );
+    }
+
+    #[test]
+    fn resolve_does_not_bail_on_common_names() {
+        let paths: Vec<String> = (0..10).map(|i| format!("pkg{i}/utils.py")).collect();
+        let (_, _, suffix_index) = build_path_index(&paths);
+
+        let result = resolve_import("utils", &suffix_index, &paths, 0);
+        assert!(
+            !result.is_empty(),
+            "should not bail on >3 matches — should pick closest"
+        );
+        assert!(result.len() <= 2, "should return at most 2 candidates");
+    }
+
+    #[test]
+    fn common_prefix_len_works() {
+        assert_eq!(common_prefix_len("src/components", "src/components"), 2);
+        assert_eq!(common_prefix_len("src/components", "src/utils"), 1);
+        assert_eq!(common_prefix_len("lib/foo", "src/bar"), 0);
+        assert_eq!(common_prefix_len("", "src"), 0);
     }
 }

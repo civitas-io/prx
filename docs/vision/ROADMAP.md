@@ -351,9 +351,10 @@ Design: `docs/design/LEAN-DOWN.md`.
 
 | Item | Priority | Description |
 |---|---|---|
-| Query generation for 8 pinned repos | **High** | 20-30 labeled queries per repo (flask, ripgrep, fastify, cargo, django, kafka, terraform, vscode). |
-| `benchmark.yml` CI workflow | **High** | Clone repos at pinned SHAs, build index, run NDCG, compare to baseline, fail on regression >0.02. |
+| Query generation for 8 pinned repos | **High** | 25 labeled queries per repo (flask, ripgrep, fastify, cargo, django, kafka, terraform, vscode). Done — 200 total queries across 6 languages, 3 size tiers. |
+| `benchmark.yml` CI workflow | **High** | Clone repos at pinned SHAs, build index, run NDCG, compare to baseline, fail on regression >0.05 (relaxed until query count increases). |
 | Results dashboard | Medium | `benchmarks/results/` with per-release JSON. |
+| Expand to 40-50 queries per repo | Medium | 25 queries gives ±0.05-0.08 standard error — too noisy for 0.02 regression detection. 40-50 narrows to ±0.03, enabling tighter CI gate. Prioritize medium/large repos where misses are highest. |
 
 ## v0.5.8 — Distribution & Documentation
 

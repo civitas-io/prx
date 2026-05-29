@@ -1,0 +1,212 @@
+{
+  "repo": "BurntSushi/ripgrep",
+  "sha": "f0cec341ab95",
+  "root": null,
+  "queries": [
+    {
+      "query": "SearchWorkerBuilder",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/core/search.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "DirEntry",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/ignore/src/walk.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "Gitignore",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/ignore/src/gitignore.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "StandardBuilder",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/printer/src/standard.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "GlobSet",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/globset/src/lib.rs", "relevance": 3},
+        {"file": "crates/globset/src/glob.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "ConfiguredHIR",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/regex/src/config.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "Haystack",
+      "category": "symbol",
+      "relevant": [
+        {"file": "crates/core/haystack.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how does ripgrep walk directories and respect gitignore rules",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/ignore/src/walk.rs", "relevance": 3},
+        {"file": "crates/ignore/src/gitignore.rs", "relevance": 3},
+        {"file": "crates/ignore/src/dir.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep perform parallel search across files",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/core/main.rs", "relevance": 3},
+        {"file": "crates/core/search.rs", "relevance": 3},
+        {"file": "crates/ignore/src/walk.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does ripgrep format and print search results",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/printer/src/standard.rs", "relevance": 3},
+        {"file": "crates/printer/src/summary.rs", "relevance": 2},
+        {"file": "crates/printer/src/color.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does ripgrep detect and handle binary files",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/core/search.rs", "relevance": 3},
+        {"file": "crates/searcher/src/lib.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep handle compressed files and preprocessors",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/cli/src/decompress.rs", "relevance": 3},
+        {"file": "crates/core/search.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does ripgrep parse command line flags and arguments",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/core/flags/parse.rs", "relevance": 3},
+        {"file": "crates/core/flags/defs.rs", "relevance": 3},
+        {"file": "crates/core/flags/hiargs.rs", "relevance": 2},
+        {"file": "crates/core/flags/lowargs.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep compile and optimize regex patterns",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/regex/src/config.rs", "relevance": 3},
+        {"file": "crates/regex/src/matcher.rs", "relevance": 2},
+        {"file": "crates/regex/src/literal.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does ripgrep implement file type filtering",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/ignore/src/types.rs", "relevance": 3},
+        {"file": "crates/ignore/src/default_types.rs", "relevance": 2},
+        {"file": "crates/ignore/src/overrides.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does ripgrep output JSON search results",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/printer/src/json.rs", "relevance": 3},
+        {"file": "crates/printer/src/jsont.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep count matches and display statistics",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/printer/src/counter.rs", "relevance": 3},
+        {"file": "crates/printer/src/stats.rs", "relevance": 3},
+        {"file": "crates/printer/src/summary.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "what is the architecture of ripgrep's crate workspace",
+      "category": "architecture",
+      "relevant": [
+        {"file": "crates/core/main.rs", "relevance": 3},
+        {"file": "crates/grep/src/lib.rs", "relevance": 2},
+        {"file": "crates/core/search.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does the Matcher trait work and what implements it",
+      "category": "architecture",
+      "relevant": [
+        {"file": "crates/matcher/src/lib.rs", "relevance": 3},
+        {"file": "crates/regex/src/matcher.rs", "relevance": 3},
+        {"file": "crates/pcre2/src/matcher.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep's line buffer and searcher work together",
+      "category": "architecture",
+      "relevant": [
+        {"file": "crates/searcher/src/line_buffer.rs", "relevance": 3},
+        {"file": "crates/searcher/src/lib.rs", "relevance": 2},
+        {"file": "crates/searcher/src/sink.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep escape and unescape patterns",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/cli/src/escape.rs", "relevance": 3},
+        {"file": "crates/cli/src/pattern.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep handle hyperlinks in output",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/printer/src/standard.rs", "relevance": 3},
+        {"file": "crates/printer/src/path.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep strip ANSI colors from regex patterns",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/regex/src/strip.rs", "relevance": 3},
+        {"file": "crates/regex/src/ban.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does ripgrep read patterns from files and stdin",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/cli/src/pattern.rs", "relevance": 3},
+        {"file": "crates/core/flags/hiargs.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does ripgrep log debug messages",
+      "category": "semantic",
+      "relevant": [
+        {"file": "crates/core/logger.rs", "relevance": 3},
+        {"file": "crates/core/messages.rs", "relevance": 2}
+      ]
+    }
+  ]
+}

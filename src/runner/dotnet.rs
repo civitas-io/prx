@@ -1,24 +1,14 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-// Program.cs(42,10): error CS1002: ; expected
-// Program.cs(15,5): warning CS0168: The variable 'x' is declared but never used
-static ISSUE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(.+?)\((\d+),(\d+)\): (error|warning) (CS\d+): (.+)$").unwrap());
-
-// Build succeeded.
-// Build FAILED.
-static BUILD_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^Build (succeeded|FAILED)\.").unwrap());
-
-// Failed!  - Failed:     2, Passed:     8, Skipped:     0, Total:    10
-// Passed!  - Failed:     0, Passed:    10, Skipped:     0, Total:    10
-static TEST_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"(?:Failed|Passed)!\s+-\s+Failed:\s+(\d+),\s+Passed:\s+(\d+),\s+Skipped:\s+(\d+)")
-        .unwrap()
-});
+define_regex!(
+    ISSUE_RE,
+    r"^(.+?)\((\d+),(\d+)\): (error|warning) (CS\d+): (.+)$"
+);
+define_regex!(BUILD_RE, r"^Build (succeeded|FAILED)\.");
+define_regex!(
+    TEST_RE,
+    r"(?:Failed|Passed)!\s+-\s+Failed:\s+(\d+),\s+Passed:\s+(\d+),\s+Skipped:\s+(\d+)"
+);
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut failures = Vec::new();

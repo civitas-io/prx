@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.4] - 2026-05-29
+
+### Changed
+
+- **`define_regex!` macro** — reduces 3-line `LazyLock<Regex>` statics to
+  1-line macro calls across all 21 runner parsers.
+- **`ParsedResult::new()` constructor** — replaces 7-field struct literals
+  in 8 parsers where `warnings` and `tail` are empty defaults.
+- **Shared `workspace` module** — extracted `relative_path()` and
+  `is_test_file()` from duplicated copies in `context.rs` and `impact.rs`
+  into `src/workspace.rs`.
+
+### Stats
+
+- Net -159 lines across 27 files. No behavior changes. All 442 tests pass.
+
 ## [0.5.3] - 2026-05-28
 
 ### Added

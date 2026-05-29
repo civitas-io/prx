@@ -1,12 +1,7 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{ParsedResult, define_regex};
 
-use super::ParsedResult;
-
-static COMMIT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^commit ([0-9a-f]{7,40})").unwrap());
-
-static AUTHOR_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Author:\s+(.+?)\s+<").unwrap());
+define_regex!(COMMIT_RE, r"^commit ([0-9a-f]{7,40})");
+define_regex!(AUTHOR_RE, r"^Author:\s+(.+?)\s+<");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut commits: Vec<String> = Vec::new();

@@ -1,10 +1,9 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static LEVEL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?i)\b(ERROR|WARN(?:ING)?|FATAL|DEBUG|INFO|TRACE)\b").unwrap());
+define_regex!(
+    LEVEL_RE,
+    r"(?i)\b(ERROR|WARN(?:ING)?|FATAL|DEBUG|INFO|TRACE)\b"
+);
 
 fn classify(line: &str) -> Option<&'static str> {
     let caps = LEVEL_RE.captures(line)?;

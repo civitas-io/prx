@@ -270,6 +270,36 @@ pub struct ParsedResult {
     pub tail: Option<String>,
 }
 
+impl ParsedResult {
+    /// Create a result with common fields. Sets `warnings` to empty and `tail` to `None`.
+    pub fn new(
+        summary: String,
+        passed: usize,
+        failed: usize,
+        skipped: usize,
+        failures: Vec<Diagnostic>,
+    ) -> Self {
+        Self {
+            summary,
+            passed,
+            failed,
+            skipped,
+            failures,
+            warnings: vec![],
+            tail: None,
+        }
+    }
+}
+
+/// Declare a `static LazyLock<Regex>` in one line.
+macro_rules! define_regex {
+    ($name:ident, $pattern:expr) => {
+        static $name: std::sync::LazyLock<regex::Regex> =
+            std::sync::LazyLock::new(|| regex::Regex::new($pattern).unwrap());
+    };
+}
+pub(crate) use define_regex;
+
 #[cfg(test)]
 mod tests {
     use super::*;

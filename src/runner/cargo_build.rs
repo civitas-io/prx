@@ -1,13 +1,7 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static ERROR_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(error|warning)(\[E\d+\])?: (.+)$").unwrap());
-
-static LOCATION_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\s+--> (.+):(\d+):(\d+)$").unwrap());
+define_regex!(ERROR_RE, r"^(error|warning)(\[E\d+\])?: (.+)$");
+define_regex!(LOCATION_RE, r"^\s+--> (.+):(\d+):(\d+)$");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut failures = Vec::new();

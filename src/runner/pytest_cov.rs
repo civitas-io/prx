@@ -1,16 +1,8 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static TOTAL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^TOTAL\s+\d+\s+\d+\s+([\d.]+%)").unwrap());
-
-static FILE_COV_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(\S+\.py)\s+\d+\s+\d+\s+([\d.]+%)").unwrap());
-
-static STMTS_MISSED_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^TOTAL\s+(\d+)\s+(\d+)").unwrap());
+define_regex!(TOTAL_RE, r"^TOTAL\s+\d+\s+\d+\s+([\d.]+%)");
+define_regex!(FILE_COV_RE, r"^(\S+\.py)\s+\d+\s+\d+\s+([\d.]+%)");
+define_regex!(STMTS_MISSED_RE, r"^TOTAL\s+(\d+)\s+(\d+)");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut total_coverage = String::new();

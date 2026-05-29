@@ -1,18 +1,10 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static SUMMARY_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"=+ (.+) =+\s*$").unwrap());
-
-static PASSED_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(\d+) passed").unwrap());
-
-static FAILED_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(\d+) failed").unwrap());
-
-static SKIPPED_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"(\d+) skipped").unwrap());
-
-static FAILURE_LINE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^FAILED (.+?) - (.+)$").unwrap());
+define_regex!(SUMMARY_RE, r"=+ (.+) =+\s*$");
+define_regex!(PASSED_RE, r"(\d+) passed");
+define_regex!(FAILED_RE, r"(\d+) failed");
+define_regex!(SKIPPED_RE, r"(\d+) skipped");
+define_regex!(FAILURE_LINE_RE, r"^FAILED (.+?) - (.+)$");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut passed = 0;
@@ -49,15 +41,7 @@ pub fn parse(output: &str) -> ParsedResult {
         summary = format!("{passed} passed, {failed} failed");
     }
 
-    ParsedResult {
-        summary,
-        passed,
-        failed,
-        skipped,
-        failures,
-        warnings: vec![],
-        tail: None,
-    }
+    ParsedResult::new(summary, passed, failed, skipped, failures)
 }
 
 #[cfg(test)]

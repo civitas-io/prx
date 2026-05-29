@@ -1,16 +1,15 @@
-use regex::Regex;
 use serde_json;
-use std::sync::LazyLock;
 
-use super::{Diagnostic, ParsedResult};
+use super::{Diagnostic, ParsedResult, define_regex};
 
-// 42:18  error  Unexpected any  @typescript-eslint/no-explicit-any
-static ISSUE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^\s+(\d+):(\d+)\s+(error|warning)\s+(.+?)\s{2,}(\S+)\s*$").unwrap()
-});
-
-static SUMMARY_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(\d+) problems? \((\d+) errors?, (\d+) warnings?\)").unwrap());
+define_regex!(
+    ISSUE_RE,
+    r"^\s+(\d+):(\d+)\s+(error|warning)\s+(.+?)\s{2,}(\S+)\s*$"
+);
+define_regex!(
+    SUMMARY_RE,
+    r"(\d+) problems? \((\d+) errors?, (\d+) warnings?\)"
+);
 
 fn parse_json(json: &serde_json::Value) -> ParsedResult {
     let mut failures = Vec::new();

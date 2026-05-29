@@ -10,3 +10,4 @@ pub mod runner;
 pub mod search;
 pub mod tokens;
 pub mod walk;
+pub mod workspace;

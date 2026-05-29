@@ -325,6 +325,7 @@ ag/
 │   ├── tokens.rs                # Token counting (tokenizers crate)
 │   ├── hash.rs                  # Content hashing (xxh3)
 │   ├── walk.rs                  # File walking (ignore crate, .gitignore/.prxignore)
+│   ├── workspace.rs             # Shared utilities (relative_path, is_test_file)
 │   ├── fallback.rs              # Graceful fallback to grep/cat/find on internal errors
 │   │
 │   ├── commands/                # Subcommand handlers

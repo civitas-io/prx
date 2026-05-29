@@ -1,12 +1,7 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static PACKAGE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(ok|FAIL)\s+(\S+)\s+([\d.]+)s").unwrap());
-
-static FAIL_HEADER_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^--- FAIL: (\S+)").unwrap());
+define_regex!(PACKAGE_RE, r"^(ok|FAIL)\s+(\S+)\s+([\d.]+)s");
+define_regex!(FAIL_HEADER_RE, r"^--- FAIL: (\S+)");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut passed_pkgs = 0;
@@ -59,15 +54,7 @@ pub fn parse(output: &str) -> ParsedResult {
 
     let summary = format!("{passed_pkgs} ok, {failed_pkgs} failed");
 
-    ParsedResult {
-        summary,
-        passed: passed_pkgs,
-        failed: failed_pkgs,
-        skipped: 0,
-        failures,
-        warnings: vec![],
-        tail: None,
-    }
+    ParsedResult::new(summary, passed_pkgs, failed_pkgs, 0, failures)
 }
 
 #[cfg(test)]

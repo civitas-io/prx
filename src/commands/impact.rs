@@ -410,34 +410,7 @@ fn find_workspace_root(target: &Path) -> Option<PathBuf> {
     None
 }
 
-fn relative_path(target: &Path, base: &Path) -> Option<String> {
-    let target_abs = std::fs::canonicalize(target).ok()?;
-    let base_abs = std::fs::canonicalize(base).ok()?;
-    target_abs
-        .strip_prefix(&base_abs)
-        .ok()
-        .map(|p| p.to_string_lossy().replace('\\', "/"))
-}
-
-fn is_test_file(rel_str: &str) -> bool {
-    if rel_str.contains("/tests/") || rel_str.starts_with("tests/") {
-        return true;
-    }
-    if rel_str.contains("__tests__/") {
-        return true;
-    }
-    let name = Path::new(rel_str)
-        .file_name()
-        .and_then(|n| n.to_str())
-        .unwrap_or("");
-    if name.starts_with("test_") {
-        return true;
-    }
-    if name.contains("_test.") || name.contains(".test.") || name.contains(".spec.") {
-        return true;
-    }
-    false
-}
+use crate::workspace::{is_test_file, relative_path};
 
 fn current_tokens(output: &ImpactOutput) -> usize {
     let s = serde_json::to_string(output).unwrap_or_default();

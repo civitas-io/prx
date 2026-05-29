@@ -54,6 +54,9 @@ regex = "1"
 # Home directory resolution for stats file
 dirs-next = "2"
 
+# Parallel iteration — embarrassingly parallel indexing (chunking, embedding, import extraction)
+rayon = "1"
+
 # Binary serialization for persistent index
 # postcard: compact serde serialization for index files (replaces unmaintained bincode, RUSTSEC-2025-0141)
 postcard = { version = "1", features = ["alloc"] }

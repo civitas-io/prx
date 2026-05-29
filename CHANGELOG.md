@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.6] - 2026-05-29
+
+### Changed
+
+- **Memory-mapped embeddings** — `embeddings.bin` loaded via `memmap2` with
+  zero-copy `bytemuck::cast_slice`. OS page cache keeps 54 MB of embeddings
+  warm across queries. Falls back to owned allocation if mmap fails.
+- **`bench-ndcg` load-once** — index loaded once, queries run N times.
+  50-query benchmark: 12.76s → 0.23s (55x speedup).
+- **`bench-ndcg --plain`** — human-readable table output with NDCG scores,
+  per-category breakdown, and miss list.
+- **Test helpers module** — shared `ag()`, `test_dir()`, `parse_json()` in
+  `tests/helpers/mod.rs`. 5 new E2E tests covering semantic search with
+  index, alpha override, run modes, and context budgets.
+
+### Stats
+
+- 442 unit + 80 E2E + 8 MCP = 530 tests (was 525).
+
 ## [0.5.5] - 2026-05-29
 
 ### Changed

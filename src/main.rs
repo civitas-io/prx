@@ -49,7 +49,11 @@ fn main() -> Result<()> {
     match result {
         Ok(Ok(ref data)) => {
             log_telemetry(&command_name, data, wall_ms);
-            write_envelope(&command_name, data.clone(), plain);
+            if plain && command_name == "bench-ndcg" {
+                commands::bench_ndcg::render_plain(data);
+            } else {
+                write_envelope(&command_name, data.clone(), plain);
+            }
         }
         Ok(Err(ref e)) => {
             if should_fallback(e) {

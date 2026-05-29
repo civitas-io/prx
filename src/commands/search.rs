@@ -248,43 +248,103 @@ fn hybrid_search(
     if all_chunks.is_empty() {
         return to_search_output(vec![], 0, false, 0);
     }
+
+    let embeddings = persist::load_embeddings(root);
+    let model = build_dense_index_model_only();
+    let symbols = persist::load_symbols(root);
+
+    hybrid_search_with_preloaded(
+        query,
+        root,
+        &all_chunks,
+        &chunk_texts,
+        &chunk_file_paths,
+        &bm25_index,
+        embeddings.as_ref(),
+        model.as_ref(),
+        None,
+        symbols.as_ref(),
+        top_k,
+        budget,
+        alpha_override,
+        skip,
+    )
+}
+
+/// Run hybrid search with pre-loaded index data. Used by bench-ndcg to avoid
+/// reloading the index per query.
+#[allow(clippy::too_many_arguments)]
+pub fn hybrid_search_with_preloaded(
+    query: &str,
+    root: &Path,
+    all_chunks: &[chunking::Chunk],
+    chunk_texts: &[String],
+    chunk_file_paths: &[String],
+    bm25_index: &SparseIndex,
+    embeddings: Option<&persist::Embeddings>,
+    model: Option<&DenseIndex>,
+    preloaded_graph: Option<&ImportGraph>,
+    symbols: Option<&crate::search::symbols::SymbolIndex>,
+    top_k: usize,
+    budget: Option<usize>,
+    alpha_override: Option<f32>,
+    skip: usize,
+) -> Result<serde_json::Value, AgError> {
+    if all_chunks.is_empty() {
+        return to_search_output(vec![], 0, false, 0);
+    }
+
     let expanded = fusion::expand_synonyms(query);
     let bm25_results = bm25_index.query(&expanded, top_k * 5);
 
-    let semantic_results = if let Some(embeddings) = persist::load_embeddings(root) {
-        let mut dense = build_dense_index_model_only();
-        if let Some(ref mut idx) = dense {
-            idx.set_embeddings(embeddings);
-            idx.search(query, top_k * 5)
-        } else {
-            vec![]
+    let semantic_results = match (embeddings, model) {
+        (Some(emb), Some(idx)) => {
+            let query_vec = idx.embed_text(query);
+            let emb_view = emb.view();
+            let mut scores: Vec<(usize, f32)> = emb_view
+                .rows()
+                .into_iter()
+                .enumerate()
+                .map(|(i, row)| (i, row.dot(&query_vec)))
+                .collect();
+            scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+            scores.truncate(top_k * 5);
+            scores
         }
-    } else {
-        let dense_index = build_dense_index(&chunk_texts);
-        match &dense_index {
-            Some(idx) => idx.search(query, top_k * 5),
-            None => vec![],
+        _ => {
+            let dense_index = build_dense_index(chunk_texts);
+            match &dense_index {
+                Some(idx) => idx.search(query, top_k * 5),
+                None => vec![],
+            }
         }
     };
 
     let alpha = fusion::resolve_alpha(query, alpha_override);
     let fused = fusion::rrf_fuse(&semantic_results, &bm25_results, alpha);
 
-    let import_graph = load_or_build_graph(root, &fused, &chunk_file_paths);
+    let import_graph_owned = if preloaded_graph.is_some() {
+        None
+    } else {
+        load_or_build_graph(root, &fused, chunk_file_paths)
+    };
+    let import_graph: Option<&ImportGraph> = preloaded_graph.or(import_graph_owned.as_ref());
 
     let mut score_map: HashMap<usize, f32> = fused.into_iter().collect();
 
-    if fusion::is_symbol_query(query) {
-        boost_symbol_definitions(root, query, &all_chunks, &mut score_map);
+    if fusion::is_symbol_query(query)
+        && let Some(sym_idx) = symbols
+    {
+        boost_symbol_definitions_with(sym_idx, query, all_chunks, &mut score_map);
     }
 
     let ranked = ranking::rerank(
         &mut score_map,
-        &chunk_texts,
-        &chunk_file_paths,
+        chunk_texts,
+        chunk_file_paths,
         query,
         top_k * 2,
-        import_graph.as_ref(),
+        import_graph,
     );
 
     let mut matches = Vec::new();
@@ -335,17 +395,12 @@ fn hybrid_search(
 
 const SYMBOL_INDEX_BOOST: f32 = 50.0;
 
-fn boost_symbol_definitions(
-    root: &Path,
+fn boost_symbol_definitions_with(
+    symbol_index: &crate::search::symbols::SymbolIndex,
     query: &str,
     chunks: &[chunking::Chunk],
     scores: &mut HashMap<usize, f32>,
 ) {
-    let symbol_index = match persist::load_symbols(root) {
-        Some(idx) => idx,
-        None => return,
-    };
-
     let symbol_name = query.trim().split("::").last().unwrap_or(query.trim());
     let defs = symbol_index.lookup_flexible(symbol_name);
     if defs.is_empty() {

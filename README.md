@@ -66,6 +66,8 @@ Ranked results, metadata included, under a token budget you control. The agent g
 
 **The semantic model is built in.** A 32M-parameter retrieval-optimized embedding model (potion-retrieval-32M, stored as float16) is compiled directly into the binary. Semantic search runs on CPU in milliseconds — no model server, no vector database, no setup step.
 
+**It's fast.** Indexing runs on all CPU cores in parallel (7.6x speedup on 10 cores). Embeddings are memory-mapped with zero-copy access — no heap allocation, no deserialization. A 50-query benchmark suite runs in 0.23 seconds.
+
 ---
 
 ## Token savings
@@ -87,7 +89,9 @@ Measured across real agent sessions on production codebases. Run the numbers on 
 
 ---
 
-## Indexing performance
+## Performance
+
+### Indexing: 7.6x parallel speedup
 
 `prx index` builds a persistent search index — BM25, semantic embeddings, import graph, and symbol definitions — in a single parallel pass. All five stages run on all available CPU cores via rayon.
 
@@ -99,6 +103,26 @@ Measured across real agent sessions on production codebases. Run the numbers on 
 The embedding stage (computing 256-dim vectors for 55K chunks) is 94% of the work. Parallelizing it alone turned a 7-minute indexing job into under a minute. On CI runners (4 cores), expect ~3-4x speedup. On workstations (8-16 cores), expect ~6-8x.
 
 Incremental rebuilds skip unchanged files entirely — only modified or new files are re-chunked and re-embedded.
+
+### Search: zero-copy memory-mapped embeddings
+
+Embedding vectors are memory-mapped directly from disk via `memmap2` and cast to `&[f32]` with zero allocation using `bytemuck`. The OS page cache keeps the index warm across queries — no heap allocation, no deserialization, no repeated file reads.
+
+On an 11K-file codebase with 54 MB of embeddings, this means:
+
+- **Zero bytes** allocated for embedding data (OS manages the pages)
+- Queries after the first hit warm cache — sub-millisecond embedding access
+- Falls back to owned allocation automatically if mmap isn't available (network FS, etc.)
+
+### Benchmarking: 55x speedup with load-once
+
+`prx bench-ndcg` measures search quality (NDCG@10) against labeled datasets. It loads the index once and runs all queries against cached data:
+
+| Benchmark | Before (v0.5.5) | After (v0.5.6) | Speedup |
+|---|---|---|---|
+| 50-query NDCG suite | 12.76s | **0.23s** | **55x** |
+
+Use `--plain` for human-readable output in the terminal.
 
 ---
 
@@ -318,12 +342,12 @@ Single static binary. No runtime dependencies. No network required after build.
 | | |
 |---|---|
 | Commands | 17 |
-| Tests | 442 unit + 75 E2E + 8 MCP |
+| Tests | 442 unit + 80 E2E + 8 MCP |
 | Run parsers | 22 (cargo, pytest, go, jest, eslint, tsc, kubectl, terraform, docker, + 13 more) |
 | Languages (parsing) | 15 tree-sitter grammars |
 | Import graph | 10 language families, tree-sitter AST extraction |
 | Symbol index | Definition lookup + reference counting |
-| Indexing | Parallel via rayon — 11K files in 54s on 10 cores (7.6x speedup) |
+| Indexing | Parallel via rayon — 11K files in 54s on 10 cores (7.6x speedup). Zero-copy mmap embeddings. |
 | Embedded model | potion-retrieval-32M (Model2Vec, float16, PCA→256 dims) |
 | Release binary | ~49 MB |
 | CI | GitHub Actions: Linux x86_64 / aarch64, macOS arm64, Windows |

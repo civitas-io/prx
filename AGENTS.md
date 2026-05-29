@@ -429,6 +429,7 @@ These are settled decisions. Do not revisit without discussion.
 | 11 | **BM25 with compound identifier tokenization** | camelCase/snake_case splitting without stemming. Code identifiers are semantically distinct -- "HTTPResponse" and "HTTP" mean different things. |
 | 12 | **RRF fusion with adaptive alpha** | Symbol queries (Foo::bar) lean BM25 (alpha=0.3). Natural language queries stay balanced (alpha=0.5). Auto-detected. |
 | 13 | **Parallel indexing via rayon** | All 5 indexing stages (read/hash/chunk, BM25, embedding, import graph, symbol index) run in parallel. No shared mutable state, no Arc, no Mutex — pure `par_iter` on thread-safe immutable data. 7.6x speedup on 10-core (11K files: 410s → 54s). BLAS thread limits prevent oversubscription. |
+| 14 | **Zero-copy memory-mapped embeddings** | `embeddings.bin` is mmap'd via `memmap2` and cast to `&[f32]` with `bytemuck::cast_slice` (zero allocation, zero deserialization). OS page cache keeps index warm across queries. Falls back to owned `Array2<f32>` if mmap fails. `Embeddings` enum abstracts both paths behind a single `view() -> ArrayView2<f32>` API. |
 
 ---
 

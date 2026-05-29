@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::io;
 use std::path::{Path, PathBuf};
 
 use rayon::prelude::*;
@@ -10,6 +11,83 @@ use crate::index::sparse::{self, SparseIndex};
 use crate::output::AgError;
 use crate::parsing;
 use crate::walk::{self, WalkOpts};
+
+/// Memory-mapped embeddings file. Zero-copy view into the OS page cache,
+/// keeps the index warm across repeated `prx search` invocations.
+pub struct MmapEmbeddings {
+    mmap: memmap2::Mmap,
+    n_chunks: usize,
+    dim: usize,
+}
+
+impl MmapEmbeddings {
+    /// Open and validate a memory-mapped embeddings file.
+    ///
+    /// The caller must ensure the file is not modified while this struct exists.
+    /// prx only writes embeddings.bin during `prx index`, which is exclusive,
+    /// and the file is read-only thereafter.
+    pub fn open(path: &Path, n_chunks: usize, dim: usize) -> io::Result<Self> {
+        let file = std::fs::File::open(path)?;
+        // SAFETY: Index files are read-only after creation. `prx index` is the sole
+        // writer and completes before any reader accesses the file. Concurrent
+        // `prx search` invocations only read.
+        let mmap = unsafe { memmap2::Mmap::map(&file)? };
+        let expected = n_chunks * dim * 4;
+        if mmap.len() != expected {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!(
+                    "embeddings.bin: expected {expected} bytes, got {}",
+                    mmap.len()
+                ),
+            ));
+        }
+        // Validate alignment and castability up front so `view()` cannot panic.
+        // bytemuck::try_cast_slice returns Err if alignment is wrong.
+        bytemuck::try_cast_slice::<u8, f32>(&mmap).map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("embeddings.bin: cast failed: {e}"),
+            )
+        })?;
+        Ok(Self {
+            mmap,
+            n_chunks,
+            dim,
+        })
+    }
+
+    /// Zero-copy 2D view over the mmap'd region.
+    pub fn view(&self) -> ndarray::ArrayView2<'_, f32> {
+        let floats: &[f32] = bytemuck::cast_slice(&self.mmap);
+        ndarray::ArrayView2::from_shape((self.n_chunks, self.dim), floats)
+            .expect("shape validated at open()")
+    }
+}
+
+/// Embeddings backing storage: memory-mapped (preferred) or owned in-memory.
+pub enum Embeddings {
+    Mmap(MmapEmbeddings),
+    Owned(ndarray::Array2<f32>),
+}
+
+impl Embeddings {
+    /// Zero-copy 2D view over the embeddings.
+    pub fn view(&self) -> ndarray::ArrayView2<'_, f32> {
+        match self {
+            Self::Mmap(m) => m.view(),
+            Self::Owned(a) => a.view(),
+        }
+    }
+
+    /// Number of embedding rows (chunks).
+    pub fn nrows(&self) -> usize {
+        match self {
+            Self::Mmap(m) => m.n_chunks,
+            Self::Owned(a) => a.nrows(),
+        }
+    }
+}
 
 const INDEX_DIR: &str = ".prx/index";
 const META_FILE: &str = "meta.json";
@@ -366,7 +444,7 @@ fn load_embedding_cache(
     (hashes, embeddings)
 }
 
-pub fn load_embeddings(root: &Path) -> Option<ndarray::Array2<f32>> {
+pub fn load_embeddings(root: &Path) -> Option<Embeddings> {
     let index_dir = root.join(INDEX_DIR);
     let meta_str = std::fs::read_to_string(index_dir.join(META_FILE)).ok()?;
     let meta: IndexMeta = serde_json::from_str(&meta_str).ok()?;
@@ -375,17 +453,26 @@ pub fn load_embeddings(root: &Path) -> Option<ndarray::Array2<f32>> {
         return None;
     }
 
-    let raw = std::fs::read(index_dir.join(EMBEDDINGS_FILE)).ok()?;
-    let expected = meta.chunk_count * meta.embeddings_dim * 4;
-    if raw.len() != expected {
-        return None;
-    }
+    let emb_path = index_dir.join(EMBEDDINGS_FILE);
 
-    let floats: Vec<f32> = raw
-        .chunks_exact(4)
-        .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
-        .collect();
-    ndarray::Array2::from_shape_vec((meta.chunk_count, meta.embeddings_dim), floats).ok()
+    match MmapEmbeddings::open(&emb_path, meta.chunk_count, meta.embeddings_dim) {
+        Ok(m) => Some(Embeddings::Mmap(m)),
+        Err(_) => {
+            let raw = std::fs::read(&emb_path).ok()?;
+            let expected = meta.chunk_count * meta.embeddings_dim * 4;
+            if raw.len() != expected {
+                return None;
+            }
+            let floats: Vec<f32> = raw
+                .chunks_exact(4)
+                .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                .collect();
+            let arr =
+                ndarray::Array2::from_shape_vec((meta.chunk_count, meta.embeddings_dim), floats)
+                    .ok()?;
+            Some(Embeddings::Owned(arr))
+        }
+    }
 }
 
 pub fn load(root: &Path) -> Result<(Vec<Chunk>, SparseIndex), AgError> {

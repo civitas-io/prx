@@ -1,6 +1,6 @@
 [package]
 name = "prx"
-version = "0.5.5"
+version = "0.5.6"
 edition = "2024"
 rust-version = "1.85"
 description = "Praxis — agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff for AI coding agents."
@@ -56,6 +56,11 @@ dirs-next = "2"
 
 # Parallel iteration — embarrassingly parallel indexing (chunking, embedding, import extraction)
 rayon = "1"
+
+# Memory-mapped files — zero-copy embedding index access, OS page cache keeps index warm across queries
+memmap2 = "0.9"
+# Safe byte-to-float casting — reinterpret mmap'd &[u8] as &[f32] with alignment validation
+bytemuck = { version = "1", features = ["extern_crate_alloc"] }
 
 # Binary serialization for persistent index
 # postcard: compact serde serialization for index files (replaces unmaintained bincode, RUSTSEC-2025-0141)

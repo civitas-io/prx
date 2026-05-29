@@ -1,32 +1,8 @@
-use assert_cmd::Command;
+mod helpers;
+
+use helpers::{ag, parse_json, test_dir};
 use predicates::prelude::*;
 use tempfile::TempDir;
-
-fn ag() -> Command {
-    let mut cmd = Command::cargo_bin("prx").unwrap();
-    cmd.env("PRX_STATS_FILE", "/dev/null");
-    cmd.env("PRX_ERRORS_FILE", "/dev/null");
-    cmd
-}
-
-fn test_dir() -> TempDir {
-    let dir = TempDir::new().unwrap();
-    std::fs::write(
-        dir.path().join("main.rs"),
-        "fn main() {\n    let x = 1;\n    println!(\"{x}\");\n}\n\nfn helper(n: i32) -> i32 {\n    n + 1\n}\n",
-    ).unwrap();
-    std::fs::write(
-        dir.path().join("lib.py"),
-        "def greet(name):\n    print(f\"Hello {name}\")\n\ndef add(a, b):\n    return a + b\n",
-    )
-    .unwrap();
-    std::fs::write(dir.path().join("data.json"), "{\"key\": \"value\"}\n").unwrap();
-    dir
-}
-
-fn parse_json(output: &[u8]) -> serde_json::Value {
-    serde_json::from_slice(output).expect("invalid JSON output")
-}
 
 // ==================== prx search ====================
 
@@ -1216,4 +1192,88 @@ fn read_meta_only() {
     assert!(out.status.success());
     let json = parse_json(&out.stdout);
     assert!(json["data"]["meta"].is_object());
+}
+
+// ==================== prx search (new coverage) ====================
+
+#[test]
+fn search_semantic_with_index() {
+    let dir = test_dir();
+    let idx = ag()
+        .args(["index", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(idx.status.success());
+    let out = ag()
+        .args([
+            "search",
+            "--semantic",
+            "greeting function",
+            dir.path().to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+}
+
+#[test]
+fn search_alpha_override() {
+    let dir = test_dir();
+    let out = ag()
+        .args([
+            "search",
+            "--alpha",
+            "0.8",
+            "main",
+            dir.path().to_str().unwrap(),
+        ])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+}
+
+// ==================== prx run (new coverage) ====================
+
+#[test]
+fn run_raw_mode() {
+    let out = ag()
+        .args(["run", "--raw", "echo", "hello"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+    assert_eq!(json["data"]["tool"], "raw");
+    assert_eq!(json["data"]["exit_code"], 0);
+}
+
+#[test]
+fn run_full_mode() {
+    let out = ag()
+        .args(["run", "--full", "echo", "hello"])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
+    assert_eq!(json["data"]["exit_code"], 0);
+    assert!(json["data"]["tail"].as_str().is_some());
+}
+
+// ==================== prx context (new coverage) ====================
+
+#[test]
+fn context_with_budget() {
+    let dir = test_dir();
+    let out = ag()
+        .args(["context", "--budget", "500", dir.path().to_str().unwrap()])
+        .output()
+        .unwrap();
+    assert!(out.status.success());
+    let json = parse_json(&out.stdout);
+    assert_eq!(json["status"], "ok");
 }

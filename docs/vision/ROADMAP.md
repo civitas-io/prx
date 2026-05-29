@@ -322,16 +322,22 @@ Design: `docs/design/LEAN-DOWN.md`.
 | `define_regex!` macro | **High** | Reduce 3-line `LazyLock<Regex>` statics to 1-line macro calls across 22 parsers. ~130 lines saved. |
 | `ParsedResult::new()` constructor | **High** | Replace 10-line struct literals with 1-line constructor calls across 22 parsers. ~200 lines saved. |
 | Extract `src/workspace.rs` | **High** | Deduplicate `find_workspace_root()`, `relative_path()`, `is_test_file()` from context.rs and impact.rs. ~73 lines saved. |
-| Test helpers (`tests/helpers/`) | Medium | Extract `run_prx()`, `test_dir()` helpers to reduce e2e.rs boilerplate. ~300 lines saved. |
-| Large function review | Low | Review `run()` functions over 100 lines for decomposition (readability only, no line savings). |
+| ~~Test helpers (`tests/helpers/`)~~ | ~~Medium~~ | Deferred to v0.5.5. |
+| ~~Large function review~~ | ~~Low~~ | Deferred to v0.5.5. |
 
-## v0.5.5 — Index Performance
+## v0.5.5 — Index Performance & Test Coverage
 
 | Item | Priority | Description |
 |---|---|---|
 | Parallel embedding (rayon) | **High** | Embed chunks in parallel during indexing. ~300s → ~100s on 4-core for 55k chunks. Each `embed_text` is independent. |
 | Parallel chunking | **High** | Parse and chunk files in parallel during indexing. Each file is independent. Rayon `par_iter` over walk entries. |
 | Parallel import extraction | Medium | Extract imports per-file in parallel during `ImportGraph::build_full`. Each file's imports are independent. |
+| E2E coverage for search.rs | **High** | Cover hybrid/semantic search paths (47.6% → 80%+). Requires built index in test fixtures. |
+| E2E coverage for mcp.rs | **High** | Cover remaining MCP tool paths (51.4% → 80%+). Extend `tests/mcp_e2e.rs`. |
+| E2E coverage for run.rs | Medium | Cover external command execution paths (63.1% → 80%+). Extend `tests/e2e.rs`. |
+| E2E coverage for init.rs | Medium | Cover config generation paths (59.8% → 80%+). Test each framework target. |
+| Test helpers (`tests/helpers/`) | Medium | Extract `run_prx()`, `test_dir()` helpers to reduce e2e.rs boilerplate. ~300 lines saved. |
+| Large function review | Low | Review `run()` functions over 100 lines for decomposition (readability only). |
 
 ## v0.5.6 — Memory-Mapped Index
 

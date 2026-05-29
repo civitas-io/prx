@@ -376,15 +376,16 @@ After each workstream:
 
 ## Honest Numbers
 
-| Workstream | Lines saved | Effort | Risk |
-|---|---|---|---|
-| 1. Runner macros + constructor | ~370 | 1.5 hrs | Very low |
-| 2. Shared workspace utilities | ~73 | 2 hrs | Low |
-| 3. Test helpers extraction | ~300 | 3 hrs | Very low |
-| 4. Function decomposition | ~0 | 2 hrs | Low |
-| **Total** | **~743** | **~8.5 hrs** | **Low** |
+| Workstream | Lines saved | Effort | Risk | Status |
+|---|---|---|---|---|
+| 1. Runner macros + constructor | -144 | 1.5 hrs | Very low | **Done (v0.5.4)** |
+| 2. Shared workspace utilities | -19 | 2 hrs | Low | **Done (v0.5.4)** |
+| 3. Test helpers extraction | ~300 | 3 hrs | Very low | Deferred to v0.5.5 |
+| 4. Function decomposition | ~0 | 2 hrs | Low | Deferred to v0.5.5 |
+| **Total shipped** | **-163** | **~3.5 hrs** | **Low** | |
 
-Earlier estimate of 1,900 lines was inflated by over-counting in the
-automated analysis. The concrete, file-by-file evidence supports **~743
-lines** of real savings (~4% of codebase). The remaining value is in
-readability and maintainability, not line count.
+Actual savings were more modest than the initial estimate of ~743 lines.
+The `define_regex!` macro saved fewer lines per site than estimated (1 line
+per regex vs 2), and `ParsedResult::new()` only applied to 8 of 22 parsers
+(13 have non-empty warnings or tail). Remaining workstreams deferred to
+v0.5.5 alongside test coverage improvements.

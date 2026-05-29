@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.5] - 2026-05-29
+
+### Changed
+
+- **Parallel indexing with rayon** — all 5 stages of `prx index` now run
+  in parallel. File read/hash/chunk, BM25 enrichment, embedding computation,
+  import graph, and symbol index all use `par_iter` or `rayon::join`.
+  BLAS thread limits set at process start to prevent oversubscription.
+
+### Performance
+
+- **7.6x speedup** on large codebases (11K files, 55K chunks):
+  410s → 54s on 10-core Mac (944% CPU utilization).
+- **3x speedup** on small codebases (258 files, 910 chunks):
+  1.2s → 0.4s.
+- Embedding computation (94% of indexing time) parallelized with
+  shared `&model` reference — no Arc, no Mutex, no cloning.
+
 ## [0.5.4] - 2026-05-29
 
 ### Changed

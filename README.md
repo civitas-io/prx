@@ -172,8 +172,9 @@ Reverse-dependency analysis built on prx's import graph: it answers "what depend
 | `prx init` | — | Detects agent frameworks and generates integration configs. |
 | `prx stats` | — | Token-savings dashboard, with `--compare`. |
 | `prx bench` | — | Side-by-side benchmark: prx vs grep+cat. |
+| `prx bench-ndcg` | — | NDCG search quality benchmark against labeled datasets. |
 
-16 commands total. Full reference with examples: [docs/USAGE.md](docs/USAGE.md).
+17 commands total. Full reference with examples: [docs/USAGE.md](docs/USAGE.md).
 
 ---
 
@@ -295,33 +296,39 @@ If an internal operation fails, prx falls back to the equivalent Unix command an
 
 ### Prebuilt binary (recommended)
 
+Download the binary for your platform from [GitHub Releases](https://github.com/civitas-io/prx/releases):
+
+| Platform | File |
+|---|---|
+| Linux x86_64 | `prx-x86_64-unknown-linux-gnu.tar.gz` |
+| Linux aarch64 | `prx-aarch64-unknown-linux-gnu.tar.gz` |
+| macOS Apple Silicon | `prx-aarch64-apple-darwin.tar.gz` |
+| Windows x86_64 | `prx-x86_64-pc-windows-msvc.zip` |
+
 ```bash
-# Linux / macOS
-curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-$(uname -s)-$(uname -m).tar.gz | tar xz
+# Example: Linux x86_64
+curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-x86_64-unknown-linux-gnu.tar.gz | tar xz
 sudo mv prx /usr/local/bin/
 prx --version
 ```
 
-Or download from [GitHub Releases](https://github.com/civitas-io/prx/releases). The prebuilt binary already contains the embedded model — nothing else to install.
+The prebuilt binary already contains the embedded model — nothing else to install.
 
 ### Build from source
 
-> **Important:** `cargo build` on its own will **not** work. The embedding model is compiled into the binary via `include_bytes!`, and its weights are downloaded by a setup step first. Run `make setup` before anything else.
-
-Requirements: Rust ≥ 1.85, a C compiler (for tree-sitter grammars), **network access**, and **Python 3** (used once to convert the model weights to float16 during setup).
+Requirements: Rust ≥ 1.85, a C compiler (for tree-sitter grammars), and network access on first build (the build script downloads model weights automatically).
 
 ```bash
 git clone https://github.com/civitas-io/prx.git
 cd prx
-make setup     # downloads model weights (~35 MB), converts to float16, builds, runs tests
+cargo build --release    # downloads model (~35 MB), converts to float16, builds
 ```
 
-First run takes a couple of minutes. After setup, the weights are baked into the binary — no downloads at runtime.
+First build takes 1-2 minutes (model download + compilation). Subsequent builds are fast. The model weights are baked into the binary via `include_bytes!` — no downloads at runtime. Set `PRX_MODELS_DIR` to point to pre-downloaded weights for offline/air-gapped builds.
 
 ```bash
-make build     # debug build
-make release    # optimized release build (~49 MB binary)
-make check     # fmt + clippy + tests
+cargo test               # run all tests
+cargo clippy              # lint
 ```
 
 See [CONTRIBUTING](docs/CONTRIBUTING.md) for the full developer guide.
@@ -362,15 +369,22 @@ See [ROADMAP](docs/vision/ROADMAP.md) for what's planned next.
 
 ## Search quality
 
-NDCG@10 measured on two labeled datasets: prx's own codebase (50 queries, 173 files) and an external production codebase (49 queries, ~11k files, not written by the prx authors). Scores use file-level deduplication. Methodology and ground truth in [docs/design/SEARCH-QUALITY.md](docs/design/SEARCH-QUALITY.md).
+NDCG@10 measured on 200 labeled queries across 8 public repositories (6 languages, 3 size tiers). All repos pinned by commit SHA. Ground truth in `benchmarks/repos/`. Methodology in [docs/design/SEARCH-QUALITY.md](docs/design/SEARCH-QUALITY.md).
 
-| Version | prx (self) | External | Notes |
-|---|---|---|---|
-| v0.3.0 | 0.639 | 0.451 | Corrected baseline |
-| v0.4.0 | 0.681 | 0.494 | Added symbol index |
-| v0.5.1 | 0.673 | 0.494 | Tree-sitter imports (no regression) |
+| Repo | Language | Files | NDCG@10 | Symbol | Semantic |
+|---|---|---|---|---|---|
+| Flask | Python | 259 | **0.710** | 0.805 | 0.662 |
+| ripgrep | Rust | 239 | **0.493** | 0.810 | 0.356 |
+| fastify | TypeScript | 417 | **0.432** | 0.822 | 0.321 |
+| cargo | Rust | 2,815 | **0.379** | 0.705 | 0.285 |
+| kafka | Java | 7,231 | **0.354** | 0.934 | 0.191 |
+| django | Python | 5,690 | **0.262** | 0.495 | 0.211 |
+| terraform | Go | 5,323 | **0.287** | 0.238 | 0.319 |
+| vscode | TypeScript | 14,643 | **0.208** | 0.639 | 0.080 |
 
-The external score is the honest one — self-evaluation inflates results through labeling bias, so we report both and lead with the external number when comparing. A direct head-to-head against other tools on a shared dataset is planned; until that exists, we don't claim a ranking against them.
+Symbol search is consistently strong (avg 0.681) across all sizes. Semantic search degrades at scale — the 32M embedded model works best on codebases under 3K files. For larger repos, code-specific model tiers are planned (see [ROADMAP](docs/vision/ROADMAP.md)).
+
+These are honest numbers on codebases we didn't write and don't tune for.
 
 ---
 

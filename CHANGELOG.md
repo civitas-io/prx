@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.7] - 2026-05-29
+
+### Added
+
+- **Public benchmark suite** — 200 labeled queries across 8 public repos
+  (flask, ripgrep, fastify, cargo, kafka, django, terraform, vscode).
+  6 languages, 3 size tiers. Measured NDCG@10 with ground-truth relevance.
+- **`benchmark.yml` CI workflow** — runs NDCG benchmark on release tags.
+  Clones all 8 repos at pinned SHAs, indexes, benchmarks, fails on
+  regression > 0.05. Results uploaded as artifacts.
+- **Versioned baseline results** — `benchmarks/results/v0.5.7-baseline.json`
+  with per-repo scores, category breakdowns, and miss counts.
+- **v0.6.0 Model Tiering milestone** — design doc for code-specific
+  Model2Vec models with download-on-demand. Based on benchmark findings
+  showing semantic search degradation at scale.
+
+### Benchmark Results
+
+| Tier | Repos | Avg NDCG@10 |
+|---|---|---|
+| Small (<3K files) | flask, ripgrep, fastify | 0.545 |
+| Medium (3-10K files) | cargo, kafka, django | 0.332 |
+| Large (10K+ files) | terraform, vscode | 0.248 |
+
 ## [0.5.6] - 2026-05-29
 
 ### Changed

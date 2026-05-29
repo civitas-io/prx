@@ -375,6 +375,32 @@ Design: `docs/design/LEAN-DOWN.md`.
 | PHP grammar | Medium | tree-sitter-php + import/outline extraction |
 | Elixir grammar | Medium | tree-sitter-elixir + import/outline extraction |
 
+## v0.6.0 — Model Tiering (Code-Specific Embeddings)
+
+Benchmark data (v0.5.7) shows the 32M general-purpose model works for small
+codebases (NDCG@10 0.5-0.7) but degrades on medium (0.3-0.4) and large
+(0.2-0.3). Code-specific models distilled via Model2Vec can close this gap
+while keeping pure-Rust inference.
+
+Research: `docs/design/MODEL-TIERING.md`. Baseline: `benchmarks/results/v0.5.7-baseline.json`.
+
+| Item | Priority | Description |
+|---|---|---|
+| Distill code-specific Model2Vec models | **High** | Distill CodeSage-v2-Base (356M) and/or all-mpnet-base-v2 (109M) into Model2Vec format (256d, f16). ~30 sec distillation, ~8 MB output. Benchmark against 200-query suite. |
+| `prx index --model` flag | **High** | Support `--model builtin` (default), `--model standard`, `--model large`. Download on first use to `~/.prx/models/`. |
+| Repo analysis + model recommendation | **High** | After `prx index`, emit a hint if repo has >3K files: "For better semantic search, try `prx index --model standard`". |
+| Model download infrastructure | **High** | SHA-256 pinned downloads from HuggingFace or GitHub Releases. Offline via `PRX_MODELS_DIR`. Progress bar. |
+| Benchmark regression gate | Medium | CI workflow that runs 200-query NDCG suite against all 8 repos. Fail if regression > 0.02 on any size tier. |
+| Evaluate Jina Code v3 distillation | Medium | Distill Jina Code v3 (570M) for the "large" tier. Expected ~30-60 MB, higher quality for 10K+ file repos. |
+
+**Model tiers:**
+
+| Tier | Model | Size | Target | NDCG@10 (expected) |
+|---|---|---|---|---|
+| `builtin` | potion-retrieval-32M (current) | 32 MB embedded | <3K files | 0.5-0.7 |
+| `standard` | CodeSage-Base-M2V-256 | ~8 MB download | 3K-10K files | 0.5-0.6 (est.) |
+| `large` | Jina-Code-v3-M2V-512 | ~30-60 MB download | 10K+ files | 0.4-0.5 (est.) |
+
 ---
 
 ## Version Compatibility

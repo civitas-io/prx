@@ -1,8 +1,8 @@
 //! NDCG benchmark runner: measures search quality against a labeled relevance dataset.
 //!
 //! Unlike the `tests/ndcg.rs` integration test which spawns the `prx` binary per query,
-//! this subcommand invokes `crate::commands::search::run` directly. This keeps measurement
-//! in-process (no fork overhead) and makes it usable from CI, MCP, or downstream tooling.
+//! this subcommand invokes the in-process search helper directly. The index is loaded
+//! once and reused across all queries, avoiding 49× I/O cost per dataset run.
 
 use std::collections::HashMap;
 use std::path::Path;
@@ -10,6 +10,7 @@ use std::path::Path;
 use clap::Args;
 use serde::{Deserialize, Serialize};
 
+use crate::index::persist;
 use crate::output::AgError;
 
 #[derive(Args)]
@@ -71,9 +72,10 @@ struct PerQueryResult {
 
 /// Run the NDCG benchmark against a labeled dataset.
 ///
-/// For each query in the dataset, invokes `commands::search::run` with `top_k=10`,
-/// deduplicates results by file, scores them against the ground-truth relevances,
-/// and aggregates NDCG@5 / NDCG@10 overall and per category.
+/// Loads the persistent index once, then runs each query through
+/// `search::hybrid_search_with_preloaded`. Deduplicates results by file,
+/// scores them against ground-truth relevances, and aggregates NDCG@5 /
+/// NDCG@10 overall and per category.
 pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
     let dataset_path = Path::new(&args.dataset);
     if !dataset_path.exists() {
@@ -96,6 +98,14 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
         return Err(AgError::FileNotFound { path: root });
     }
 
+    let (chunks, bm25_index) = persist::load(root_path)?;
+    let chunk_texts: Vec<String> = chunks.iter().map(|c| c.content.clone()).collect();
+    let chunk_file_paths: Vec<String> = chunks.iter().map(|c| c.file_path.clone()).collect();
+    let embeddings = persist::load_embeddings(root_path);
+    let model = crate::index::dense::load_model();
+    let import_graph = crate::search::graph::ImportGraph::load(&root_path.join(".prx/index")).ok();
+    let symbols = persist::load_symbols(root_path);
+
     let mut all_ndcg5 = Vec::new();
     let mut all_ndcg10 = Vec::new();
     let mut by_category_scores: HashMap<String, Vec<f64>> = HashMap::new();
@@ -103,21 +113,22 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
     let mut per_query = Vec::new();
 
     for q in &dataset.queries {
-        let search_args = crate::commands::search::SearchArgs {
-            query: q.query.clone(),
-            path: root.clone(),
-            literal: false,
-            semantic: false,
-            structural: false,
-            top_k: 10,
-            budget: None,
-            context: None,
-            exists: false,
-            continue_token: None,
-            alpha: None,
-        };
-
-        let result = match crate::commands::search::run(search_args) {
+        let result = match crate::commands::search::hybrid_search_with_preloaded(
+            &q.query,
+            root_path,
+            &chunks,
+            &chunk_texts,
+            &chunk_file_paths,
+            &bm25_index,
+            embeddings.as_ref(),
+            model.as_ref(),
+            import_graph.as_ref(),
+            symbols.as_ref(),
+            10,
+            None,
+            None,
+            0,
+        ) {
             Ok(v) => v,
             Err(_) => continue,
         };
@@ -180,6 +191,61 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
     serde_json::to_value(output).map_err(|e| AgError::Internal {
         message: e.to_string(),
     })
+}
+
+/// Render the bench-ndcg JSON output as a human-readable table.
+pub fn render_plain(data: &serde_json::Value) {
+    use std::io::Write;
+
+    let mut stdout = std::io::stdout().lock();
+
+    let ndcg5 = data.get("ndcg5").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let ndcg10 = data.get("ndcg10").and_then(|v| v.as_f64()).unwrap_or(0.0);
+    let queries = data
+        .get("queries_evaluated")
+        .and_then(|v| v.as_u64())
+        .unwrap_or(0);
+    let misses = data
+        .get("misses")
+        .and_then(|v| v.as_array())
+        .map(|a| a.len())
+        .unwrap_or(0);
+
+    let _ = writeln!(
+        stdout,
+        "NDCG@5:  {ndcg5:.3}    NDCG@10: {ndcg10:.3}\nQueries: {queries:<8} Misses:  {misses}\n"
+    );
+
+    if let Some(by_cat) = data.get("by_category").and_then(|v| v.as_object()) {
+        let _ = writeln!(stdout, "Category          NDCG@10  Count");
+        let _ = writeln!(stdout, "─────────────────────────────────");
+
+        let mut rows: Vec<(&String, f64, u64)> = by_cat
+            .iter()
+            .map(|(k, v)| {
+                let n = v.get("ndcg10").and_then(|x| x.as_f64()).unwrap_or(0.0);
+                let c = v.get("count").and_then(|x| x.as_u64()).unwrap_or(0);
+                (k, n, c)
+            })
+            .collect();
+        rows.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+
+        for (cat, ndcg, count) in rows {
+            let _ = writeln!(stdout, "{cat:<17} {ndcg:<7.3}  {count}");
+        }
+        let _ = writeln!(stdout);
+    }
+
+    if let Some(miss_arr) = data.get("misses").and_then(|v| v.as_array())
+        && !miss_arr.is_empty()
+    {
+        let _ = writeln!(stdout, "Misses:");
+        for m in miss_arr {
+            if let Some(s) = m.as_str() {
+                let _ = writeln!(stdout, "  - {s:?}");
+            }
+        }
+    }
 }
 
 fn extract_unique_files(result: &serde_json::Value) -> Vec<String> {

@@ -87,6 +87,21 @@ Measured across real agent sessions on production codebases. Run the numbers on 
 
 ---
 
+## Indexing performance
+
+`prx index` builds a persistent search index — BM25, semantic embeddings, import graph, and symbol definitions — in a single parallel pass. All five stages run on all available CPU cores via rayon.
+
+| Codebase | Files | Chunks | Time | CPU |
+|---|---|---|---|---|
+| Small Rust project (prx itself) | 260 | 910 | **0.4s** | — |
+| Large production monorepo | 11,021 | 55,484 | **54s** | 944% (10 cores) |
+
+The embedding stage (computing 256-dim vectors for 55K chunks) is 94% of the work. Parallelizing it alone turned a 7-minute indexing job into under a minute. On CI runners (4 cores), expect ~3-4x speedup. On workstations (8-16 cores), expect ~6-8x.
+
+Incremental rebuilds skip unchanged files entirely — only modified or new files are re-chunked and re-embedded.
+
+---
+
 ## The commands agents actually orchestrate around
 
 Most tools stop at "better grep." The two commands below are why prx is useful for agents working inside a tight context window — they answer questions that would otherwise take a dozen `grep`/`cat` calls to reconstruct.
@@ -123,7 +138,7 @@ Reverse-dependency analysis built on prx's import graph: it answers "what depend
 | `prx impact` | — | Reverse dependency analysis: what depends on a given file. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
 | `prx exists` | grep -q | Fast bloom-filter existence check, near-zero tokens. |
-| `prx index` | — | Persistent search index for faster repeated searches. |
+| `prx index` | — | Parallel persistent index: 11K files in ~55s (7.6x speedup via rayon). |
 | `prx mcp` | — | MCP server over stdio for direct agent integration. |
 | `prx batch` | xargs | Parallel JSONL batch execution. |
 | `prx init` | — | Detects agent frameworks and generates integration configs. |
@@ -302,11 +317,13 @@ Single static binary. No runtime dependencies. No network required after build.
 
 | | |
 |---|---|
-| Commands | 16 |
-| Tests | 435 unit + 75 E2E + 8 MCP |
+| Commands | 17 |
+| Tests | 442 unit + 75 E2E + 8 MCP |
+| Run parsers | 22 (cargo, pytest, go, jest, eslint, tsc, kubectl, terraform, docker, + 13 more) |
 | Languages (parsing) | 15 tree-sitter grammars |
 | Import graph | 10 language families, tree-sitter AST extraction |
 | Symbol index | Definition lookup + reference counting |
+| Indexing | Parallel via rayon — 11K files in 54s on 10 cores (7.6x speedup) |
 | Embedded model | potion-retrieval-32M (Model2Vec, float16, PCA→256 dims) |
 | Release binary | ~49 MB |
 | CI | GitHub Actions: Linux x86_64 / aarch64, macOS arm64, Windows |

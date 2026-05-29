@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::parsing::outline::{self, SymbolKind};
@@ -40,20 +41,27 @@ impl SymbolIndex {
     /// chunks reference each symbol name.
     pub fn build(
         file_paths: &[String],
-        reader: impl Fn(&str) -> Option<String>,
+        reader: impl Fn(&str) -> Option<String> + Sync,
         chunk_texts: &[String],
     ) -> Self {
+        let per_file: Vec<HashMap<String, Vec<SymbolDef>>> = file_paths
+            .par_iter()
+            .map(|path| {
+                let mut local: HashMap<String, Vec<SymbolDef>> = HashMap::new();
+                let ext = path.rsplit('.').next().unwrap_or("");
+                if let Some(source) = reader(path) {
+                    let symbols = outline::extract_symbols(&source, ext);
+                    collect_defs(&symbols, path, &mut local);
+                }
+                local
+            })
+            .collect();
+
         let mut defs: HashMap<String, Vec<SymbolDef>> = HashMap::new();
-
-        for path in file_paths {
-            let ext = path.rsplit('.').next().unwrap_or("");
-            let source = match reader(path) {
-                Some(s) => s,
-                None => continue,
-            };
-
-            let symbols = outline::extract_symbols(&source, ext);
-            collect_defs(&symbols, path, &mut defs);
+        for local in per_file {
+            for (name, mut entries) in local {
+                defs.entry(name).or_default().append(&mut entries);
+            }
         }
 
         let ref_counts = count_references(&defs, chunk_texts);
@@ -173,22 +181,18 @@ fn count_references(
     defs: &HashMap<String, Vec<SymbolDef>>,
     chunk_texts: &[String],
 ) -> HashMap<String, u32> {
-    let mut counts: HashMap<String, u32> = HashMap::new();
-
-    for name in defs.keys() {
-        if name.len() < 3 {
-            continue;
-        }
-        let mut count: u32 = 0;
-        for text in chunk_texts {
-            if text.contains(name.as_str()) {
-                count += 1;
+    defs.par_iter()
+        .filter_map(|(name, _)| {
+            if name.len() < 3 {
+                return None;
             }
-        }
-        counts.insert(name.clone(), count);
-    }
-
-    counts
+            let count = chunk_texts
+                .iter()
+                .filter(|text| text.contains(name.as_str()))
+                .count() as u32;
+            Some((name.clone(), count))
+        })
+        .collect()
 }
 
 #[cfg(test)]

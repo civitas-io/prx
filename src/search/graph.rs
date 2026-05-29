@@ -1,6 +1,7 @@
 use std::collections::{HashMap, VecDeque};
 use std::path::Path;
 
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::parsing::imports;
@@ -19,26 +20,35 @@ struct SerializedGraph {
 }
 
 impl ImportGraph {
-    pub fn build_full(file_paths: &[String], reader: impl Fn(&str) -> Option<String>) -> Self {
+    pub fn build_full(
+        file_paths: &[String],
+        reader: impl Fn(&str) -> Option<String> + Sync,
+    ) -> Self {
         let (paths, path_to_id, suffix_index) = build_path_index(file_paths);
         let n = paths.len();
-        let mut forward = vec![Vec::new(); n];
 
-        for (i, path) in paths.iter().enumerate() {
-            let ext = path.rsplit('.').next().unwrap_or("");
-            if let Some(source) = reader(path) {
-                let raw_imports = imports::extract_imports(&source, ext);
-                for imp in raw_imports {
-                    for &target in resolve_import(&imp, &suffix_index, &paths, i as u32).iter() {
-                        if target != i as u32 {
-                            forward[i].push(target);
+        let forward: Vec<Vec<u32>> = paths
+            .par_iter()
+            .enumerate()
+            .map(|(i, path)| {
+                let ext = path.rsplit('.').next().unwrap_or("");
+                let mut targets: Vec<u32> = Vec::new();
+                if let Some(source) = reader(path) {
+                    let raw_imports = imports::extract_imports(&source, ext);
+                    for imp in raw_imports {
+                        for &target in resolve_import(&imp, &suffix_index, &paths, i as u32).iter()
+                        {
+                            if target != i as u32 {
+                                targets.push(target);
+                            }
                         }
                     }
+                    targets.sort();
+                    targets.dedup();
                 }
-                forward[i].sort();
-                forward[i].dedup();
-            }
-        }
+                targets
+            })
+            .collect();
 
         let reverse = build_reverse(&forward, n);
 

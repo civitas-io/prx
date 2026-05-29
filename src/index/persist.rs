@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
+use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
 use crate::chunking::{self, Chunk};
@@ -96,68 +97,101 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
 
     let existing = load_existing_index(root);
 
-    let mut all_chunks = Vec::new();
-    let mut file_hashes = HashMap::new();
+    struct FileResult {
+        rel_path: String,
+        hash: String,
+        chunks: Vec<Chunk>,
+        language: Option<String>,
+        was_changed: bool,
+    }
+
+    let existing_hashes: HashMap<&str, &str> = existing
+        .as_ref()
+        .map(|(meta, _)| {
+            meta.file_hashes
+                .iter()
+                .map(|(k, v)| (k.as_str(), v.as_str()))
+                .collect()
+        })
+        .unwrap_or_default();
+    let existing_chunks: Option<&Vec<SerializedChunk>> =
+        existing.as_ref().map(|(_, chunks)| chunks);
+
+    let file_results: Vec<FileResult> = entries
+        .par_iter()
+        .filter_map(|entry| {
+            let content = std::fs::read_to_string(&entry.path).ok()?;
+            let rel_path = entry
+                .path
+                .strip_prefix(root)
+                .unwrap_or(&entry.path)
+                .to_string_lossy()
+                .to_string();
+            let current_hash = hash::hash_bytes(content.as_bytes());
+            let ext = parsing::extension_from_path(&entry.path);
+            let language = ext
+                .and_then(parsing::languages::language_name_for_extension)
+                .map(|s| s.to_string());
+
+            let reuse = existing_hashes.get(rel_path.as_str()).and_then(|old_hash| {
+                if *old_hash == current_hash.as_str() {
+                    existing_chunks.and_then(|old| {
+                        let reused: Vec<SerializedChunk> = old
+                            .iter()
+                            .filter(|c| c.file_path == rel_path)
+                            .cloned()
+                            .collect();
+                        if reused.is_empty() {
+                            None
+                        } else {
+                            Some(reused)
+                        }
+                    })
+                } else {
+                    None
+                }
+            });
+
+            let (chunks, was_changed) = if let Some(reused) = reuse {
+                (reused.iter().map(Chunk::from).collect(), false)
+            } else {
+                (chunking::chunk_file(&content, &rel_path, ext), true)
+            };
+
+            Some(FileResult {
+                rel_path,
+                hash: current_hash,
+                chunks,
+                language,
+                was_changed,
+            })
+        })
+        .collect();
+
+    let mut all_chunks: Vec<Chunk> = Vec::new();
+    let mut file_hashes: HashMap<String, String> = HashMap::new();
     let mut lang_counts: HashMap<String, usize> = HashMap::new();
     let mut files_changed: usize = 0;
     let mut files_unchanged: usize = 0;
 
-    for entry in &entries {
-        let content = match std::fs::read_to_string(&entry.path) {
-            Ok(c) => c,
-            Err(_) => continue,
-        };
-
-        let rel_path = entry
-            .path
-            .strip_prefix(root)
-            .unwrap_or(&entry.path)
-            .to_string_lossy()
-            .to_string();
-
-        let current_hash = hash::hash_bytes(content.as_bytes());
-
-        let ext = parsing::extension_from_path(&entry.path);
-        if let Some(lang) = ext.and_then(parsing::languages::language_name_for_extension) {
-            *lang_counts.entry(lang.to_string()).or_insert(0) += 1;
+    for result in file_results {
+        if let Some(lang) = result.language {
+            *lang_counts.entry(lang).or_insert(0) += 1;
         }
-
-        let reuse = existing.as_ref().and_then(|(old_meta, old_chunks)| {
-            let old_hash = old_meta.file_hashes.get(&rel_path)?;
-            if *old_hash == current_hash {
-                let reused: Vec<SerializedChunk> = old_chunks
-                    .iter()
-                    .filter(|c| c.file_path == rel_path)
-                    .cloned()
-                    .collect();
-                if reused.is_empty() {
-                    None
-                } else {
-                    Some(reused)
-                }
-            } else {
-                None
-            }
-        });
-
-        file_hashes.insert(rel_path.clone(), current_hash);
-
-        if let Some(reused) = reuse {
-            files_unchanged += 1;
-            all_chunks.extend(reused.iter().map(Chunk::from));
-        } else {
+        file_hashes.insert(result.rel_path, result.hash);
+        if result.was_changed {
             files_changed += 1;
-            let chunks = chunking::chunk_file(&content, &rel_path, ext);
-            all_chunks.extend(chunks);
+        } else {
+            files_unchanged += 1;
         }
+        all_chunks.extend(result.chunks);
     }
 
     let serialized_chunks: Vec<SerializedChunk> =
-        all_chunks.iter().map(SerializedChunk::from).collect();
+        all_chunks.par_iter().map(SerializedChunk::from).collect();
 
-    // BM25 index is global — always rebuild from all chunks
     let enriched_texts: Vec<String> = all_chunks
-        .iter()
+        .par_iter()
         .map(|c| sparse::enrich_for_bm25(&c.content, &c.file_path))
         .collect();
 
@@ -205,18 +239,25 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
         paths.dedup();
         paths
     };
-    let import_graph = crate::search::graph::ImportGraph::build_full(&file_paths, |path| {
-        std::fs::read_to_string(root.join(path)).ok()
-    });
-    let _ = import_graph.save(&index_dir);
 
     let chunk_texts: Vec<String> = all_chunks.iter().map(|c| c.content.clone()).collect();
-    let symbol_index = crate::search::symbols::SymbolIndex::build(
-        &file_paths,
-        |path| std::fs::read_to_string(root.join(path)).ok(),
-        &chunk_texts,
+
+    rayon::join(
+        || {
+            let g = crate::search::graph::ImportGraph::build_full(&file_paths, |path| {
+                std::fs::read_to_string(root.join(path)).ok()
+            });
+            let _ = g.save(&index_dir);
+        },
+        || {
+            let s = crate::search::symbols::SymbolIndex::build(
+                &file_paths,
+                |path| std::fs::read_to_string(root.join(path)).ok(),
+                &chunk_texts,
+            );
+            let _ = s.save(&index_dir);
+        },
     );
-    let _ = symbol_index.save(&index_dir);
 
     Ok(IndexStats {
         files: entries.len(),
@@ -255,21 +296,30 @@ fn compute_and_save_embeddings(
         .map(|(i, h)| (h.as_str(), i))
         .collect();
 
-    let mut result = ndarray::Array2::zeros((enriched_texts.len(), dim));
-    let mut embedded_count = 0usize;
+    let _ = model.embed_text("warmup");
 
-    for (i, h) in current_hashes.iter().enumerate() {
-        if let Some(&old_idx) = old_lookup.get(h.as_str()) {
-            if let Some(old_emb) = old_embeddings.as_ref() {
-                if old_idx < old_emb.nrows() {
-                    result.row_mut(i).assign(&old_emb.row(old_idx));
-                    continue;
+    let embeddings: Vec<(ndarray::Array1<f32>, bool)> = current_hashes
+        .par_iter()
+        .enumerate()
+        .map(|(i, h)| {
+            if let Some(&old_idx) = old_lookup.get(h.as_str()) {
+                if let Some(old_emb) = old_embeddings.as_ref() {
+                    if old_idx < old_emb.nrows() {
+                        return (old_emb.row(old_idx).to_owned(), false);
+                    }
                 }
             }
-        }
-        let emb = model.embed_text(&enriched_texts[i]);
+            (model.embed_text(&enriched_texts[i]), true)
+        })
+        .collect();
+
+    let mut result = ndarray::Array2::zeros((enriched_texts.len(), dim));
+    let mut embedded_count = 0usize;
+    for (i, (emb, was_computed)) in embeddings.into_iter().enumerate() {
         result.row_mut(i).assign(&emb);
-        embedded_count += 1;
+        if was_computed {
+            embedded_count += 1;
+        }
     }
 
     let _ = std::fs::create_dir_all(index_dir);

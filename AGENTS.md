@@ -1,7 +1,7 @@
 # AGENTS.md -- prx (Praxis)
 
 > Machine-readable project reference for AI coding assistants.
-> Last updated: 2026-05-18
+> Last updated: 2026-05-29
 
 ## Project Identity
 
@@ -13,11 +13,11 @@ agents, not humans.
 - **Repository:** `github.com/civitas-io/prx`
 - **License:** Apache 2.0
 - **Language:** Rust (edition 2024)
-- **Status:** v0.2.0 released
+- **Status:** v0.5.5 released
 
 ### What prx Is
 
-- A single static binary (~47 MB) with zero runtime dependencies
+- A single static binary (~49 MB) with zero runtime dependencies
 - Replaces grep, cat, find, sed, diff with agent-native equivalents
 - Embeds a 32M-parameter retrieval-optimized embedding model for semantic code search
 - Returns structured JSON with labeled fields, token counts, and content hashes
@@ -428,6 +428,7 @@ These are settled decisions. Do not revisit without discussion.
 | 10 | **6-stage reranking pipeline** | Definition boost, stem matching, file coherence, import graph proximity, noise penalties, saturation decay. Quality comes from ranking, not just retrieval. |
 | 11 | **BM25 with compound identifier tokenization** | camelCase/snake_case splitting without stemming. Code identifiers are semantically distinct -- "HTTPResponse" and "HTTP" mean different things. |
 | 12 | **RRF fusion with adaptive alpha** | Symbol queries (Foo::bar) lean BM25 (alpha=0.3). Natural language queries stay balanced (alpha=0.5). Auto-detected. |
+| 13 | **Parallel indexing via rayon** | All 5 indexing stages (read/hash/chunk, BM25, embedding, import graph, symbol index) run in parallel. No shared mutable state, no Arc, no Mutex — pure `par_iter` on thread-safe immutable data. 7.6x speedup on 10-core (11K files: 410s → 54s). BLAS thread limits prevent oversubscription. |
 
 ---
 

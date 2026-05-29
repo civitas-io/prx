@@ -21,6 +21,14 @@ use commands::{Cli, Commands};
 use output::write_envelope;
 
 fn main() -> Result<()> {
+    // Pin BLAS thread pools to 1 — prevents N×N oversubscription when rayon
+    // parallelizes embedding calls (each of which may invoke BLAS internally).
+    unsafe {
+        std::env::set_var("VECLIB_MAXIMUM_THREADS", "1");
+        std::env::set_var("OPENBLAS_NUM_THREADS", "1");
+        std::env::set_var("MKL_NUM_THREADS", "1");
+    }
+
     let cli = Cli::parse();
     let command_name = cli.command.name();
     let plain = cli.plain;

@@ -1,6 +1,6 @@
 [package]
 name = "prx"
-version = "0.5.4"
+version = "0.5.5"
 edition = "2024"
 rust-version = "1.85"
 description = "Praxis — agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff for AI coding agents."
@@ -53,6 +53,9 @@ regex = "1"
 
 # Home directory resolution for stats file
 dirs-next = "2"
+
+# Parallel iteration — embarrassingly parallel indexing (chunking, embedding, import extraction)
+rayon = "1"
 
 # Binary serialization for persistent index
 # postcard: compact serde serialization for index files (replaces unmaintained bincode, RUSTSEC-2025-0141)

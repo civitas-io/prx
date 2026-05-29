@@ -355,10 +355,11 @@ Design: `docs/design/LEAN-DOWN.md`.
 | `benchmark.yml` CI workflow | **High** | Clone repos at pinned SHAs, build index, run NDCG, compare to baseline, fail on regression >0.02. |
 | Results dashboard | Medium | `benchmarks/results/` with per-release JSON. |
 
-## v0.5.8 — Distribution
+## v0.5.8 — Distribution & Documentation
 
 | Item | Priority | Description |
 |---|---|---|
+| Documentation site (mdBook) | **High** | mdBook-based docs at `civitas-io.github.io/prx/`. Organize existing 21 docs into SUMMARY.md, add `deploy-docs.yml` workflow for GitHub Pages. |
 | `cargo publish` | **High** | `cargo install prx`. |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |

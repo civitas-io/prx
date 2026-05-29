@@ -152,7 +152,7 @@ pub fn run(args: ContextArgs) -> Result<serde_json::Value, AgError> {
     if !args.no_edges {
         let edges = workspace_root.as_deref().and_then(|ws| {
             let graph = ImportGraph::load(&persist::index_path(ws)).ok()?;
-            let prefix = relative_path(path, ws)?;
+            let prefix = crate::workspace::relative_path(path, ws)?;
             Some(compute_edges(&graph, &prefix, path.is_file()))
         });
         output.edges = edges;
@@ -250,7 +250,7 @@ fn build_directory_context(
             continue;
         }
 
-        if !args.include_tests && is_test_file(&rel_str, &entry.path) {
+        if !args.include_tests && crate::workspace::is_test_file(&rel_str) {
             continue;
         }
 
@@ -400,23 +400,6 @@ fn kind_priority(kind: &str) -> u32 {
     }
 }
 
-fn is_test_file(rel_str: &str, path: &Path) -> bool {
-    if rel_str.contains("/tests/") || rel_str.starts_with("tests/") {
-        return true;
-    }
-    if rel_str.contains("__tests__/") {
-        return true;
-    }
-    let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-    if name.starts_with("test_") {
-        return true;
-    }
-    if name.contains("_test.") || name.contains(".test.") || name.contains(".spec.") {
-        return true;
-    }
-    false
-}
-
 fn extract_directory_doc(root: &Path) -> Option<DocBlock> {
     for candidate in ["README.md", "README", "readme.md"] {
         let path = root.join(candidate);
@@ -518,15 +501,6 @@ fn find_workspace_root(target: &Path) -> Option<PathBuf> {
         }
     }
     None
-}
-
-fn relative_path(target: &Path, base: &Path) -> Option<String> {
-    let target_abs = std::fs::canonicalize(target).ok()?;
-    let base_abs = std::fs::canonicalize(base).ok()?;
-    target_abs
-        .strip_prefix(&base_abs)
-        .ok()
-        .map(|p| p.to_string_lossy().replace('\\', "/"))
 }
 
 fn compute_edges(graph: &ImportGraph, target_prefix: &str, target_is_file: bool) -> Edges {

@@ -15,6 +15,7 @@ mod runner;
 mod search;
 mod tokens;
 mod walk;
+mod workspace;
 
 use commands::{Cli, Commands};
 use output::write_envelope;

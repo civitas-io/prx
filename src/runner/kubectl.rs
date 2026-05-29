@@ -1,23 +1,17 @@
-use regex::Regex;
 use serde_json;
-use std::sync::LazyLock;
 
-use super::{Diagnostic, ParsedResult};
+use super::{Diagnostic, ParsedResult, define_regex};
 
-static STATUS_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Status:\s+(\S+)").unwrap());
-
-static CONDITION_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(
-        r"^\s+(Initialized|Ready|PodScheduled|ContainersReady|Available|Progressing)\s+(\S+)",
-    )
-    .unwrap()
-});
-
-static EVENT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\s+(Normal|Warning)\s+(\S+)\s+\S+\s+\S+\s+(.+?)\s*$").unwrap());
-
-static RESTART_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"(?i)restart\s*count:\s*(\d+)").unwrap());
+define_regex!(STATUS_RE, r"^Status:\s+(\S+)");
+define_regex!(
+    CONDITION_RE,
+    r"^\s+(Initialized|Ready|PodScheduled|ContainersReady|Available|Progressing)\s+(\S+)"
+);
+define_regex!(
+    EVENT_RE,
+    r"^\s+(Normal|Warning)\s+(\S+)\s+\S+\s+\S+\s+(.+?)\s*$"
+);
+define_regex!(RESTART_RE, r"(?i)restart\s*count:\s*(\d+)");
 
 fn parse_json(json: &serde_json::Value) -> ParsedResult {
     let mut failures = Vec::new();

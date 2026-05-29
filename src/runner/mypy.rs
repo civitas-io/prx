@@ -1,20 +1,11 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-// src/auth.py:42: error: Incompatible return value type (got "str", expected "int")
-// src/auth.py:42:5: error: ... (column variant)
-static ISSUE_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^(.+?\.pyi?):(\d+)(?::(\d+))?: (error|warning|note): (.+)$").unwrap()
-});
-
-// Found 2 errors in 1 file (checked 5 source files)
-// Success: no issues found in 5 source files
-static SUMMARY_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^Found (\d+) errors? in (\d+) files?").unwrap());
-
-static SUCCESS_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Success: no issues").unwrap());
+define_regex!(
+    ISSUE_RE,
+    r"^(.+?\.pyi?):(\d+)(?::(\d+))?: (error|warning|note): (.+)$"
+);
+define_regex!(SUMMARY_RE, r"^Found (\d+) errors? in (\d+) files?");
+define_regex!(SUCCESS_RE, r"^Success: no issues");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut failures = Vec::new();

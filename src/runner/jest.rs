@@ -1,22 +1,15 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-// Jest: Tests:  2 failed, 48 passed, 50 total
-static JEST_SUMMARY_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"Tests:\s+(?:(\d+) failed, )?(\d+) passed, (\d+) total").unwrap());
-
-// Vitest: Tests  2 failed | 48 passed (50)
-static VITEST_SUMMARY_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"Tests\s+(?:(\d+) failed \| )?(\d+) passed \((\d+)\)").unwrap());
-
-// ● test suite > test name
-static FAILURE_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\s*●\s+(.+)$").unwrap());
-
-// at Object.<anonymous> (tests/auth.test.ts:43:18)
-static AT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"at .+ \((.+):(\d+):(\d+)\)").unwrap());
+define_regex!(
+    JEST_SUMMARY_RE,
+    r"Tests:\s+(?:(\d+) failed, )?(\d+) passed, (\d+) total"
+);
+define_regex!(
+    VITEST_SUMMARY_RE,
+    r"Tests\s+(?:(\d+) failed \| )?(\d+) passed \((\d+)\)"
+);
+define_regex!(FAILURE_RE, r"^\s*●\s+(.+)$");
+define_regex!(AT_RE, r"at .+ \((.+):(\d+):(\d+)\)");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut passed = 0;
@@ -77,15 +70,7 @@ pub fn parse(output: &str) -> ParsedResult {
         summary = format!("{passed} passed, {failed} failed");
     }
 
-    ParsedResult {
-        summary,
-        passed,
-        failed,
-        skipped: 0,
-        failures,
-        warnings: vec![],
-        tail: None,
-    }
+    ParsedResult::new(summary, passed, failed, 0, failures)
 }
 
 #[cfg(test)]

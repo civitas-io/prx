@@ -1,24 +1,18 @@
-use regex::Regex;
 use serde_json;
-use std::sync::LazyLock;
 
-use super::{Diagnostic, ParsedResult};
+use super::{Diagnostic, ParsedResult, define_regex};
 
-static PLAN_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy\.").unwrap()
-});
-
-static APPLY_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"^Apply complete!\s+Resources:\s+(\d+) added,\s+(\d+) changed,\s+(\d+) destroyed")
-        .unwrap()
-});
-
-static RESOURCE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\s*#\s+(\S+)\s+will be (\w+)").unwrap());
-
-static NO_CHANGES_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^No changes\.").unwrap());
-
-static ERROR_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^(?i)error:?\s*(.+)$").unwrap());
+define_regex!(
+    PLAN_RE,
+    r"^Plan: (\d+) to add, (\d+) to change, (\d+) to destroy\."
+);
+define_regex!(
+    APPLY_RE,
+    r"^Apply complete!\s+Resources:\s+(\d+) added,\s+(\d+) changed,\s+(\d+) destroyed"
+);
+define_regex!(RESOURCE_RE, r"^\s*#\s+(\S+)\s+will be (\w+)");
+define_regex!(NO_CHANGES_RE, r"^No changes\.");
+define_regex!(ERROR_RE, r"^(?i)error:?\s*(.+)$");
 
 fn parse_json(output: &str) -> ParsedResult {
     let mut failures = Vec::new();

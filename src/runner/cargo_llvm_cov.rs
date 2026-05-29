@@ -1,17 +1,11 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static TEST_SUMMARY_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored").unwrap()
-});
-
-static TOTAL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^TOTAL\s+\d+\s+\d+\s+([\d.]+%)").unwrap());
-
-static FILE_COV_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\s*(\S+\.rs)\s+\d+\s+\d+\s+([\d.]+%)").unwrap());
+define_regex!(
+    TEST_SUMMARY_RE,
+    r"test result: (ok|FAILED)\. (\d+) passed; (\d+) failed; (\d+) ignored"
+);
+define_regex!(TOTAL_RE, r"^TOTAL\s+\d+\s+\d+\s+([\d.]+%)");
+define_regex!(FILE_COV_RE, r"^\s*(\S+\.rs)\s+\d+\s+\d+\s+([\d.]+%)");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut passed = 0;
@@ -51,15 +45,7 @@ pub fn parse(output: &str) -> ParsedResult {
         format!("{total_coverage} coverage, {passed} passed, {failed} failed")
     };
 
-    ParsedResult {
-        summary,
-        passed,
-        failed,
-        skipped,
-        failures: low_coverage,
-        warnings: vec![],
-        tail: None,
-    }
+    ParsedResult::new(summary, passed, failed, skipped, low_coverage)
 }
 
 #[cfg(test)]

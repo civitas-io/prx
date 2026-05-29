@@ -1,19 +1,12 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static ERROR_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^\[ERROR\]\s+(.+)$").unwrap());
-
-static LOCATION_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(.+?):\[(\d+),(\d+)\]\s+(.+)$").unwrap());
-
-static TESTS_RE: LazyLock<Regex> = LazyLock::new(|| {
-    Regex::new(r"Tests run: (\d+), Failures: (\d+), Errors: (\d+), Skipped: (\d+)").unwrap()
-});
-
-static BUILD_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\[INFO\] BUILD (SUCCESS|FAILURE)").unwrap());
+define_regex!(ERROR_RE, r"^\[ERROR\]\s+(.+)$");
+define_regex!(LOCATION_RE, r"^(.+?):\[(\d+),(\d+)\]\s+(.+)$");
+define_regex!(
+    TESTS_RE,
+    r"Tests run: (\d+), Failures: (\d+), Errors: (\d+), Skipped: (\d+)"
+);
+define_regex!(BUILD_RE, r"^\[INFO\] BUILD (SUCCESS|FAILURE)");
 
 fn is_noise(line: &str) -> bool {
     line.starts_with("[INFO] Downloading from")
@@ -87,15 +80,13 @@ pub fn parse(output: &str) -> ParsedResult {
         _ => format!("{} error(s)", failures.len()),
     };
 
-    ParsedResult {
+    ParsedResult::new(
         summary,
         passed,
-        failed: if failed > 0 { failed } else { failures.len() },
+        if failed > 0 { failed } else { failures.len() },
         skipped,
         failures,
-        warnings: vec![],
-        tail: None,
-    }
+    )
 }
 
 #[cfg(test)]

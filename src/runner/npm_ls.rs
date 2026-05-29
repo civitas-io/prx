@@ -1,14 +1,9 @@
-use regex::Regex;
 use serde_json;
-use std::sync::LazyLock;
 
-use super::{Diagnostic, ParsedResult};
+use super::{Diagnostic, ParsedResult, define_regex};
 
-static TOP_LEVEL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(?:├──|└──|├─┬|└─┬)\s+(.+)$").unwrap());
-
-static NPM_ERR_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^npm (ERR!|WARN)\s+(.+)$").unwrap());
+define_regex!(TOP_LEVEL_RE, r"^(?:├──|└──|├─┬|└─┬)\s+(.+)$");
+define_regex!(NPM_ERR_RE, r"^npm (ERR!|WARN)\s+(.+)$");
 
 fn parse_json(json: &serde_json::Value) -> ParsedResult {
     let mut deps: Vec<String> = Vec::new();

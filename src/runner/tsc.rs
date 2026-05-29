@@ -1,11 +1,9 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-// src/auth.ts(42,18): error TS2345: Argument of type 'string'...
-static ERROR_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(.+)\((\d+),(\d+)\): (error|warning) (TS\d+): (.+)$").unwrap());
+define_regex!(
+    ERROR_RE,
+    r"^(.+)\((\d+),(\d+)\): (error|warning) (TS\d+): (.+)$"
+);
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut failures = Vec::new();

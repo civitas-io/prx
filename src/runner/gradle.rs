@@ -1,19 +1,9 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static FAILED_TASK_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^>\s+Task\s+(\S+)\s+FAILED").unwrap());
-
-static JAVA_ERROR_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(.+?):(\d+):\s+error:\s+(.+)$").unwrap());
-
-static BUILD_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^BUILD (SUCCESSFUL|FAILED)").unwrap());
-
-static TEST_FAIL_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(\d+) tests? completed, (\d+) failed").unwrap());
+define_regex!(FAILED_TASK_RE, r"^>\s+Task\s+(\S+)\s+FAILED");
+define_regex!(JAVA_ERROR_RE, r"^(.+?):(\d+):\s+error:\s+(.+)$");
+define_regex!(BUILD_RE, r"^BUILD (SUCCESSFUL|FAILED)");
+define_regex!(TEST_FAIL_RE, r"^(\d+) tests? completed, (\d+) failed");
 
 fn is_noise(line: &str) -> bool {
     line.starts_with("Download ")
@@ -82,15 +72,13 @@ pub fn parse(output: &str) -> ParsedResult {
         _ => format!("{} failure(s)", failures.len()),
     };
 
-    ParsedResult {
+    ParsedResult::new(
         summary,
         passed,
-        failed: if failed > 0 { failed } else { failures.len() },
-        skipped: 0,
+        if failed > 0 { failed } else { failures.len() },
+        0,
         failures,
-        warnings: vec![],
-        tail: None,
-    }
+    )
 }
 
 #[cfg(test)]

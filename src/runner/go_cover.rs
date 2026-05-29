@@ -1,16 +1,11 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static COVERAGE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"coverage:\s+([\d.]+)%\s+of\s+statements").unwrap());
-
-static PACKAGE_RESULT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(ok|FAIL)\s+(\S+)\s+[\d.]+s\s+coverage:\s+([\d.]+)%").unwrap());
-
-static SINGLE_PKG_COVERAGE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(PASS|FAIL)\s*$").unwrap());
+define_regex!(COVERAGE_RE, r"coverage:\s+([\d.]+)%\s+of\s+statements");
+define_regex!(
+    PACKAGE_RESULT_RE,
+    r"^(ok|FAIL)\s+(\S+)\s+[\d.]+s\s+coverage:\s+([\d.]+)%"
+);
+define_regex!(SINGLE_PKG_COVERAGE_RE, r"^(PASS|FAIL)\s*$");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut coverages = Vec::new();
@@ -60,15 +55,13 @@ pub fn parse(output: &str) -> ParsedResult {
         "no coverage data".to_string()
     };
 
-    ParsedResult {
+    ParsedResult::new(
         summary,
-        passed: if failed_packages.is_empty() { 1 } else { 0 },
-        failed: failed_packages.len(),
-        skipped: 0,
-        failures: failed_packages,
-        warnings: vec![],
-        tail: None,
-    }
+        if failed_packages.is_empty() { 1 } else { 0 },
+        failed_packages.len(),
+        0,
+        failed_packages,
+    )
 }
 
 #[cfg(test)]

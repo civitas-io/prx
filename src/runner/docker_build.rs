@@ -1,21 +1,10 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static STEP_RE: LazyLock<Regex> = LazyLock::new(|| Regex::new(r"^Step (\d+/\d+) : (.+)$").unwrap());
-
-static SUCCESS_BUILT_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^Successfully built (\S+)").unwrap());
-
-static SUCCESS_TAGGED_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^Successfully tagged (\S+)").unwrap());
-
-static ERROR_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^(ERROR|error):\s*(.+)$").unwrap());
-
-static NONZERO_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"returned a non-zero code:\s*(\d+)").unwrap());
+define_regex!(STEP_RE, r"^Step (\d+/\d+) : (.+)$");
+define_regex!(SUCCESS_BUILT_RE, r"^Successfully built (\S+)");
+define_regex!(SUCCESS_TAGGED_RE, r"^Successfully tagged (\S+)");
+define_regex!(ERROR_RE, r"^(ERROR|error):\s*(.+)$");
+define_regex!(NONZERO_RE, r"returned a non-zero code:\s*(\d+)");
 
 fn is_noise(line: &str) -> bool {
     let trimmed = line.trim_start();

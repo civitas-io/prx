@@ -1,16 +1,11 @@
-use regex::Regex;
-use std::sync::LazyLock;
+use super::{Diagnostic, ParsedResult, define_regex};
 
-use super::{Diagnostic, ParsedResult};
-
-static COVERAGE_TABLE_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^All files\s+\|\s+([\d.]+)\s+\|").unwrap());
-
-static FILE_COV_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"^\s+(\S+\.(?:ts|tsx|js|jsx))\s+\|\s+([\d.]+)\s+\|").unwrap());
-
-static TEST_SUMMARY_RE: LazyLock<Regex> =
-    LazyLock::new(|| Regex::new(r"Tests:\s+(\d+) passed, (\d+) total").unwrap());
+define_regex!(COVERAGE_TABLE_RE, r"^All files\s+\|\s+([\d.]+)\s+\|");
+define_regex!(
+    FILE_COV_RE,
+    r"^\s+(\S+\.(?:ts|tsx|js|jsx))\s+\|\s+([\d.]+)\s+\|"
+);
+define_regex!(TEST_SUMMARY_RE, r"Tests:\s+(\d+) passed, (\d+) total");
 
 pub fn parse(output: &str) -> ParsedResult {
     let mut overall_coverage = String::new();

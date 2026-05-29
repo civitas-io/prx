@@ -13,7 +13,7 @@ jobs:
   benchmark:
     name: NDCG Benchmark (${{ matrix.repo.name }})
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       fail-fast: false
       matrix:
@@ -54,8 +54,12 @@ jobs:
 
       - name: Clone ${{ matrix.repo.name }}
         run: |
-          git clone --depth 50 https://github.com/${{ matrix.repo.url }}.git bench-repo
-          cd bench-repo && git checkout ${{ matrix.repo.sha }}
+          git clone --depth 200 https://github.com/${{ matrix.repo.url }}.git bench-repo
+          cd bench-repo
+          git checkout ${{ matrix.repo.sha }} 2>/dev/null || {
+            git fetch --unshallow
+            git checkout ${{ matrix.repo.sha }}
+          }
 
       - name: Index
         run: ./target/release/prx index bench-repo

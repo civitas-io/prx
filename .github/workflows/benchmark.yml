@@ -1,0 +1,123 @@
+name: Benchmark
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+env:
+  CARGO_TERM_COLOR: always
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  benchmark:
+    name: NDCG Benchmark (${{ matrix.repo.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - name: flask
+            url: pallets/flask
+            sha: 954f5684e484
+          - name: ripgrep
+            url: BurntSushi/ripgrep
+            sha: f0cec341ab95
+          - name: fastify
+            url: fastify/fastify
+            sha: 3e04cff92753
+          - name: cargo
+            url: rust-lang/cargo
+            sha: 03cb632e2473
+          - name: django
+            url: django/django
+            sha: 032549216074
+          - name: kafka
+            url: apache/kafka
+            sha: fa097fa593a2
+          - name: terraform
+            url: hashicorp/terraform
+            sha: a2ad11c4f14c
+          - name: vscode
+            url: microsoft/vscode
+            sha: 183159e2b33b
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Build release
+        run: cargo build --release
+
+      - name: Clone ${{ matrix.repo.name }}
+        run: |
+          git clone --depth 50 https://github.com/${{ matrix.repo.url }}.git bench-repo
+          cd bench-repo && git checkout ${{ matrix.repo.sha }}
+
+      - name: Index
+        run: ./target/release/prx index bench-repo
+
+      - name: Run NDCG benchmark
+        run: |
+          ./target/release/prx bench-ndcg benchmarks/repos/${{ matrix.repo.name }}.json bench-repo \
+            > benchmarks-result-${{ matrix.repo.name }}.json
+
+      - name: Check regression
+        run: |
+          NDCG=$(jq -r '.data.ndcg10' benchmarks-result-${{ matrix.repo.name }}.json)
+          echo "NDCG@10 for ${{ matrix.repo.name }}: $NDCG"
+
+          # Baseline thresholds (from v0.5.7 measurements, with 0.05 tolerance)
+          case "${{ matrix.repo.name }}" in
+            flask)     BASELINE=0.66 ;;
+            ripgrep)   BASELINE=0.44 ;;
+            fastify)   BASELINE=0.38 ;;
+            cargo)     BASELINE=0.33 ;;
+            kafka)     BASELINE=0.30 ;;
+            django)    BASELINE=0.21 ;;
+            terraform) BASELINE=0.24 ;;
+            vscode)    BASELINE=0.16 ;;
+          esac
+
+          echo "Baseline: $BASELINE (with 0.05 tolerance)"
+
+          PASS=$(echo "$NDCG >= $BASELINE" | bc -l)
+          if [ "$PASS" -eq 0 ]; then
+            echo "::error::NDCG regression! $NDCG < $BASELINE for ${{ matrix.repo.name }}"
+            exit 1
+          fi
+
+      - name: Upload results
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ndcg-${{ matrix.repo.name }}
+          path: benchmarks-result-${{ matrix.repo.name }}.json
+
+  summary:
+    name: Benchmark Summary
+    needs: benchmark
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          path: results
+          merge-multiple: true
+
+      - name: Print summary
+        run: |
+          echo "## NDCG@10 Benchmark Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Repo | NDCG@10 | Queries | Misses |" >> $GITHUB_STEP_SUMMARY
+          echo "|------|---------|---------|--------|" >> $GITHUB_STEP_SUMMARY
+          for f in results/benchmarks-result-*.json; do
+            REPO=$(basename "$f" | sed 's/benchmarks-result-//' | sed 's/.json//')
+            NDCG=$(jq -r '.data.ndcg10 // "N/A"' "$f" 2>/dev/null || echo "N/A")
+            QUERIES=$(jq -r '.data.queries_evaluated // "N/A"' "$f" 2>/dev/null || echo "N/A")
+            MISSES=$(jq -r '.data.misses | length // 0' "$f" 2>/dev/null || echo "N/A")
+            echo "| $REPO | $NDCG | $QUERIES | $MISSES |" >> $GITHUB_STEP_SUMMARY
+          done

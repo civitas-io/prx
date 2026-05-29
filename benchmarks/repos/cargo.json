@@ -1,0 +1,204 @@
+{
+  "repo": "rust-lang/cargo",
+  "sha": "03cb632e2473",
+  "root": null,
+  "queries": [
+    {
+      "query": "Workspace",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/cargo/core/workspace.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "Manifest",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/cargo/core/manifest.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "PackageId",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/cargo/core/package_id.rs", "relevance": 3},
+        {"file": "src/cargo/core/package_id_spec.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "SourceId",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/cargo/core/source_id.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "Profile",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/cargo/core/profiles.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "Summary",
+      "category": "symbol",
+      "relevant": [
+        {"file": "src/cargo/core/summary.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how does cargo resolve dependency versions",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/core/resolver/mod.rs", "relevance": 3},
+        {"file": "src/cargo/core/resolver/dep_cache.rs", "relevance": 2},
+        {"file": "src/cargo/ops/resolve.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo compile a package",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/core/compiler/mod.rs", "relevance": 3},
+        {"file": "src/cargo/core/compiler/unit_dependencies.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo handle build scripts",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/core/compiler/custom_build.rs", "relevance": 3},
+        {"file": "src/cargo/core/compiler/mod.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does cargo install packages from crates.io",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/ops/cargo_install.rs", "relevance": 3},
+        {"file": "src/cargo/ops/common_for_install_and_uninstall.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo create new packages with cargo new",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/ops/cargo_new.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how does cargo parse Cargo.toml files",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/util/toml/mod.rs", "relevance": 3},
+        {"file": "src/cargo/core/manifest.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo download crates from a registry",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/sources/registry/mod.rs", "relevance": 3},
+        {"file": "src/cargo/sources/registry/download.rs", "relevance": 2},
+        {"file": "src/cargo/sources/config.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does cargo handle git dependencies",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/sources/git/mod.rs", "relevance": 3},
+        {"file": "src/cargo/sources/git/source.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo manage the lockfile",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/ops/lockfile.rs", "relevance": 3},
+        {"file": "src/cargo/core/resolver/encode.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo handle feature flags and conditional compilation",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/core/features.rs", "relevance": 3},
+        {"file": "src/cargo/core/resolver/features.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how does cargo run tests with cargo test",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/ops/cargo_test.rs", "relevance": 3},
+        {"file": "src/cargo/core/compiler/mod.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does cargo update dependencies",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/ops/cargo_update.rs", "relevance": 3},
+        {"file": "src/cargo/ops/resolve.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does cargo handle authentication and credentials",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/util/auth/mod.rs", "relevance": 3},
+        {"file": "src/cargo/util/credential/mod.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo display progress bars",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/util/progress.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "what is the architecture of cargo's dependency resolver",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/cargo/core/resolver/mod.rs", "relevance": 3},
+        {"file": "src/cargo/core/resolver/dep_cache.rs", "relevance": 2},
+        {"file": "src/cargo/core/resolver/errors.rs", "relevance": 1},
+        {"file": "src/cargo/core/resolver/features.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "what is the relationship between packages, targets, and units in cargo",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/cargo/core/manifest.rs", "relevance": 3},
+        {"file": "src/cargo/core/package.rs", "relevance": 3},
+        {"file": "src/cargo/core/compiler/unit_dependencies.rs", "relevance": 2}
+      ]
+    },
+    {
+      "query": "how does cargo's source abstraction work",
+      "category": "architecture",
+      "relevant": [
+        {"file": "src/cargo/sources/source.rs", "relevance": 3},
+        {"file": "src/cargo/sources/path.rs", "relevance": 2},
+        {"file": "src/cargo/sources/config.rs", "relevance": 1}
+      ]
+    },
+    {
+      "query": "how does cargo vendor dependencies",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/ops/vendor.rs", "relevance": 3}
+      ]
+    },
+    {
+      "query": "how does cargo handle future incompatibility reports",
+      "category": "semantic",
+      "relevant": [
+        {"file": "src/cargo/core/compiler/future_incompat.rs", "relevance": 3}
+      ]
+    }
+  ]
+}

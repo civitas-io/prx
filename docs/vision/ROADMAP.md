@@ -312,7 +312,20 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | Self-contained build (`build.rs`) | **High** | `cargo build` works without `make models` or Python. SHA-256 pinned artifacts. Offline via `PRX_MODELS_DIR`. |
 | Migrate off bincode | **High** | Replace bincode (RUSTSEC-2025-0141) with postcard for all index serialization. |
 
-## v0.5.4 — Index Performance
+## v0.5.4 — Lean-Down Refactoring
+
+Code review and reduction pass. No behavior changes, no new features.
+Design: `docs/design/LEAN-DOWN.md`.
+
+| Item | Priority | Description |
+|---|---|---|
+| `define_regex!` macro | **High** | Reduce 3-line `LazyLock<Regex>` statics to 1-line macro calls across 22 parsers. ~130 lines saved. |
+| `ParsedResult::new()` constructor | **High** | Replace 10-line struct literals with 1-line constructor calls across 22 parsers. ~200 lines saved. |
+| Extract `src/workspace.rs` | **High** | Deduplicate `find_workspace_root()`, `relative_path()`, `is_test_file()` from context.rs and impact.rs. ~73 lines saved. |
+| Test helpers (`tests/helpers/`) | Medium | Extract `run_prx()`, `test_dir()` helpers to reduce e2e.rs boilerplate. ~300 lines saved. |
+| Large function review | Low | Review `run()` functions over 100 lines for decomposition (readability only, no line savings). |
+
+## v0.5.5 — Index Performance
 
 | Item | Priority | Description |
 |---|---|---|
@@ -320,7 +333,7 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | Parallel chunking | **High** | Parse and chunk files in parallel during indexing. Each file is independent. Rayon `par_iter` over walk entries. |
 | Parallel import extraction | Medium | Extract imports per-file in parallel during `ImportGraph::build_full`. Each file's imports are independent. |
 
-## v0.5.5 — Memory-Mapped Index
+## v0.5.6 — Memory-Mapped Index
 
 | Item | Priority | Description |
 |---|---|---|
@@ -328,7 +341,7 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | `bench-ndcg --plain` | Medium | Human-readable table output for terminal use. |
 | `bench-ndcg` load-once | Medium | Load index once, query N times. Depends on mmap or refactored search API. |
 
-## v0.5.6 — Public Benchmark Suite
+## v0.5.7 — Public Benchmark Suite
 
 | Item | Priority | Description |
 |---|---|---|
@@ -336,7 +349,7 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | `benchmark.yml` CI workflow | **High** | Clone repos at pinned SHAs, build index, run NDCG, compare to baseline, fail on regression >0.02. |
 | Results dashboard | Medium | `benchmarks/results/` with per-release JSON. |
 
-## v0.5.7 — Distribution
+## v0.5.8 — Distribution
 
 | Item | Priority | Description |
 |---|---|---|
@@ -345,7 +358,7 @@ Detailed plan: `docs/design/V050-PLAN.md`.
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
 
-## v0.5.8 — Additional Grammars
+## v0.5.9 — Additional Grammars
 
 | Item | Priority | Description |
 |---|---|---|

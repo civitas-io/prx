@@ -95,14 +95,18 @@ Measured across real agent sessions on production codebases. Run the numbers on 
 
 `prx index` builds a persistent search index — BM25, semantic embeddings, import graph, and symbol definitions — in a single parallel pass. All five stages run on all available CPU cores via rayon.
 
-| Codebase | Files | Chunks | Time | CPU |
-|---|---|---|---|---|
-| Small Rust project (prx itself) | 260 | 910 | **0.4s** | — |
-| Large production monorepo | 11,021 | 55,484 | **54s** | 944% (10 cores) |
+| Codebase | Files | Chunks | Time |
+|---|---|---|---|
+| Flask (Python, 15K LOC) | 259 | 1,225 | **0.3s** |
+| ripgrep (Rust, 25K LOC) | 239 | 2,465 | **0.6s** |
+| fastify (TypeScript, 15K LOC) | 417 | 2,529 | **0.6s** |
+| cargo (Rust, 150K LOC) | 2,815 | 12,118 | **5s** |
+| terraform (Go, 2M LOC) | 5,323 | 22,798 | **10s** |
+| django (Python, 300K LOC) | 5,690 | 30,944 | **32s** |
+| kafka (Java, 500K LOC) | 7,231 | 63,740 | **114s** |
+| vscode (TypeScript, 1M LOC) | 14,643 | 136,056 | **340s** |
 
-The embedding stage (computing 256-dim vectors for 55K chunks) is 94% of the work. Parallelizing it alone turned a 7-minute indexing job into under a minute. On CI runners (4 cores), expect ~3-4x speedup. On workstations (8-16 cores), expect ~6-8x.
-
-Incremental rebuilds skip unchanged files entirely — only modified or new files are re-chunked and re-embedded.
+Measured on 10-core Apple Silicon with rayon parallelism (944% CPU utilization). On CI runners (4 cores), expect ~3-4x speedup over sequential. Incremental rebuilds skip unchanged files entirely.
 
 ### Search: zero-copy memory-mapped embeddings
 

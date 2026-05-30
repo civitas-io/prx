@@ -30,3 +30,4 @@ benchmarks/ndcg_results*.json
 # Handoff files
 HANDOFF.md
 issues.md
+book/build/

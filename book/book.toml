@@ -1,0 +1,18 @@
+[book]
+title = "prx Documentation"
+authors = ["Civitas"]
+description = "Agent-native Unix tools for AI coding agents"
+language = "en"
+src = "src"
+
+[build]
+build-dir = "build"
+
+[output.html]
+git-repository-url = "https://github.com/civitas-io/prx"
+edit-url-template = "https://github.com/civitas-io/prx/edit/main/book/src/{path}"
+default-theme = "light"
+preferred-dark-theme = "navy"
+
+[output.html.search]
+enable = true

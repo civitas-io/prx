@@ -20,28 +20,28 @@ jobs:
         repo:
           - name: flask
             url: pallets/flask
-            sha: 954f5684e484
+            sha: "954f5684e484"
           - name: ripgrep
             url: BurntSushi/ripgrep
-            sha: f0cec341ab95
+            sha: "f0cec341ab95"
           - name: fastify
             url: fastify/fastify
-            sha: 3e04cff92753
+            sha: "3e04cff92753"
           - name: cargo
             url: rust-lang/cargo
-            sha: 03cb632e2473
+            sha: "03cb632e2473"
           - name: django
             url: django/django
-            sha: 032549216074
+            sha: "032549216074"
           - name: kafka
             url: apache/kafka
-            sha: fa097fa593a2
+            sha: "fa097fa593a2"
           - name: terraform
             url: hashicorp/terraform
-            sha: a2ad11c4f14c
+            sha: "a2ad11c4f14c"
           - name: vscode
             url: microsoft/vscode
-            sha: 183159e2b33b
+            sha: "183159e2b33b"
     steps:
       - uses: actions/checkout@v6
 

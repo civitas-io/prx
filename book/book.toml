@@ -13,6 +13,7 @@ git-repository-url = "https://github.com/civitas-io/prx"
 edit-url-template = "https://github.com/civitas-io/prx/edit/main/book/src/{path}"
 default-theme = "light"
 preferred-dark-theme = "navy"
+additional-css = ["theme/custom.css"]
 
 [output.html.search]
 enable = true

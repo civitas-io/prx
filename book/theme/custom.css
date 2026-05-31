@@ -1,0 +1,244 @@
+/* prx documentation theme — inspired by modern Rust project docs */
+
+/* ── Fonts ──────────────────────────────────────────────────────── */
+
+:root {
+    --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+body, .sidebar, .content {
+    font-family: var(--font-body) !important;
+}
+
+code, pre, .hljs {
+    font-family: var(--font-mono) !important;
+    font-size: 0.875em;
+}
+
+/* ── Light theme colors ─────────────────────────────────────────── */
+
+.light {
+    --bg: #ffffff;
+    --fg: #1a1a2e;
+    --sidebar-bg: #0f172a;
+    --sidebar-fg: #e2e8f0;
+    --sidebar-active: #38bdf8;
+    --sidebar-non-existant: #64748b;
+    --links: #2563eb;
+    --inline-code-color: #0f172a;
+    --theme-popup-bg: #ffffff;
+    --theme-popup-border: #e2e8f0;
+    --quote-bg: #f0f9ff;
+    --quote-border: #38bdf8;
+    --table-border-color: #e2e8f0;
+    --table-header-bg: #f8fafc;
+    --table-alternate-bg: #f8fafc;
+    --searchbar-border-color: #cbd5e1;
+    --searchbar-bg: #f8fafc;
+}
+
+/* ── Navy (dark) theme colors ───────────────────────────────────── */
+
+.navy {
+    --bg: #0f172a;
+    --fg: #e2e8f0;
+    --sidebar-bg: #020617;
+    --sidebar-fg: #cbd5e1;
+    --sidebar-active: #38bdf8;
+    --sidebar-non-existant: #475569;
+    --links: #60a5fa;
+    --inline-code-color: #e2e8f0;
+    --quote-bg: #1e293b;
+    --quote-border: #38bdf8;
+    --table-border-color: #334155;
+    --table-header-bg: #1e293b;
+    --table-alternate-bg: #1e293b;
+}
+
+/* ── Coal (dark) theme colors ───────────────────────────────────── */
+
+.coal {
+    --sidebar-bg: #141414;
+    --sidebar-active: #38bdf8;
+    --links: #60a5fa;
+    --quote-bg: #1a1a1a;
+    --quote-border: #38bdf8;
+}
+
+/* ── Ayu theme colors ───────────────────────────────────────────── */
+
+.ayu {
+    --sidebar-active: #38bdf8;
+    --links: #60a5fa;
+    --quote-border: #38bdf8;
+}
+
+/* ── Sidebar styling ────────────────────────────────────────────── */
+
+.sidebar {
+    font-size: 0.9em;
+    line-height: 1.6;
+}
+
+.sidebar .sidebar-scrollbox {
+    padding-top: 1.5em;
+}
+
+.sidebar ol.chapter li a {
+    padding: 5px 20px;
+    border-radius: 4px;
+    transition: background-color 0.15s ease;
+}
+
+.sidebar ol.chapter li a:hover {
+    background-color: rgba(56, 189, 248, 0.1);
+}
+
+.sidebar ol.chapter li.chapter-item.expanded a,
+.sidebar ol.chapter li.active a {
+    color: var(--sidebar-active);
+    font-weight: 600;
+}
+
+/* Part titles in sidebar */
+.sidebar .chapter-item .part-title {
+    font-size: 0.75em;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sidebar-active);
+    margin-top: 1.2em;
+    padding: 0 20px;
+}
+
+/* ── Content area ───────────────────────────────────────────────── */
+
+.content {
+    max-width: 52em;
+    line-height: 1.75;
+}
+
+.content h1 {
+    font-size: 2em;
+    font-weight: 700;
+    margin-top: 0;
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--table-border-color);
+}
+
+.content h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    margin-top: 2em;
+    padding-bottom: 0.2em;
+    border-bottom: 1px solid var(--table-border-color);
+}
+
+.content h3 {
+    font-size: 1.2em;
+    font-weight: 600;
+    margin-top: 1.5em;
+}
+
+/* ── Code blocks ────────────────────────────────────────────────── */
+
+.content pre {
+    border-radius: 8px;
+    padding: 1em 1.2em;
+    border: 1px solid var(--table-border-color);
+}
+
+.content code {
+    padding: 0.15em 0.4em;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+
+.light .content pre {
+    background-color: #f8fafc !important;
+}
+
+.light .content code:not(pre code) {
+    background-color: #f1f5f9;
+    border: 1px solid #e2e8f0;
+}
+
+/* ── Tables ─────────────────────────────────────────────────────── */
+
+.content table {
+    border-collapse: collapse;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    margin: 1em 0;
+}
+
+.content table th {
+    font-weight: 600;
+    text-align: left;
+    padding: 0.75em 1em;
+    background-color: var(--table-header-bg);
+    border-bottom: 2px solid var(--table-border-color);
+}
+
+.content table td {
+    padding: 0.6em 1em;
+    border-bottom: 1px solid var(--table-border-color);
+}
+
+.content table tr:last-child td {
+    border-bottom: none;
+}
+
+/* ── Blockquotes ────────────────────────────────────────────────── */
+
+.content blockquote {
+    border-left: 4px solid var(--quote-border);
+    background-color: var(--quote-bg);
+    padding: 0.8em 1.2em;
+    border-radius: 0 8px 8px 0;
+    margin: 1em 0;
+}
+
+/* ── Links ──────────────────────────────────────────────────────── */
+
+.content a {
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-bottom-color 0.15s ease;
+}
+
+.content a:hover {
+    border-bottom-color: var(--links);
+}
+
+/* ── Navigation buttons ─────────────────────────────────────────── */
+
+.nav-chapters {
+    font-size: 0.9em;
+    opacity: 0.7;
+    transition: opacity 0.15s ease;
+}
+
+.nav-chapters:hover {
+    opacity: 1;
+}
+
+/* ── Search ─────────────────────────────────────────────────────── */
+
+#searchbar {
+    border-radius: 8px;
+    padding: 0.5em 1em;
+}
+
+/* ── Mobile ─────────────────────────────────────────────────────── */
+
+@media (max-width: 1080px) {
+    .content h1 {
+        font-size: 1.6em;
+    }
+    .content h2 {
+        font-size: 1.3em;
+    }
+}

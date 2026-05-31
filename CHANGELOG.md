@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.8] - 2026-05-30
+
+### Added
+
+- **mdBook documentation site** — 33 pages across 7 sections (User Guide,
+  Commands, Architecture, Performance, Reference, Contributing, Vision).
+  Deployed to `civitas-io.github.io/prx/` via GitHub Pages.
+- **`deploy-docs.yml`** — GitHub Actions workflow for automatic docs
+  deployment on push to main.
+
+### Changed
+
+- **Internal docs reorganized** — sprint-specific and internal design docs
+  moved to `docs/internal/`. CLAUDE.md removed (redundant with AGENTS.md).
+- **Makefile simplified** — removed stale `setup`, `models`, `coverage`
+  targets. Added `docs` target for mdBook build.
+
 ## [0.5.7] - 2026-05-29
 
 ### Added

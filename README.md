@@ -295,9 +295,25 @@ If an internal operation fails, prx falls back to the equivalent Unix command an
 
 ## Install
 
-### Prebuilt binary (recommended)
+```bash
+# Homebrew (macOS / Linux)
+brew install civitas-io/tap/prx
 
-Download the binary for your platform from [GitHub Releases](https://github.com/civitas-io/prx/releases):
+# Cargo (Rust developers)
+cargo install prx
+
+# Prebuilt binary (any platform)
+curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-aarch64-apple-darwin.tar.gz | tar xz
+sudo mv prx /usr/local/bin/
+```
+
+| Method | What you get | Requirements |
+|---|---|---|
+| **Homebrew** | Prebuilt binary, auto-updates | macOS or Linux with Homebrew |
+| **cargo install** | Builds from source | Rust 1.85+, C compiler, network |
+| **GitHub Releases** | Prebuilt binary, manual download | None |
+
+Prebuilt binaries for all platforms on [GitHub Releases](https://github.com/civitas-io/prx/releases):
 
 | Platform | File |
 |---|---|
@@ -306,44 +322,13 @@ Download the binary for your platform from [GitHub Releases](https://github.com/
 | macOS Apple Silicon | `prx-aarch64-apple-darwin.tar.gz` |
 | Windows x86_64 | `prx-x86_64-pc-windows-msvc.zip` |
 
-```bash
-# Example: Linux x86_64
-curl -L https://github.com/civitas-io/prx/releases/latest/download/prx-x86_64-unknown-linux-gnu.tar.gz | tar xz
-sudo mv prx /usr/local/bin/
-prx --version
-```
-
-The prebuilt binary already contains the embedded model — nothing else to install.
-
-### Homebrew (macOS / Linux)
-
-```bash
-brew install civitas-io/tap/prx
-```
-
-### cargo install (Rust developers)
-
-```bash
-cargo install prx
-```
-
-Requires Rust 1.85+ and a C compiler. Model weights are downloaded automatically during build.
+The binary contains the embedded model — no downloads at runtime, works offline.
 
 ### Build from source
 
-Requirements: Rust ≥ 1.85, a C compiler (for tree-sitter grammars), and network access on first build (the build script downloads model weights automatically).
-
 ```bash
-git clone https://github.com/civitas-io/prx.git
-cd prx
-cargo build --release    # downloads model (~35 MB), converts to float16, builds
-```
-
-First build takes 1-2 minutes (model download + compilation). Subsequent builds are fast. The model weights are baked into the binary via `include_bytes!` — no downloads at runtime. Set `PRX_MODELS_DIR` to point to pre-downloaded weights for offline/air-gapped builds.
-
-```bash
-cargo test               # run all tests
-cargo clippy              # lint
+git clone https://github.com/civitas-io/prx.git && cd prx
+cargo build --release    # model downloaded automatically by build.rs
 ```
 
 See the [Contributing guide](https://civitas-io.github.io/prx/contributing/setup.html) for the full developer setup.

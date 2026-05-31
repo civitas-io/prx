@@ -281,9 +281,17 @@ prx init --agent claude-code  # generate a dedicated Claude Code sub-agent
 | **MCP server** | `prx mcp` | Agents that prefer structured tool calls mid-task |
 | **Agent definition** | `prx init --agent claude-code` | A dedicated retrieval sub-agent |
 
-### For AI agents
+### Skills guide (for AI agents)
 
-If you're an agent evaluating prx, read [`skills/agents.md`](skills/agents.md): installation, per-command examples, and measured token savings written for machine consumption.
+prx ships with a machine-readable skill guide at [`skills/agents.md`](skills/agents.md) — a complete reference written for AI agents, not humans. It covers:
+
+- **When to use prx** instead of grep, cat, find, sed (decision table)
+- **Core workflow** — the 12-step sequence from existence check to test run
+- **Per-command examples** with expected JSON output
+- **Measured token savings** per command (99% on cache hits, 95% on test runs)
+- **Conditional reads, budgets, and search modes** with concrete usage
+
+Load it into your agent's context with `prx init --agents-md`, or read it directly. It's 210 lines — designed to fit in a single context load.
 
 ---
 

@@ -315,6 +315,20 @@ prx --version
 
 The prebuilt binary already contains the embedded model — nothing else to install.
 
+### Homebrew (macOS / Linux)
+
+```bash
+brew install civitas-io/tap/prx
+```
+
+### cargo install (Rust developers)
+
+```bash
+cargo install prx
+```
+
+Requires Rust 1.85+ and a C compiler. Model weights are downloaded automatically during build.
+
 ### Build from source
 
 Requirements: Rust ≥ 1.85, a C compiler (for tree-sitter grammars), and network access on first build (the build script downloads model weights automatically).

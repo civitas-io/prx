@@ -3,6 +3,7 @@
 [![CI](https://github.com/civitas-io/prx/actions/workflows/ci.yml/badge.svg)](https://github.com/civitas-io/prx/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-lightgrey)](#platform-support)
+[![Docs](https://img.shields.io/badge/docs-civitas--io.github.io%2Fprx-blue)](https://civitas-io.github.io/prx/)
 
 **AI coding agents burn most of their context window re-discovering code they've already seen. prx fixes that at the source.**
 

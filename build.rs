@@ -10,9 +10,10 @@
 //!   4. Rewrite the safetensors file with the `embeddings` tensor converted
 //!      from F32 to F16 (other tensors preserved verbatim).
 //!
-//! Files land in `models/` (alongside `Cargo.toml`) because `src/` uses
-//! `include_bytes!("../models/…")` — paths relative to the source file, which
-//! cannot reach `OUT_DIR`.
+//! Files land in `$OUT_DIR/models/` and are referenced via
+//! `include_bytes!(concat!(env!("PRX_MODELS_PATH"), "/…"))`.
+//! If `models/` exists in the source tree (developer cache), files are
+//! copied from there instead of re-downloading.
 
 use std::env;
 use std::fs;
@@ -42,14 +43,33 @@ fn main() {
     println!("cargo:rerun-if-changed=models/{M2V_TOK_FILE}");
     println!("cargo:rerun-if-changed=models/{CL100K_FILE}");
 
+    let out_dir = env::var("OUT_DIR").expect("OUT_DIR is set by cargo");
+    let models_dir = PathBuf::from(&out_dir).join("models");
     let manifest_dir = env::var("CARGO_MANIFEST_DIR").expect("CARGO_MANIFEST_DIR is set by cargo");
-    let models_dir = PathBuf::from(manifest_dir).join("models");
+    let source_models = PathBuf::from(&manifest_dir).join("models");
+
+    fs::create_dir_all(&models_dir).expect("create models dir in OUT_DIR");
+
+    if source_models.join(MODEL_FILE).exists()
+        && source_models.join(M2V_TOK_FILE).exists()
+        && source_models.join(CL100K_FILE).exists()
+    {
+        for file in &[MODEL_FILE, M2V_TOK_FILE, CL100K_FILE] {
+            let src = source_models.join(file);
+            let dst = models_dir.join(file);
+            if !dst.exists() {
+                fs::copy(&src, &dst).expect("copy model from source tree to OUT_DIR");
+            }
+        }
+    }
 
     if let Err(e) = ensure_models(&models_dir) {
         eprintln!("\nbuild.rs: failed to provision model files\n  {e}\n");
         eprintln!("Set PRX_MODELS_DIR=<path> to use pre-downloaded files for offline builds.");
         std::process::exit(1);
     }
+
+    println!("cargo:rustc-env=PRX_MODELS_PATH={}", models_dir.display());
 }
 
 fn ensure_models(models_dir: &Path) -> Result<(), String> {

@@ -203,7 +203,10 @@ pub fn run(args: FindArgs) -> Result<serde_json::Value, AgError> {
 }
 
 fn score_file_relevance(entries: &mut [FileEntry], root: &Path, query: &str) {
-    let model_bytes: &[u8] = include_bytes!("../../models/potion-retrieval-32M.safetensors");
+    let model_bytes: &[u8] = include_bytes!(concat!(
+        env!("PRX_MODELS_PATH"),
+        "/potion-retrieval-32M.safetensors"
+    ));
     if model_bytes.is_empty() {
         return;
     }
@@ -293,7 +296,10 @@ fn score_file_relevance(entries: &mut [FileEntry], root: &Path, query: &str) {
 }
 
 fn load_model2vec_vocab(_expected_size: usize) -> Option<HashMap<String, usize>> {
-    let tokenizer_bytes: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
+    let tokenizer_bytes: &[u8] = include_bytes!(concat!(
+        env!("PRX_MODELS_PATH"),
+        "/model2vec_tokenizer.json"
+    ));
     if tokenizer_bytes.is_empty() {
         return None;
     }

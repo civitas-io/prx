@@ -8,6 +8,15 @@ license = "Apache-2.0"
 repository = "https://github.com/civitas-io/prx"
 keywords = ["cli", "ai", "agent", "search", "tools"]
 categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
+exclude = [
+    "models/",
+    "benchmarks/",
+    "book/",
+    "docs/",
+    ".prx/",
+    ".github/",
+]
 
 [dependencies]
 # CLI framework — derive API with multicall for busybox-style dispatch

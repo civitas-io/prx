@@ -2,7 +2,8 @@ use std::sync::OnceLock;
 
 static TOKENIZER: OnceLock<Option<tokenizers::Tokenizer>> = OnceLock::new();
 
-static TOKENIZER_BYTES: &[u8] = include_bytes!("../models/cl100k_base.json");
+static TOKENIZER_BYTES: &[u8] =
+    include_bytes!(concat!(env!("PRX_MODELS_PATH"), "/cl100k_base.json"));
 
 pub fn count_fast(text: &str) -> usize {
     text.len() / 4

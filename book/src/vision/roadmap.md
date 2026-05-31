@@ -256,19 +256,24 @@ Measured NDCG@10: 0.639 (self), 0.451 (external production codebase). Target: 0.
 
 ---
 
-## v0.5.8 — Distribution and Documentation
+## v0.5.8 — Documentation Site [DONE]
+
+| Item | Priority | Status |
+|---|---|---|
+| Documentation site (mdBook) | **High** | **Done** — 33 pages at `civitas-io.github.io/prx/`. |
+| deploy-docs.yml workflow | **High** | **Done** — auto-deploy on push to main. |
+| Docs cleanup | Medium | **Done** — book/ is single source of truth, docs/ archived. |
+
+## v0.5.9 — Distribution
 
 | Item | Priority | Description |
 |---|---|---|
-| Documentation site (mdBook) | High | mdBook-based docs at `civitas-io.github.io/prx/`. |
-| `cargo publish` | High | `cargo install prx`. |
+| `cargo publish` | **High** | `cargo install prx`. |
 | Homebrew formula | High | `brew install civitas-io/tap/prx` |
 | npm wrapper | Medium | `npx prx` for JS/TS agents |
 | pip wrapper | Medium | `pip install prx` for Python agents |
 
----
-
-## v0.5.9 — Additional Grammars
+## v0.5.10 — Additional Grammars
 
 | Item | Priority | Description |
 |---|---|---|

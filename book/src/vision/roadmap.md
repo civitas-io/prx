@@ -291,10 +291,12 @@ Benchmark data (v0.5.7) shows the 32M general-purpose model works for small code
 
 | Item | Priority | Description |
 |---|---|---|
-| Distill code-specific Model2Vec models | High | Distill CodeSage-v2-Base (356M) and/or all-mpnet-base-v2 (109M) into Model2Vec format (256d, f16). ~30 sec distillation, ~8 MB output. |
-| `prx index --model` flag | High | Support `--model builtin` (default), `--model standard`, `--model large`. Download on first use to `~/.prx/models/`. |
+| Expand benchmark to 40-50 queries per repo | **High** | 25 queries gives ±0.05-0.08 noise — need tighter baselines before evaluating new models. Prioritize medium/large repos (django, kafka, terraform, vscode). |
+| Distill code-specific Model2Vec models | **High** | Distill CodeSage-v2-Base (356M) and/or all-mpnet-base-v2 (109M) into Model2Vec format (256d, f16). ~30 sec distillation, ~8 MB output. Benchmark against expanded query suite. |
+| `prx index --model` flag | **High** | Support `--model builtin` (default), `--model standard`, `--model large`. Download on first use to `~/.prx/models/`. |
 | Repo analysis + model recommendation | High | After `prx index`, emit a hint if repo has >3K files: "For better semantic search, try `prx index --model standard`". |
 | Model download infrastructure | High | SHA-256 pinned downloads from HuggingFace or GitHub Releases. Offline via `PRX_MODELS_DIR`. Progress bar. |
+| Benchmark regression gate tightening | Medium | With 40-50 queries, tighten CI gate from 0.05 to 0.02 regression threshold. |
 
 **Model tiers:**
 

@@ -3,7 +3,10 @@ use std::collections::HashMap;
 use std::sync::OnceLock;
 
 static MODEL2VEC_TOKENIZER: OnceLock<Option<tokenizers::Tokenizer>> = OnceLock::new();
-static MODEL2VEC_TOKENIZER_BYTES: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
+static MODEL2VEC_TOKENIZER_BYTES: &[u8] = include_bytes!(concat!(
+    env!("PRX_MODELS_PATH"),
+    "/model2vec_tokenizer.json"
+));
 
 pub struct DenseIndex {
     vocab: HashMap<String, usize>,
@@ -104,7 +107,10 @@ impl DenseIndex {
 }
 
 pub fn load_model() -> Option<DenseIndex> {
-    let model_bytes: &[u8] = include_bytes!("../../models/potion-retrieval-32M.safetensors");
+    let model_bytes: &[u8] = include_bytes!(concat!(
+        env!("PRX_MODELS_PATH"),
+        "/potion-retrieval-32M.safetensors"
+    ));
     if model_bytes.is_empty() {
         return None;
     }
@@ -156,7 +162,10 @@ pub fn load_model() -> Option<DenseIndex> {
 }
 
 fn load_model_vocab(expected_size: usize) -> Option<HashMap<String, usize>> {
-    let tokenizer_bytes: &[u8] = include_bytes!("../../models/model2vec_tokenizer.json");
+    let tokenizer_bytes: &[u8] = include_bytes!(concat!(
+        env!("PRX_MODELS_PATH"),
+        "/model2vec_tokenizer.json"
+    ));
     if tokenizer_bytes.is_empty() {
         return Some(
             (0..expected_size)

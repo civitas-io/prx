@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.9] - 2026-05-31
+
+### Changed
+
+- **crates.io ready** — `cargo publish --dry-run` passes. Build script
+  downloads models to `OUT_DIR` instead of source tree. Published crate
+  is 171 KB compressed (models downloaded at build time via `build.rs`).
+- **Cargo.toml exclude** — models/, benchmarks/, book/, docs/, .prx/,
+  .github/ excluded from published crate.
+
+### To publish
+
+```bash
+cargo login <your-token>
+cargo publish
+```
+
 ## [0.5.8] - 2026-05-30
 
 ### Added

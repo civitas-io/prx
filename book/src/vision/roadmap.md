@@ -264,14 +264,15 @@ Measured NDCG@10: 0.639 (self), 0.451 (external production codebase). Target: 0.
 | deploy-docs.yml workflow | **High** | **Done** — auto-deploy on push to main. |
 | Docs cleanup | Medium | **Done** — book/ is single source of truth, docs/ archived. |
 
-## v0.5.9 — Distribution
+## v0.5.9 — Distribution [DONE]
 
-| Item | Priority | Description |
+| Item | Priority | Status |
 |---|---|---|
-| `cargo publish` | **High** | `cargo install prx`. |
-| Homebrew formula | High | `brew install civitas-io/tap/prx` |
-| npm wrapper | Medium | `npx prx` for JS/TS agents |
-| pip wrapper | Medium | `pip install prx` for Python agents |
+| `cargo publish` | **High** | **Done** — [crates.io/crates/prx](https://crates.io/crates/prx). `cargo install prx`. |
+| Homebrew formula | **High** | **Done** — `brew install civitas-io/tap/prx`. Tap: [civitas-io/homebrew-tap](https://github.com/civitas-io/homebrew-tap). |
+| build.rs OUT_DIR fix | **High** | **Done** — models download to OUT_DIR, crate is 171 KB compressed. |
+| npm wrapper | Medium | Deferred — `npx prx` for JS/TS agents. |
+| pip wrapper | Medium | Deferred — `pip install prx` for Python agents. |
 
 ## v0.5.10 — Additional Grammars
 

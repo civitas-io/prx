@@ -174,7 +174,7 @@ Reverse-dependency analysis built on prx's import graph: it answers "what depend
 | `prx bench` | — | Side-by-side benchmark: prx vs grep+cat. |
 | `prx bench-ndcg` | — | NDCG search quality benchmark against labeled datasets. |
 
-17 commands total. Full reference with examples: [docs/USAGE.md](docs/USAGE.md).
+17 commands total. Full reference with examples in the [documentation site](https://civitas-io.github.io/prx/).
 
 ---
 
@@ -331,7 +331,7 @@ cargo test               # run all tests
 cargo clippy              # lint
 ```
 
-See [CONTRIBUTING](docs/CONTRIBUTING.md) for the full developer guide.
+See the [Contributing guide](https://civitas-io.github.io/prx/contributing/setup.html) for the full developer setup.
 
 ---
 
@@ -363,7 +363,7 @@ Single static binary. No runtime dependencies. No network required after build.
 | Release binary | ~49 MB |
 | CI | GitHub Actions: Linux x86_64 / aarch64, macOS arm64, Windows |
 
-See [ROADMAP](docs/vision/ROADMAP.md) for what's planned next.
+See the [Roadmap](https://civitas-io.github.io/prx/vision/roadmap.html) for what's planned next.
 
 ---
 
@@ -382,7 +382,7 @@ NDCG@10 measured on 200 labeled queries across 8 public repositories (6 language
 | terraform | Go | 5,323 | **0.287** | 0.238 | 0.319 |
 | vscode | TypeScript | 14,643 | **0.208** | 0.639 | 0.080 |
 
-Symbol search is consistently strong (avg 0.681) across all sizes. Semantic search degrades at scale — the 32M embedded model works best on codebases under 3K files. For larger repos, code-specific model tiers are planned (see [ROADMAP](docs/vision/ROADMAP.md)).
+Symbol search is consistently strong (avg 0.681) across all sizes. Semantic search degrades at scale — the 32M embedded model works best on codebases under 3K files. For larger repos, code-specific model tiers are planned (see [Roadmap](https://civitas-io.github.io/prx/vision/roadmap.html)).
 
 These are honest numbers on codebases we didn't write and don't tune for.
 
@@ -390,7 +390,7 @@ These are honest numbers on codebases we didn't write and don't tune for.
 
 ## Contributing
 
-See [CONTRIBUTING](docs/CONTRIBUTING.md) for setup, workflow, and how to add commands, languages, and run parsers.
+See the [Contributing guide](https://civitas-io.github.io/prx/contributing/setup.html) for setup, workflow, and how to add commands, languages, and run parsers.
 
 ## License
 

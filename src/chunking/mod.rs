@@ -31,12 +31,18 @@ pub fn chunk_file(source: &str, file_path: &str, ext: Option<&str>) -> Vec<Chunk
 
     let with_overlap = add_overlap(&boundaries, source, OVERLAP_BYTES);
 
+    let newline_offsets: Vec<usize> = source
+        .bytes()
+        .enumerate()
+        .filter_map(|(i, b)| if b == b'\n' { Some(i) } else { None })
+        .collect();
+
     with_overlap
         .into_iter()
         .map(|(start_byte, end_byte)| {
             let content = source[start_byte..end_byte].to_string();
-            let start_line = source[..start_byte].matches('\n').count() + 1;
-            let end_line = source[..end_byte].matches('\n').count() + 1;
+            let start_line = newline_offsets.partition_point(|&o| o < start_byte) + 1;
+            let end_line = newline_offsets.partition_point(|&o| o < end_byte) + 1;
             Chunk {
                 content,
                 file_path: file_path.to_string(),

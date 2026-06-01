@@ -170,7 +170,7 @@ This dramatically improves precision for symbol queries. Symbol NDCG improved fr
 
 ## Import Graph
 
-The import graph captures file-level dependency edges extracted via tree-sitter AST queries across 10 language families. Edges are resolved by suffix matching with proximity-based disambiguation. Persisted as `imports.bin`.
+The import graph captures file-level dependency edges extracted via tree-sitter AST queries across 20 language families. Edges are resolved by suffix matching with proximity-based disambiguation. Persisted as `imports.bin`.
 
 The graph is used in two ways:
 - **Proximity boost** (stage 3 above): files near top results get a score boost

@@ -54,27 +54,44 @@ The core binary without `mcp` or `watch` is fully synchronous. No async runtime 
 
 ## Tree-sitter Grammar Crates
 
-All grammar crates must be compatible with tree-sitter 0.25.x. This version was chosen because it has the broadest grammar crate compatibility — only 1 of 15 grammar crates supports 0.26.x.
+All grammar crates must be compatible with tree-sitter 0.26.x via the `LanguageFn` API. Where upstream crates don't support 0.26, we use compatible forks.
+
+**Original grammars (13):**
 
 | Crate | Version | Language | Notes |
 |---|---|---|---|
 | tree-sitter-rust | 0.24 | Rust | `LANGUAGE` const |
 | tree-sitter-python | 0.25 | Python | `LANGUAGE` const |
 | tree-sitter-javascript | 0.25 | JavaScript | `LANGUAGE` const |
-| tree-sitter-typescript | 0.23 | TypeScript, TSX | Two separate Language objects: `LANGUAGE_TYPESCRIPT`, `LANGUAGE_TSX` |
+| tree-sitter-typescript | 0.23 | TypeScript, TSX | `LANGUAGE_TYPESCRIPT`, `LANGUAGE_TSX` |
 | tree-sitter-go | 0.25 | Go | `LANGUAGE` const |
 | tree-sitter-java | 0.23 | Java | `LANGUAGE` const |
 | tree-sitter-c | 0.24 | C | `LANGUAGE` const |
-| tree-sitter-cpp | 0.23 | C++ | `LANGUAGE` const. Also compatible with 0.26. |
+| tree-sitter-cpp | 0.23 | C++ | `LANGUAGE` const |
 | tree-sitter-ruby | 0.23 | Ruby | `LANGUAGE` const |
 | tree-sitter-bash | 0.25 | Bash | `LANGUAGE` const |
 | tree-sitter-json | 0.24 | JSON | `LANGUAGE` const |
-| tree-sitter-toml | 0.20 | TOML | `language()` function (not a const) |
-| tree-sitter-yaml | 0.7 | YAML | Check source for access pattern |
 | tree-sitter-html | 0.23 | HTML | `LANGUAGE` const |
 | tree-sitter-css | 0.25 | CSS | `LANGUAGE` const |
 
-**Standard access pattern (14 crates):**
+**v0.5.10 additions (14):**
+
+| Crate | Version | Language | Notes |
+|---|---|---|---|
+| tree-sitter-kotlin-sg | 0.4 | Kotlin | `-sg` fork for 0.26. `LANGUAGE` const |
+| tree-sitter-swift | 0.7 | Swift | `LANGUAGE` const |
+| tree-sitter-c-sharp | 0.23 | C# | `LANGUAGE` const |
+| tree-sitter-php | 0.24 | PHP | `LANGUAGE_PHP` const |
+| tree-sitter-elixir | 0.3 | Elixir | `LANGUAGE` const |
+| tree-sitter-yaml | 0.7 | YAML | `LANGUAGE` const |
+| tree-sitter-toml-ng | 0.7 | TOML | `-ng` fork for 0.26. `LANGUAGE` const |
+| tree-sitter-md | 0.5 | Markdown | `LANGUAGE` const |
+| tree-sitter-containerfile | 0.8 | Dockerfile | `LANGUAGE` const |
+| tree-sitter-hcl | 1.1 | HCL/Terraform | `LANGUAGE` const |
+| tree-sitter-sequel | 0.3 | SQL | `LANGUAGE` const |
+| tree-sitter-make | 1.1 | Makefile | `LANGUAGE` const |
+
+**Standard access pattern (all crates except PHP and TypeScript):**
 
 ```rust
 use tree_sitter_rust::LANGUAGE;
@@ -82,7 +99,7 @@ let lang: tree_sitter::Language = LANGUAGE.into();
 parser.set_language(&lang)?;
 ```
 
-**TypeScript (special — two languages):**
+**TypeScript (two languages):**
 
 ```rust
 use tree_sitter_typescript::{LANGUAGE_TYPESCRIPT, LANGUAGE_TSX};
@@ -90,10 +107,11 @@ use tree_sitter_typescript::{LANGUAGE_TYPESCRIPT, LANGUAGE_TSX};
 // Use LANGUAGE_TSX for .tsx files
 ```
 
-**TOML (special — function, not const):**
+**PHP (different const name):**
 
 ```rust
-let lang = tree_sitter_toml::language();
+use tree_sitter_php::LANGUAGE_PHP;
+let lang: tree_sitter::Language = LANGUAGE_PHP.into();
 parser.set_language(&lang)?;
 ```
 
@@ -101,7 +119,7 @@ parser.set_language(&lang)?;
 
 **clap over structopt:** clap 4.x includes derive macros natively. structopt is deprecated.
 
-**tree-sitter 0.25 over 0.26:** Grammar crate compatibility. Only 1 of 15 grammar crates supports 0.26.x.
+**tree-sitter 0.26:** Modern `LanguageFn` API, broad ecosystem adoption. Compatible forks used where upstream crates lag behind.
 
 **safetensors over manual deserialization:** Zero-copy mmap, standard format, maintained by HuggingFace.
 

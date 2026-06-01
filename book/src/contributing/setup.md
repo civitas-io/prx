@@ -140,7 +140,7 @@ One note: the model files in `models/` are large binary files. Some IDEs index e
 
 ## Adding a New Language Grammar
 
-1. Add `tree-sitter-<lang>` crate to `Cargo.toml` (must be compatible with tree-sitter 0.25.x)
+1. Add `tree-sitter-<lang>` crate to `Cargo.toml` (must provide `LanguageFn` compatible with tree-sitter 0.26.x)
 2. Add extension mapping in `src/parsing/languages.rs`
 3. Add outline test in `src/parsing/outline.rs`
 

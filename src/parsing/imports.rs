@@ -35,6 +35,11 @@ fn collect_imports(node: Node, source: &str, ext: &str, imports: &mut Vec<String
         "sh" | "bash" | "zsh" => extract_bash(node, source, imports),
         "css" => extract_css(node, source, imports),
         "html" | "htm" => extract_html(node, source, imports),
+        "kt" | "kts" => extract_kotlin(node, source, imports),
+        "swift" => extract_swift(node, source, imports),
+        "cs" => extract_csharp(node, source, imports),
+        "php" => extract_php(node, source, imports),
+        "ex" | "exs" => extract_elixir(node, source, imports),
         _ => false,
     };
     if consumed {
@@ -272,6 +277,119 @@ fn extract_html(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
     false
 }
 
+fn extract_kotlin(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "import_header" {
+        if let Some(id) = node.child_by_field_name("identifier") {
+            push_text(id, source, imports);
+        } else {
+            let mut cursor = node.walk();
+            for child in node.children(&mut cursor) {
+                if child.kind() == "identifier" {
+                    push_text(child, source, imports);
+                    break;
+                }
+            }
+        }
+        return true;
+    }
+    false
+}
+
+fn extract_swift(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "import_declaration" {
+        let mut cursor = node.walk();
+        for child in node.children(&mut cursor) {
+            if child.kind() == "identifier" {
+                push_text(child, source, imports);
+                return true;
+            }
+        }
+        return true;
+    }
+    false
+}
+
+fn extract_csharp(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "using_directive" {
+        let mut cursor = node.walk();
+        for child in node.named_children(&mut cursor) {
+            if matches!(child.kind(), "identifier" | "qualified_name") {
+                push_text(child, source, imports);
+                break;
+            }
+        }
+        return true;
+    }
+    false
+}
+
+fn extract_php(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    match node.kind() {
+        "namespace_use_declaration" => {
+            let mut cursor = node.walk();
+            for child in node.named_children(&mut cursor) {
+                if child.kind() == "namespace_use_clause" {
+                    let mut inner = child.walk();
+                    for c in child.named_children(&mut inner) {
+                        if c.kind() == "qualified_name" || c.kind() == "name" {
+                            push_text(c, source, imports);
+                            break;
+                        }
+                    }
+                }
+            }
+            true
+        }
+        "expression_statement" => {
+            let mut cursor = node.walk();
+            for child in node.named_children(&mut cursor) {
+                if matches!(
+                    child.kind(),
+                    "require_expression"
+                        | "require_once_expression"
+                        | "include_expression"
+                        | "include_once_expression"
+                ) {
+                    let mut inner = child.walk();
+                    for c in child.children(&mut inner) {
+                        if c.kind() == "string" {
+                            push_string_literal(c, source, imports);
+                            return true;
+                        }
+                    }
+                }
+            }
+            false
+        }
+        _ => false,
+    }
+}
+
+fn extract_elixir(node: Node, source: &str, imports: &mut Vec<String>) -> bool {
+    if node.kind() == "call" {
+        if let Some(target) = node.child(0) {
+            if target.kind() == "identifier" {
+                let name = target.utf8_text(source.as_bytes()).unwrap_or("");
+                if matches!(name, "import" | "alias" | "use" | "require") {
+                    let mut cursor = node.walk();
+                    for child in node.children(&mut cursor) {
+                        if child.kind() == "arguments" {
+                            let mut inner = child.walk();
+                            for arg in child.children(&mut inner) {
+                                if arg.kind() == "alias" || arg.kind() == "identifier" {
+                                    push_text(arg, source, imports);
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    false
+}
+
 fn push_text(node: Node, source: &str, imports: &mut Vec<String>) {
     if let Ok(text) = node.utf8_text(source.as_bytes()) {
         if !text.is_empty() {
@@ -433,5 +551,62 @@ mod tests {
         let src = "{\"key\": \"value\"}\n";
         let imports = extract_imports(src, "json");
         assert!(imports.is_empty());
+    }
+
+    #[test]
+    fn kotlin_imports() {
+        let src = "import java.util.List\nimport kotlin.io.println\n";
+        let imports = extract_imports(src, "kt");
+        assert_eq!(imports, vec!["java.util.List", "kotlin.io.println"]);
+    }
+
+    #[test]
+    fn swift_import() {
+        let src = "import Foundation\nimport UIKit\n";
+        let imports = extract_imports(src, "swift");
+        assert_eq!(imports, vec!["Foundation", "UIKit"]);
+    }
+
+    #[test]
+    fn csharp_using() {
+        let src = "using System;\nusing System.IO;\n";
+        let imports = extract_imports(src, "cs");
+        assert_eq!(imports, vec!["System", "System.IO"]);
+    }
+
+    #[test]
+    fn php_use_and_require() {
+        let src = "<?php\nuse Illuminate\\Database\\Model;\nrequire_once 'helper.php';\n";
+        let imports = extract_imports(src, "php");
+        assert!(
+            imports.iter().any(|i| i.contains("Illuminate")),
+            "missing use: {imports:?}"
+        );
+        assert!(
+            imports.iter().any(|i| i.contains("helper")),
+            "missing require: {imports:?}"
+        );
+    }
+
+    #[test]
+    fn elixir_import_alias_use() {
+        let src = "defmodule MyApp do\n  import Ecto.Query\n  alias MyApp.Repo\n  use GenServer\n  require Logger\nend\n";
+        let imports = extract_imports(src, "ex");
+        assert!(
+            imports.iter().any(|i| i.contains("Ecto")),
+            "missing import: {imports:?}"
+        );
+        assert!(
+            imports.iter().any(|i| i.contains("Repo")),
+            "missing alias: {imports:?}"
+        );
+        assert!(
+            imports.iter().any(|i| i.contains("GenServer")),
+            "missing use: {imports:?}"
+        );
+        assert!(
+            imports.iter().any(|i| i.contains("Logger")),
+            "missing require: {imports:?}"
+        );
     }
 }

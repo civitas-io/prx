@@ -1,6 +1,6 @@
 [package]
 name = "prx"
-version = "0.5.9"
+version = "0.5.10"
 edition = "2024"
 rust-version = "1.85"
 description = "Praxis — agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff for AI coding agents."
@@ -103,6 +103,20 @@ tree-sitter-bash = "0.25"
 tree-sitter-json = "0.24"
 tree-sitter-html = "0.23"
 tree-sitter-css = "0.25"
+# v0.5.10 — additional language grammars
+tree-sitter-kotlin = { package = "tree-sitter-kotlin-sg", version = "0.4" }  # Kotlin grammar — -sg fork for tree-sitter 0.26 compat
+tree-sitter-swift = "0.7"              # Swift grammar (iOS/macOS development)
+tree-sitter-c-sharp = "0.23"           # C# grammar (.NET ecosystem)
+tree-sitter-php = "0.24"               # PHP grammar (web backends, Laravel/Symfony)
+tree-sitter-elixir = "0.3"             # Elixir grammar (BEAM/OTP ecosystem)
+# v0.5.10 — config/scripting language grammars
+tree-sitter-yaml = "0.7"              # YAML grammar (CI/CD configs, Kubernetes manifests, Docker Compose)
+tree-sitter-toml = { package = "tree-sitter-toml-ng", version = "0.7" }  # TOML grammar — -ng fork for tree-sitter 0.26 compat
+tree-sitter-markdown = { package = "tree-sitter-markdown-updated", version = "0.1" }  # Markdown grammar — -updated fork for 0.26 compat
+tree-sitter-dockerfile = { package = "tree-sitter-dockerfile-updated", version = "0.2" }  # Dockerfile grammar — -updated fork for 0.26 compat
+tree-sitter-hcl = "1.1"               # HCL/Terraform grammar (infrastructure as code)
+tree-sitter-sql = { package = "tree-sitter-sequel", version = "0.3" }  # SQL grammar — sequel fork with LanguageFn API
+tree-sitter-make = "1.1"              # Makefile grammar (build systems)
 
 [features]
 default = ["mcp"]

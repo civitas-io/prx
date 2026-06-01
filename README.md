@@ -225,7 +225,7 @@ prx search --literal "authenticate(" src/              # exact match, ripgrep sp
 prx search --structural 'fn $NAME($$$) { $$$ }' src/   # AST pattern matching
 ```
 
-The import graph is extracted from the AST (tree-sitter) across 10 language families that have an import concept. Search quality is tracked with NDCG@10 on labeled datasets — see [Search quality](#search-quality) for the honest numbers and methodology.
+The import graph is extracted from the AST (tree-sitter) across 20 language families that have an import concept. Search quality is tracked with NDCG@10 on labeled datasets — see [Search quality](#search-quality) for the honest numbers and methodology.
 
 ---
 
@@ -361,10 +361,10 @@ Single static binary. No runtime dependencies. No network required after build.
 | | |
 |---|---|
 | Commands | 17 |
-| Tests | 442 unit + 80 E2E + 8 MCP |
+| Tests | 454 unit + 80 E2E + 8 MCP |
 | Run parsers | 22 (cargo, pytest, go, jest, eslint, tsc, kubectl, terraform, docker, + 13 more) |
-| Languages (parsing) | 15 tree-sitter grammars |
-| Import graph | 10 language families, tree-sitter AST extraction |
+| Languages (parsing) | 27 tree-sitter grammars |
+| Import graph | 20 language families, tree-sitter AST extraction |
 | Symbol index | Definition lookup + reference counting |
 | Indexing | Parallel via rayon — 11K files in 54s on 10 cores (7.6x speedup). Zero-copy mmap embeddings. |
 | Embedded model | potion-retrieval-32M (Model2Vec, float16, PCA→256 dims) |
@@ -372,6 +372,41 @@ Single static binary. No runtime dependencies. No network required after build.
 | CI | GitHub Actions: Linux x86_64 / aarch64, macOS arm64, Windows |
 
 See the [Roadmap](https://civitas-io.github.io/prx/vision/roadmap.html) for what's planned next.
+
+<details>
+<summary><strong>Supported languages (27)</strong></summary>
+
+| Language | Extensions | Parsing | Imports | Outline | Snap |
+|---|---|---|---|---|---|
+| Rust | `.rs` | ✓ | ✓ | ✓ | ✓ |
+| Python | `.py` `.pyi` | ✓ | ✓ | ✓ | ✓ |
+| JavaScript | `.js` `.jsx` `.mjs` `.cjs` | ✓ | ✓ | ✓ | ✓ |
+| TypeScript | `.ts` `.tsx` `.mts` `.cts` | ✓ | ✓ | ✓ | ✓ |
+| Go | `.go` | ✓ | ✓ | ✓ | ✓ |
+| Java | `.java` | ✓ | ✓ | ✓ | ✓ |
+| C | `.c` `.h` | ✓ | ✓ | ✓ | ✓ |
+| C++ | `.cpp` `.cc` `.hpp` `.hxx` | ✓ | ✓ | ✓ | ✓ |
+| Ruby | `.rb` | ✓ | ✓ | — | ✓ |
+| Bash | `.sh` `.bash` `.zsh` | ✓ | ✓ | — | ✓ |
+| Kotlin | `.kt` `.kts` | ✓ | ✓ | ✓ | ✓ |
+| Swift | `.swift` | ✓ | ✓ | ✓ | ✓ |
+| C# | `.cs` | ✓ | ✓ | ✓ | ✓ |
+| PHP | `.php` | ✓ | ✓ | ✓ | ✓ |
+| Elixir | `.ex` `.exs` | ✓ | ✓ | ✓ | ✓ |
+| SQL | `.sql` | ✓ | — | — | — |
+| HCL/Terraform | `.tf` `.hcl` | ✓ | — | ✓ | ✓ |
+| YAML | `.yml` `.yaml` | ✓ | — | — | — |
+| TOML | `.toml` | ✓ | — | — | — |
+| Markdown | `.md` | ✓ | — | — | — |
+| Dockerfile | `Dockerfile` | ✓ | — | — | — |
+| Makefile | `Makefile` `.mk` | ✓ | — | ✓ | — |
+| JSON | `.json` | ✓ | — | — | — |
+| HTML | `.html` `.htm` | ✓ | ✓ | — | — |
+| CSS | `.css` | ✓ | ✓ | — | — |
+
+**Parsing** = tree-sitter AST (chunking, `--skeleton`, `--mode aggressive`). **Imports** = dependency graph extraction. **Outline** = symbol table (`prx outline`). **Snap** = structural snapping (`--snap function/class`).
+
+</details>
 
 ---
 

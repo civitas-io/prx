@@ -24,7 +24,7 @@ prx returns exactly what you need.
 | Read a file again | `prx read file --if-changed <hash>` | 50-byte stub if unchanged (99% savings) |
 | Understand a module | `prx context src/auth/` | Stats + doc + entrypoints + files + edges in one call |
 | "What breaks if I change this?" | `prx impact src/auth.rs` | Reverse dependency walk with symbol attribution |
-| `outline` / `ctags` equivalent | `prx outline src/` | Tree-sitter symbol table (10 kinds, nested) |
+| `outline` / `ctags` equivalent | `prx outline src/` | Tree-sitter symbol table (27 languages, nested) |
 | Multiple independent queries | `prx batch < commands.jsonl` | Parallel execution, single response |
 
 ## Core Workflow
@@ -203,6 +203,17 @@ MCP — use CLI on PATH for sub-agent access.
 6. `prx edit` — preview then apply
 7. `prx run cargo test` — verify with minimal output
 8. `prx index .` — build once, search faster thereafter
+
+## Supported Languages (27)
+
+**Full support** (parsing, imports, outline, snap):
+Rust, Python, JavaScript/TypeScript, Go, Java, C/C++, Kotlin, Swift, C#, PHP, Elixir
+
+**Parsing + imports**: Ruby, Bash, HTML, CSS
+
+**Parsing + outline**: HCL/Terraform (resource/variable blocks), Makefile (rules + variables)
+
+**Parsing only** (chunking, skeleton, aggressive mode): YAML, TOML, Markdown, Dockerfile, SQL, JSON
 
 ## Links
 

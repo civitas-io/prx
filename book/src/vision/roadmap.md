@@ -311,18 +311,22 @@ Parallel embedding indexing via rayon. O(n) top-k selection replacing O(n log n)
 
 ---
 
-## v0.6.0 — Model Tiering
+## v0.6.0 — Model Tiering + Codebase Health
+
+The headline feature: tiered embedding models that scale to large repos. Bundled with remaining codebase simplification (P2) that reduces drift risk before the model infrastructure lands.
+
+### Model Tiering
 
 Benchmark data (v0.5.7) shows the 32M general-purpose model works for small codebases (NDCG@10 0.5-0.7) but degrades on medium (0.3-0.4) and large (0.2-0.3). Code-specific models distilled via Model2Vec can close this gap while keeping pure-Rust inference.
 
 | Item | Priority | Description |
 |---|---|---|
-| Expand benchmark to 40-50 queries per repo | **High** | 25 queries gives ±0.05-0.08 noise — need tighter baselines before evaluating new models. Prioritize medium/large repos (django, kafka, terraform, vscode). |
-| Distill code-specific Model2Vec models | **High** | Distill CodeSage-v2-Base (356M) and/or all-mpnet-base-v2 (109M) into Model2Vec format (256d, f16). ~30 sec distillation, ~8 MB output. Benchmark against expanded query suite. |
-| `prx index --model` flag | **High** | Support `--model builtin` (default), `--model standard`, `--model large`. Download on first use to `~/.prx/models/`. |
-| Repo analysis + model recommendation | High | After `prx index`, emit a hint if repo has >3K files: "For better semantic search, try `prx index --model standard`". |
-| Model download infrastructure | High | SHA-256 pinned downloads from HuggingFace or GitHub Releases. Offline via `PRX_MODELS_DIR`. Progress bar. |
-| Benchmark regression gate tightening | Medium | With 40-50 queries, tighten CI gate from 0.05 to 0.02 regression threshold. |
+| Expand benchmark to 40-50 queries per repo | **High** | 25 queries gives ±0.05-0.08 noise — need tighter baselines before evaluating new models. |
+| Distill code-specific Model2Vec models | **High** | CodeSage-v2-Base (356M) and/or all-mpnet-base-v2 (109M) → Model2Vec (256d, f16). ~30s distillation, ~8 MB. |
+| `prx index --model` flag | **High** | `--model builtin` (default), `--model standard`, `--model large`. Download on first use to `~/.prx/models/`. |
+| Repo analysis + model recommendation | High | After `prx index`, hint if repo >3K files: "try `prx index --model standard`". |
+| Model download infrastructure | High | SHA-256 pinned downloads. Offline via `PRX_MODELS_DIR`. Progress bar. |
+| Measured savings baselines (P1-1) | Medium | Wire `prx bench` as the source for the README savings table instead of modeled estimates. |
 
 **Model tiers:**
 
@@ -331,6 +335,51 @@ Benchmark data (v0.5.7) shows the 32M general-purpose model works for small code
 | `builtin` | potion-retrieval-32M (current) | 32 MB embedded | <3K files | 0.5-0.7 |
 | `standard` | CodeSage-Base-M2V-256 | ~8 MB download | 3K-10K files | 0.5-0.6 (est.) |
 | `large` | Jina-Code-v3-M2V-512 | ~30-60 MB download | 10K+ files | 0.4-0.5 (est.) |
+
+### Codebase Simplification (remaining P2)
+
+| Item | Effort | Description |
+|---|---|---|
+| P2-1: Budget helper | M | `budget::retain_within()` — budget enforcement reimplemented ~6× with magic constants. |
+| P2-3: Runner parser helpers | M | Extract `ParsedResult::diagnostics()` and `try_json()` from 11 parsers. |
+| P2-4: Symbol-tree flattener | M | Unify 4 recursive flatteners into one shared helper. |
+| P2-5: Git utils module | S | `git show` + path-relativization reimplemented 3×. |
+| P2-6: Default derives | S | `..Default::default()` on Args structs in batch.rs/mcp.rs. |
+
+---
+
+## v0.6.1 — Agent Primitives
+
+New commands and modes that reduce multi-step agent workflows to single calls.
+
+| Item | Effort | Description |
+|---|---|---|
+| P4-1: Persistent `exists` | M | Wire bloom filter to persisted index instead of rebuilding from scratch every call. |
+| P4-2: `--no-fallback` strict mode | M | Retrieval-sensitive agents fail loud instead of silently degrading to plain matching. |
+| P4-7: Surface fallback flag | S | Make it obvious in output when a fallback occurred (pairs with P4-2). |
+| P4-6: `prx context` git-aware budgeting | S | Prioritize recently-changed files in the module package. |
+| P4-5: NDCG regression gate in CI | M | Search quality can't silently regress between releases. Tighten threshold from 0.05 to 0.02. |
+
+---
+
+## v0.6.2 — Advanced Agent Features
+
+Higher-level primitives that compose existing infrastructure into new capabilities.
+
+| Item | Effort | Description |
+|---|---|---|
+| P4-3: `prx explain <symbol>` | L | One call for definition + callers + tests. Agents currently stitch search→read→impact. |
+| P4-4: Cross-file rename | L | Multi-edit transaction built on import graph. AST-validated, multi-file. |
+
+---
+
+## v0.6.3 — Distribution & Infrastructure
+
+| Item | Effort | Description |
+|---|---|---|
+| Homebrew SHA automation | M | Auto-update formula SHA256 on release instead of manual process. |
+| npm wrapper | M | `npx prx` for JS/TS agents. |
+| pip wrapper | M | `pip install prx` for Python agents. |
 
 ---
 

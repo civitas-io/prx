@@ -26,7 +26,7 @@ Most of those tokens are waste: whole files read to use ten lines, the same file
 
 **The semantic model is built in.** A 32M-parameter retrieval-optimized embedding model (potion-retrieval-32M, stored as float16) is compiled directly into the binary. Semantic search runs on CPU in milliseconds. No model server, no vector database, no setup step.
 
-**It's fast.** Indexing runs on all CPU cores in parallel (7.6x speedup on 10 cores). Embeddings are memory-mapped with zero-copy access. A 50-query benchmark suite runs in 0.23 seconds.
+**It's fast.** Indexing runs on all CPU cores in parallel (~17x total speedup on 10 cores). Embeddings are memory-mapped with zero-copy access. A 50-query benchmark suite runs in 0.23 seconds.
 
 ## All commands
 
@@ -42,7 +42,7 @@ Most of those tokens are waste: whole files read to use ten lines, the same file
 | `prx impact` | — | Reverse dependency analysis: what depends on a given file. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
 | `prx exists` | grep -q | Fast bloom-filter existence check, near-zero tokens. |
-| `prx index` | — | Parallel persistent index: 11K files in ~55s (7.6x speedup via rayon). |
+| `prx index` | — | Parallel persistent index: 11K files in ~24s (~17x speedup via rayon). |
 | `prx mcp` | — | MCP server over stdio for direct agent integration. |
 | `prx batch` | xargs | Parallel JSONL batch execution. |
 | `prx init` | — | Detects agent frameworks and generates integration configs. |

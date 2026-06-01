@@ -67,7 +67,7 @@ Ranked results, metadata included, under a token budget you control. The agent g
 
 **The semantic model is built in.** A 32M-parameter retrieval-optimized embedding model (potion-retrieval-32M, stored as float16) is compiled directly into the binary. Semantic search runs on CPU in milliseconds — no model server, no vector database, no setup step.
 
-**It's fast.** Indexing runs on all CPU cores in parallel (7.6x speedup on 10 cores). Embeddings are memory-mapped with zero-copy access — no heap allocation, no deserialization. A 50-query benchmark suite runs in 0.23 seconds.
+**It's fast.** Indexing runs on all CPU cores in parallel (~17x total speedup on 10 cores: v0.5.5: 7.6x parallel stages, v0.5.14: 2.2x parallel embeddings + hot-path optimizations). Embeddings are memory-mapped with zero-copy access — no heap allocation, no deserialization. A 50-query benchmark suite runs in 0.23 seconds.
 
 ---
 
@@ -92,9 +92,9 @@ Measured across real agent sessions on production codebases. Run the numbers on 
 
 ## Performance
 
-### Indexing: 7.6x parallel speedup
+### Indexing: ~17x parallel speedup
 
-`prx index` builds a persistent search index — BM25, semantic embeddings, import graph, and symbol definitions — in a single parallel pass. All five stages run on all available CPU cores via rayon.
+`prx index` builds a persistent search index — BM25, semantic embeddings, import graph, and symbol definitions — in a single parallel pass. All five stages run on all available CPU cores via rayon (v0.5.5). v0.5.14 added parallel embedding computation via `par_iter` across chunks, O(n) top-k selection, precomputed newline offsets, HashSet-based BM25 df, and per-chunk word sets for symbol refs.
 
 | Codebase | Files | Chunks | Time |
 |---|---|---|---|
@@ -108,6 +108,12 @@ Measured across real agent sessions on production codebases. Run the numbers on 
 | vscode (TypeScript, 1M LOC) | 14,643 | 136,056 | **340s** |
 
 Measured on 10-core Apple Silicon with rayon parallelism (944% CPU utilization). On CI runners (4 cores), expect ~3-4x speedup over sequential. Incremental rebuilds skip unchanged files entirely.
+
+> Times above are from the v0.5.7 baseline. v0.5.14 added parallel embedding computation and hot-path optimizations, reducing the 11K-file benchmark from 55s to 24s (2.2x additional speedup).
+
+### `find --tree`: 47x faster at scale
+
+`prx find --tree` on an 11K-file codebase dropped from 33s to 0.7s after replacing the O(n²) JSON tree builder with a native nested map that serializes once.
 
 ### Search: zero-copy memory-mapped embeddings
 
@@ -167,7 +173,7 @@ Reverse-dependency analysis built on prx's import graph: it answers "what depend
 | `prx impact` | — | Reverse dependency analysis: what depends on a given file. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
 | `prx exists` | grep -q | Fast bloom-filter existence check, near-zero tokens. |
-| `prx index` | — | Parallel persistent index: 11K files in ~55s (7.6x speedup via rayon). |
+| `prx index` | — | Parallel persistent index: 11K files in ~24s (~17x speedup via rayon). |
 | `prx mcp` | — | MCP server over stdio for direct agent integration. |
 | `prx batch` | xargs | Parallel JSONL batch execution. |
 | `prx init` | — | Detects agent frameworks and generates integration configs. |
@@ -366,7 +372,7 @@ Single static binary. No runtime dependencies. No network required after build.
 | Languages (parsing) | 27 tree-sitter grammars |
 | Import graph | 20 language families, tree-sitter AST extraction |
 | Symbol index | Definition lookup + reference counting |
-| Indexing | Parallel via rayon — 11K files in 54s on 10 cores (7.6x speedup). Zero-copy mmap embeddings. |
+| Indexing | Parallel via rayon — 11K files in ~24s on 10 cores (~17x total speedup: 410s → 24s). Zero-copy mmap embeddings. |
 | Embedded model | potion-retrieval-32M (Model2Vec, float16, PCA→256 dims) |
 | Release binary | ~49 MB |
 | CI | GitHub Actions: Linux x86_64 / aarch64, macOS arm64, Windows |

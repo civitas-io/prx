@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.13] - 2026-06-01
+
+### Fixed
+
+- **C1: Search result ordering** — `saturation_decay` now decays all chunks before
+  truncating to top_k, preventing decayed low-score chunks from evicting higher-scoring
+  chunks from different files.
+- **C2: Diff function attribution** — `find_changed_functions` now uses
+  `change.new_index()` instead of manual line counting, fixing off-by-N errors
+  when deletions interleave with insertions.
+- **C3: Language table consistency** — `walk.rs` now delegates to
+  `language_name_for_extension()` as the single source of truth. Fixes `.jsx`
+  reporting `"jsx"` in some paths and `"javascript"` in others.
+- **C4: Dead CLI flags removed** — `search --context`, `search --exists`, and
+  `read --meta` were silently accepted with no effect. Removed from the CLI.
+- **C5: Workspace root consistency** — unified `find_workspace_root` into
+  `workspace.rs`. Both `context` and `impact` commands now use the same logic.
+- **C6: Mmap overflow protection** — `MmapEmbeddings::open` now uses `checked_mul`
+  for the `n_chunks * dim * 4` size calculation, returning `InvalidData` instead
+  of panicking on corrupt index metadata.
+- **C7: Go coverage reporting** — `go_cover` summary now honestly labels its
+  output as "unweighted" average across packages.
+- **C8: JS/TS outline noise** — `lexical_declaration` no longer classified as a
+  symbol. Top-level `const x = 5` is filtered out; `const fn = () => {}` still
+  emitted via the arrow_function handler.
+
 ## [0.5.12] - 2026-06-01
 
 ### Fixed

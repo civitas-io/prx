@@ -32,7 +32,15 @@ impl MmapEmbeddings {
         // writer and completes before any reader accesses the file. Concurrent
         // `prx search` invocations only read.
         let mmap = unsafe { memmap2::Mmap::map(&file)? };
-        let expected = n_chunks * dim * 4;
+        let expected = n_chunks
+            .checked_mul(dim)
+            .and_then(|v| v.checked_mul(4))
+            .ok_or_else(|| {
+                io::Error::new(
+                    io::ErrorKind::InvalidData,
+                    "embeddings.bin: size overflow in n_chunks * dim * 4",
+                )
+            })?;
         if mmap.len() != expected {
             return Err(io::Error::new(
                 io::ErrorKind::InvalidData,

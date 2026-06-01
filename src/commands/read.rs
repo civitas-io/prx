@@ -4,7 +4,7 @@ use clap::Args;
 use serde::Serialize;
 
 use crate::hash;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing::{self, outline, snap, strip};
 use crate::tokens;
 
@@ -454,12 +454,6 @@ fn symbols_to_entries(symbols: &[outline::Symbol]) -> Vec<SymbolEntry> {
             children: symbols_to_entries(&s.children),
         })
         .collect()
-}
-
-fn to_json(output: ReadOutput) -> Result<serde_json::Value, AgError> {
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
 }
 
 #[cfg(test)]

@@ -1,6 +1,6 @@
 use clap::Args;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::runner;
 
 #[derive(Args)]
@@ -50,9 +50,7 @@ pub fn run(args: RunArgs) -> Result<serde_json::Value, AgError> {
             output_tokens_saved: 0,
             tail: Some(combined),
         };
-        return serde_json::to_value(output).map_err(|e| AgError::Internal {
-            message: e.to_string(),
-        });
+        return to_json(output);
     }
 
     let tool = runner::detect_tool(&command);
@@ -63,9 +61,7 @@ pub fn run(args: RunArgs) -> Result<serde_json::Value, AgError> {
         output.tail = Some(combined);
     }
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 #[cfg(test)]

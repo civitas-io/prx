@@ -3,7 +3,7 @@ use std::io::BufRead;
 use clap::Args;
 use serde::Serialize;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 
 #[derive(Args)]
 pub struct BatchArgs {}
@@ -74,9 +74,7 @@ pub fn run(_args: BatchArgs) -> Result<serde_json::Value, AgError> {
         }
     }
 
-    serde_json::to_value(serde_json::json!({"results": results})).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(serde_json::json!({"results": results}))
 }
 
 fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgError> {

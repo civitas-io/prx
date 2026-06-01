@@ -11,7 +11,7 @@ use clap::Args;
 use serde::Serialize;
 
 use crate::index::persist;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing::{self, imports, outline};
 use crate::search::graph::ImportGraph;
 use crate::tokens;
@@ -199,9 +199,7 @@ pub fn run(args: ImpactArgs) -> Result<serde_json::Value, AgError> {
     }
     output.warnings = warnings;
 
-    serde_json::to_value(&output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(&output)
 }
 
 fn flat_exports(symbols: &[outline::Symbol]) -> Vec<Export> {

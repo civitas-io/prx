@@ -115,11 +115,9 @@ impl SparseIndex {
 
         let k = top_k.min(scored.len());
         if k > 0 {
-            scored.select_nth_unstable_by(k - 1, |a, b| {
-                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-            });
+            scored.select_nth_unstable_by(k - 1, crate::ranking::cmp_score_desc);
             scored.truncate(k);
-            scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+            scored.sort_by(crate::ranking::cmp_score_desc);
         }
         scored
     }

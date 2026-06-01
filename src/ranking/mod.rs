@@ -6,6 +6,10 @@ use std::collections::HashMap;
 
 use crate::search::graph::ImportGraph;
 
+pub fn cmp_score_desc(a: &(usize, f32), b: &(usize, f32)) -> std::cmp::Ordering {
+    b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
+}
+
 pub fn rerank(
     scores: &mut HashMap<usize, f32>,
     chunk_texts: &[String],
@@ -78,16 +82,14 @@ pub fn rerank_with_config(
     let mut ranked: Vec<(usize, f32)> = scores.iter().map(|(&id, &s)| (id, s)).collect();
 
     if config.saturation_decay {
-        ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        ranked.sort_by(cmp_score_desc);
         penalties::apply_saturation_decay(&ranked, file_paths, top_k)
     } else {
         let k = top_k.min(ranked.len());
         if k > 0 {
-            ranked.select_nth_unstable_by(k - 1, |a, b| {
-                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-            });
+            ranked.select_nth_unstable_by(k - 1, cmp_score_desc);
             ranked.truncate(k);
-            ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+            ranked.sort_by(cmp_score_desc);
         }
         ranked
     }

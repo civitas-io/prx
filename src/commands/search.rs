@@ -12,7 +12,7 @@ use crate::hash;
 use crate::index::dense::DenseIndex;
 use crate::index::persist;
 use crate::index::sparse::{self, SparseIndex};
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing;
 use crate::ranking;
 use crate::search::{fusion, graph::ImportGraph, structural};
@@ -299,7 +299,7 @@ pub fn hybrid_search_with_preloaded(
                 .enumerate()
                 .map(|(i, row)| (i, row.dot(&query_vec)))
                 .collect();
-            scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+            scores.sort_by(crate::ranking::cmp_score_desc);
             scores.truncate(top_k * 5);
             scores
         }
@@ -531,9 +531,7 @@ fn to_search_output_with_warning(
         continuation_token,
         warning,
     };
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 fn encode_continuation(skip: usize) -> String {

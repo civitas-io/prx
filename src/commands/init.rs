@@ -3,7 +3,7 @@ use std::path::Path;
 use clap::Args;
 use serde::Serialize;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 
 #[derive(Args)]
 pub struct InitArgs {
@@ -80,9 +80,7 @@ pub fn run(args: InitArgs) -> Result<serde_json::Value, AgError> {
     }
 
     let output = InitOutput { actions };
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 fn append_agents_md(actions: &mut Vec<String>) -> Result<(), AgError> {

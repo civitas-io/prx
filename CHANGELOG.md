@@ -5,6 +5,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.14] - 2026-06-01
+
+### Changed
+
+- **Parallel embedding indexing** — `index_chunks` now uses `par_iter` via rayon
+  instead of serial iteration. All CPU cores used for embedding computation.
+- **Top-k selection** — `dense.search`, `sparse.query`, and `ranking::rerank` now
+  use `select_nth_unstable_by` (O(n)) instead of full sort (O(n log n)) when only
+  the top k results are needed.
+- **Find tree builder** — replaced O(n²) `insert_into_tree` that cloned/deserialized
+  `serde_json::Value` subtrees per file per level with native `BTreeMap<String, TreeNode>`
+  built once and serialized once at the end.
+- **Chunk line numbering** — precompute newline byte offsets once, then binary-search
+  (`partition_point`) per chunk instead of scanning from byte 0 each time.
+- **BM25 document frequency** — replaced per-doc `vec![false; n_terms]` allocation
+  with `HashSet` of the doc's own term indices.
+- **Symbol reference counting** — precompute per-chunk word sets, then check set
+  membership instead of O(n_symbols × n_chunks × text) substring scan.
+
 ## [0.5.13] - 2026-06-01
 
 ### Fixed

@@ -305,6 +305,10 @@ P0 bugs from code review. Each fix is independently testable.
 | C7 | bug | S | `go_cover` reports unweighted mean across packages | |
 | C8 | bug | S | JS/TS outline floods with noise — every top-level `const` emitted | |
 
+## v0.5.14 — Performance (P1 Scale Fixes) [DONE]
+
+Parallel embedding indexing via rayon. O(n) top-k selection replacing O(n log n) full sorts. Find tree builder O(n²) → O(n). Chunk line numbering O(n²) → O(n log n). BM25 df and symbol reference counting optimized.
+
 ---
 
 ## v0.6.0 — Model Tiering

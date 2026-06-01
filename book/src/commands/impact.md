@@ -72,7 +72,7 @@ Example output:
 
 ## How it works
 
-`prx impact` does a reverse walk of the import graph built by `prx index`. Import edges are extracted from the AST using tree-sitter across 10 language families.
+`prx impact` does a reverse walk of the import graph built by `prx index`. Import edges are extracted from the AST using tree-sitter across 20 language families.
 
 When an import name is ambiguous across many files, resolution falls back to a directory-proximity heuristic and returns the most likely candidates. Treat the output as a high-quality map, not a formal proof of completeness.
 

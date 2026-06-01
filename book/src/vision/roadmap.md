@@ -274,15 +274,17 @@ Measured NDCG@10: 0.639 (self), 0.451 (external production codebase). Target: 0.
 | npm wrapper | Medium | Deferred — `npx prx` for JS/TS agents. |
 | pip wrapper | Medium | Deferred — `pip install prx` for Python agents. |
 
-## v0.5.10 — Additional Grammars
+## v0.5.10 — Additional Grammars [DONE]
 
-| Item | Priority | Description |
-|---|---|---|
-| Kotlin grammar | Medium | tree-sitter-kotlin + import/outline extraction |
-| Swift grammar | Medium | tree-sitter-swift + import/outline extraction |
-| C# grammar | Medium | tree-sitter-c-sharp + import/outline extraction |
-| PHP grammar | Medium | tree-sitter-php + import/outline extraction |
-| Elixir grammar | Medium | tree-sitter-elixir + import/outline extraction |
+Added 12 new tree-sitter grammars, bringing the total to 27 languages compiled into the binary. Import extraction expanded from 10 to 20 language families.
+
+Languages added: Kotlin (tree-sitter-kotlin-sg), Swift, C#, PHP, Elixir, YAML, TOML (tree-sitter-toml-ng), Markdown (tree-sitter-md), Dockerfile (tree-sitter-containerfile), HCL/Terraform, SQL (tree-sitter-sequel), Makefile.
+
+All new grammars target tree-sitter 0.26.x via the `LanguageFn` API. Compatible forks used where upstream crates don't yet support 0.26.
+
+## v0.5.11 — Fixes [DONE]
+
+Windows CI fix: resolved grammar compilation failure on `windows-latest` GitHub Actions runner. Homebrew formula updated to v0.5.11.
 
 ---
 

@@ -31,7 +31,7 @@ Model2Vec inference is not a neural network in the transformer sense. There's no
 | Crate | Pure Rust? | Build Requirement | Platform Notes |
 |---|---|---|---|
 | clap | Yes | None | |
-| tree-sitter | No | C compiler (cc crate) | Pinned to 0.25.x for grammar crate compatibility. Language grammars are C compiled into binary. All CI runners have C compilers. Windows needs MSVC or MinGW. |
+| tree-sitter | No | C compiler (cc crate) | 0.26.x with LanguageFn API. Language grammars are C compiled into binary. All CI runners have C compilers. Windows needs MSVC or MinGW. |
 | ast-grep-core | Yes | None | |
 | safetensors | Yes | None | Zero-copy mmap |
 | ndarray | Yes | None | BLAS optional, not used |
@@ -52,13 +52,13 @@ The only non-pure-Rust dependency is tree-sitter, which requires a C compiler at
 
 ## Tree-sitter Grammar Compatibility
 
-All grammars are pinned to tree-sitter 0.25.x. This version was chosen because it has the broadest grammar crate compatibility — only 1 of 15 grammar crates supports 0.26.x, while all support 0.25.x.
+All grammars target tree-sitter 0.26.x via the `LanguageFn` API from `tree-sitter-language`. Where upstream grammar crates don't yet support 0.26, compatible forks are used (e.g., `tree-sitter-kotlin-sg` for Kotlin, `tree-sitter-md` for Markdown, `tree-sitter-containerfile` for Dockerfile).
 
-Supported languages (15 grammars compiled into the binary):
+Supported languages (27 grammars compiled into the binary):
 
-Rust, Python, JavaScript, TypeScript, TSX, Go, Java, C, C++, Ruby, Bash, JSON, TOML, YAML, HTML, CSS
+Rust, Python, JavaScript, TypeScript, TSX, Go, Java, C, C++, Ruby, Bash, Kotlin, Swift, C#, PHP, Elixir, YAML, TOML, Markdown, Dockerfile, HCL/Terraform, SQL, Makefile, JSON, HTML, CSS
 
-Additional grammars can be added as crate dependencies. The grammar crate must be compatible with tree-sitter 0.25.x.
+Additional grammars can be added as crate dependencies. The grammar crate must provide a `LanguageFn` compatible with tree-sitter 0.26.x.
 
 ## Cross-Compilation
 

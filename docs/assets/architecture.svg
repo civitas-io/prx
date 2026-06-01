@@ -106,7 +106,7 @@
   <!-- Tree-sitter -->
   <rect x="485" y="250" width="175" height="52" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
   <text x="572" y="270" text-anchor="middle" font-size="11" font-weight="600" fill="#333">Tree-sitter</text>
-  <text x="572" y="285" text-anchor="middle" font-size="10" fill="#777">15 languages compiled in</text>
+  <text x="572" y="285" text-anchor="middle" font-size="10" fill="#777">27 languages compiled in</text>
   <text x="572" y="298" text-anchor="middle" font-size="10" fill="#777">parse, outline, snap, validate</text>
 
   <!-- File Walking -->
@@ -165,5 +165,5 @@
   <text x="540" y="658" text-anchor="middle" font-size="11" fill="#555">Index: &lt;500ms | Query: &lt;5ms</text>
 
   <rect x="650" y="636" width="220" height="34" rx="4" fill="#fff" stroke="#ccc" stroke-width="1"/>
-  <text x="760" y="658" text-anchor="middle" font-size="11" fill="#555">15 languages, embedded grammars</text>
+  <text x="760" y="658" text-anchor="middle" font-size="11" fill="#555">27 languages, embedded grammars</text>
 </svg>

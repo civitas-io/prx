@@ -48,7 +48,7 @@ The hybrid search combines both: symbol search anchors precision, semantic searc
 
 **Architecture queries on large repos.** The `architecture_ndcg10` scores in the benchmark data show 0.000 for kafka, django, and vscode. High-level architectural queries ("where is the plugin system?") are hard for any embedding model on large codebases.
 
-**Import graph coverage.** Import extraction covers 10 language families via tree-sitter AST queries. Languages outside this set don't get proximity boosting. The graph is also a best-effort extraction: dynamic imports, conditional imports, and generated code may not be captured.
+**Import graph coverage.** Import extraction covers 20 language families via tree-sitter AST queries. Languages outside this set don't get proximity boosting. The graph is also a best-effort extraction: dynamic imports, conditional imports, and generated code may not be captured.
 
 ## Planned improvements
 

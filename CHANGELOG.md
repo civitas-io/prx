@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.10] - 2026-06-01
+
+### Added
+
+**Programming languages (5):**
+- **Kotlin** — `.kt`, `.kts`. Import extraction, symbol outline, snapping.
+  Uses `tree-sitter-kotlin-sg` fork for tree-sitter 0.26 compatibility.
+- **Swift** — `.swift`. Imports, outline (functions, classes, structs, enums, protocols), snapping.
+- **C#** — `.cs`. `using` directives, outline (classes, interfaces, structs, enums, methods, namespaces), snapping.
+- **PHP** — `.php`. `use` declarations + `require`/`include`, outline (functions, classes, interfaces, traits, enums), snapping.
+- **Elixir** — `.ex`, `.exs`. `import`/`alias`/`use`/`require`, outline (`defmodule`, `def`/`defp`, `defprotocol`), snapping.
+
+**Config/scripting languages (7):**
+- **YAML** — `.yml`, `.yaml`. Parsing, chunking, skeleton support.
+- **TOML** — `.toml`. Uses `tree-sitter-toml-ng` fork for 0.26 compat.
+- **Markdown** — `.md`. Uses `tree-sitter-markdown-updated` fork.
+- **Dockerfile** — `Dockerfile`. Uses `tree-sitter-dockerfile-updated` fork.
+- **HCL/Terraform** — `.tf`, `.hcl`. Outline extracts resource/variable/module blocks with labels.
+- **SQL** — `.sql`. Uses `tree-sitter-sequel` fork with LanguageFn API.
+- **Makefile** — `Makefile`, `.mk`. Outline extracts rules and variable assignments.
+
+**Totals:**
+- Supported languages: **27** (was 15)
+- Tests: **454 unit + 80 E2E = 534** (was 442 + 80 = 522)
+
 ## [0.5.9] - 2026-05-31
 
 ### Changed

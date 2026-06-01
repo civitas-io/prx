@@ -7,7 +7,7 @@ returns structured JSON with token counts and content hashes.
 Standard Unix tools waste 30-93% of your tokens on output you re-parse.
 prx returns exactly what you need.
 
-**Single binary (~49 MB), zero dependencies, works offline/sandboxed. Embeds 32M-parameter retrieval-optimized embedding model. Parallel indexing via rayon (7.6x speedup). Zero-copy memory-mapped embeddings. 50-query benchmark in 0.23s.**
+**Single binary (~49 MB), zero dependencies, works offline/sandboxed. Embeds 32M-parameter retrieval-optimized embedding model. Parallel indexing via rayon (~17x speedup: 410s → 24s on 11K files). Zero-copy memory-mapped embeddings. 50-query benchmark in 0.23s.**
 
 ## When to Use prx Instead of Other Tools
 
@@ -72,7 +72,7 @@ prx run pytest
 prx run go test ./...
 
 # 12. Build search index for faster repeated queries
-#     (parallel — uses all CPU cores, 11K files in ~55s)
+#     (parallel — uses all CPU cores, 11K files in ~24s, ~17x speedup)
 prx index .
 ```
 

@@ -76,12 +76,19 @@ pub fn rerank_with_config(
     }
 
     let mut ranked: Vec<(usize, f32)> = scores.iter().map(|(&id, &s)| (id, s)).collect();
-    ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
 
     if config.saturation_decay {
+        ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
         penalties::apply_saturation_decay(&ranked, file_paths, top_k)
     } else {
-        ranked.truncate(top_k);
+        let k = top_k.min(ranked.len());
+        if k > 0 {
+            ranked.select_nth_unstable_by(k - 1, |a, b| {
+                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
+            });
+            ranked.truncate(k);
+            ranked.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        }
         ranked
     }
 }

@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 
 use rayon::prelude::*;
@@ -176,19 +176,26 @@ fn collect_defs(
     }
 }
 
-/// Count how many chunks mention each symbol name.
 fn count_references(
     defs: &HashMap<String, Vec<SymbolDef>>,
     chunk_texts: &[String],
 ) -> HashMap<String, u32> {
+    let chunk_words: Vec<HashSet<&str>> = chunk_texts
+        .iter()
+        .map(|text| {
+            text.split(|c: char| !c.is_alphanumeric() && c != '_')
+                .collect()
+        })
+        .collect();
+
     defs.par_iter()
         .filter_map(|(name, _)| {
             if name.len() < 3 {
                 return None;
             }
-            let count = chunk_texts
+            let count = chunk_words
                 .iter()
-                .filter(|text| text.contains(name.as_str()))
+                .filter(|words| words.contains(name.as_str()))
                 .count() as u32;
             Some((name.clone(), count))
         })

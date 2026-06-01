@@ -39,7 +39,7 @@ A single parallel pass builds five artifacts:
 4. **Symbol index** — definition lookup and reference counting
 5. **Chunk data** — code chunks with metadata
 
-All five stages run in parallel via rayon. On a 10-core machine, indexing is 7.6x faster than sequential.
+All five stages run in parallel via rayon. On a 10-core machine, indexing is ~17x faster than the original sequential baseline (v0.5.5: 7.6x from parallel stages; v0.5.14: 2.2x additional from parallel embedding computation and O(n²) hot-path fixes).
 
 ## Incremental rebuilds
 

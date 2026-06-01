@@ -347,44 +347,74 @@ fn glob_matches(pattern: &str, path: &str) -> bool {
     file_name.contains(pattern)
 }
 
-fn build_tree(entries: &[FileEntry]) -> serde_json::Value {
-    let mut tree: BTreeMap<String, serde_json::Value> = BTreeMap::new();
-    for entry in entries {
-        let parts: Vec<&str> = entry.path.split('/').collect();
-        insert_into_tree(&mut tree, &parts, entry);
-    }
-    serde_json::to_value(&tree).unwrap_or_default()
+enum TreeNode {
+    File(FileInfo),
+    Dir(BTreeMap<String, TreeNode>),
 }
 
-fn insert_into_tree(
-    tree: &mut BTreeMap<String, serde_json::Value>,
-    parts: &[&str],
-    entry: &FileEntry,
-) {
+struct FileInfo {
+    lines: usize,
+    bytes: usize,
+    language: Option<String>,
+    symbols: Option<usize>,
+}
+
+impl TreeNode {
+    fn to_json(&self) -> serde_json::Value {
+        match self {
+            TreeNode::File(info) => {
+                let mut map = serde_json::Map::new();
+                map.insert("lines".to_string(), serde_json::json!(info.lines));
+                map.insert("bytes".to_string(), serde_json::json!(info.bytes));
+                if let Some(ref lang) = info.language {
+                    map.insert("language".to_string(), serde_json::json!(lang));
+                }
+                if let Some(syms) = info.symbols {
+                    map.insert("symbols".to_string(), serde_json::json!(syms));
+                }
+                serde_json::Value::Object(map)
+            }
+            TreeNode::Dir(children) => {
+                let map: serde_json::Map<String, serde_json::Value> = children
+                    .iter()
+                    .map(|(k, v)| (k.clone(), v.to_json()))
+                    .collect();
+                serde_json::Value::Object(map)
+            }
+        }
+    }
+}
+
+fn build_tree(entries: &[FileEntry]) -> serde_json::Value {
+    let mut root: BTreeMap<String, TreeNode> = BTreeMap::new();
+    for entry in entries {
+        let parts: Vec<&str> = entry.path.split('/').collect();
+        insert_into_tree(&mut root, &parts, entry);
+    }
+    TreeNode::Dir(root).to_json()
+}
+
+fn insert_into_tree(tree: &mut BTreeMap<String, TreeNode>, parts: &[&str], entry: &FileEntry) {
     if parts.len() == 1 {
-        let mut info = serde_json::Map::new();
-        info.insert("lines".to_string(), serde_json::json!(entry.lines));
-        info.insert("bytes".to_string(), serde_json::json!(entry.bytes));
-        if let Some(ref lang) = entry.language {
-            info.insert("language".to_string(), serde_json::json!(lang));
-        }
-        if let Some(syms) = entry.symbols {
-            info.insert("symbols".to_string(), serde_json::json!(syms));
-        }
-        tree.insert(parts[0].to_string(), serde_json::Value::Object(info));
+        tree.insert(
+            parts[0].to_string(),
+            TreeNode::File(FileInfo {
+                lines: entry.lines,
+                bytes: entry.bytes,
+                language: entry.language.clone(),
+                symbols: entry.symbols,
+            }),
+        );
         return;
     }
 
     let dir = parts[0];
     let subtree = tree
         .entry(format!("{dir}/"))
-        .or_insert_with(|| serde_json::json!({}));
+        .or_insert_with(|| TreeNode::Dir(BTreeMap::new()));
 
-    if let serde_json::Value::Object(map) = subtree {
-        let mut sub: BTreeMap<String, serde_json::Value> =
-            serde_json::from_value(serde_json::Value::Object(map.clone())).unwrap_or_default();
-        insert_into_tree(&mut sub, &parts[1..], entry);
-        *subtree = serde_json::to_value(&sub).unwrap_or_default();
+    if let TreeNode::Dir(children) = subtree {
+        insert_into_tree(children, &parts[1..], entry);
     }
 }
 

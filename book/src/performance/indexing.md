@@ -1,8 +1,10 @@
 # Indexing Performance
 
-## Parallel indexing: 7.6x speedup
+## Parallel indexing: ~17x total speedup
 
-`prx index` builds a persistent search index in a single parallel pass. All five stages run on all available CPU cores via rayon:
+`prx index` builds a persistent search index in a single parallel pass. Speedup came in two waves:
+
+**v0.5.5 (7.6x):** All five stages run on all available CPU cores via rayon:
 
 1. Read, hash, and chunk files
 2. Build BM25 sparse index
@@ -11,6 +13,8 @@
 5. Build symbol index
 
 No shared mutable state, no Arc, no Mutex. Pure `par_iter` on thread-safe immutable data. BLAS thread limits prevent oversubscription.
+
+**v0.5.14 (2.2x additional):** Embedding computation parallelized within each stage via `par_iter` across chunks. Hot-path O(n²) fixes: O(n) top-k selection, precomputed newline offsets, HashSet-based BM25 df, per-chunk word sets for symbol refs. Combined: 410s → 24s (~17x total).
 
 ## Benchmark results
 
@@ -29,6 +33,8 @@ Measured on 10-core Apple Silicon (944% CPU utilization):
 
 On CI runners with 4 cores, expect ~3-4x speedup over sequential. On a single core, indexing is still correct but slower.
 
+> Times above are from the v0.5.7 baseline. v0.5.14 added parallel embedding computation and hot-path optimizations, reducing the 11K-file benchmark from 55s to 24s (2.2x additional speedup). Measured on the fiddler repo (11,092 files, 57,408 chunks) on Apple Silicon.
+
 ## Incremental rebuilds
 
 `prx index` tracks file hashes and skips unchanged files. Only files that have changed since the last index run are re-processed. For a codebase where 10% of files changed, an incremental rebuild takes roughly 10% of the full rebuild time.
@@ -44,6 +50,14 @@ On an 11K-file codebase with 54 MB of embeddings:
 - Falls back to owned `Array2<f32>` automatically if mmap isn't available (network FS, etc.)
 
 The `Embeddings` enum abstracts both paths behind a single `view() -> ArrayView2<f32>` API, so the rest of the search pipeline doesn't need to know which path is active.
+
+## `find --tree` performance
+
+`prx find --tree` on an 11K-file codebase dropped from 33s to 0.7s (47x speedup) after replacing the O(n²) JSON tree builder with a native nested `TreeNode` map that serializes once. The old approach rebuilt the tree structure on every node insertion; the new approach builds the map in a single pass and serializes at the end.
+
+| Codebase | Files | Before | After | Speedup |
+|---|---|---|---|---|
+| fiddler (11K files) | 11,092 | 32.9s | 0.7s | **47x** |
 
 ## bench-ndcg: 55x speedup with load-once
 

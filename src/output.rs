@@ -2,12 +2,12 @@ use serde::Serialize;
 use std::io::Write;
 
 #[derive(thiserror::Error, Debug)]
-#[allow(dead_code)]
 pub enum AgError {
     #[error("file not found: {path}")]
     FileNotFound { path: String },
 
     #[error("parse error in {path}: {message}")]
+    #[allow(dead_code)]
     ParseError {
         path: String,
         language: String,
@@ -135,6 +135,12 @@ fn write_plain(_command: &str, data: &serde_json::Value) {
     let _ = writeln!(stdout);
 }
 
+pub fn to_json<T: serde::Serialize>(value: T) -> Result<serde_json::Value, AgError> {
+    serde_json::to_value(value).map_err(|e| AgError::Internal {
+        message: e.to_string(),
+    })
+}
+
 pub fn build_fallback_envelope(command: &str, data: serde_json::Value) -> serde_json::Value {
     let json_data = serde_json::to_string(&data).unwrap_or_default();
     let tokens = json_data.len() / 4;
@@ -161,68 +167,9 @@ pub fn write_fallback_envelope(command: &str, data: serde_json::Value, plain: bo
     let _ = writeln!(stdout);
 }
 
-pub fn build_envelope(command: &str, data: serde_json::Value) -> serde_json::Value {
-    let json_data = serde_json::to_string(&data).unwrap_or_default();
-    let tokens = json_data.len() / 4;
-
-    serde_json::to_value(Envelope {
-        version: env!("CARGO_PKG_VERSION").to_string(),
-        command: command.to_string(),
-        status: "ok".to_string(),
-        tokens,
-        data,
-    })
-    .unwrap_or_default()
-}
-
-pub fn build_error_envelope(command: &str, error: &AgError) -> serde_json::Value {
-    serde_json::to_value(ErrorEnvelope {
-        version: env!("CARGO_PKG_VERSION").to_string(),
-        command: command.to_string(),
-        status: "error".to_string(),
-        error: ErrorDetail {
-            code: error.code().to_string(),
-            message: error.to_string(),
-            suggestion: error.suggestion().map(String::from),
-        },
-    })
-    .unwrap_or_default()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn envelope_has_version() {
-        let env = build_envelope("search", serde_json::json!({"test": true}));
-        assert_eq!(env["version"], env!("CARGO_PKG_VERSION"));
-        assert_eq!(env["command"], "search");
-        assert_eq!(env["status"], "ok");
-    }
-
-    #[test]
-    fn envelope_token_count() {
-        let data = serde_json::json!({"hello": "world"});
-        let env = build_envelope("read", data);
-        assert!(env["tokens"].as_u64().unwrap() > 0);
-    }
-
-    #[test]
-    fn error_envelope_has_code() {
-        let err = AgError::FileNotFound {
-            path: "/missing.rs".to_string(),
-        };
-        let env = build_error_envelope("read", &err);
-        assert_eq!(env["status"], "error");
-        assert_eq!(env["error"]["code"], "file_not_found");
-        assert!(
-            env["error"]["message"]
-                .as_str()
-                .unwrap()
-                .contains("/missing.rs")
-        );
-    }
 
     #[test]
     fn error_suggestion_present_for_file_not_found() {

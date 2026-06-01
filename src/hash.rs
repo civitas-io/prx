@@ -5,6 +5,7 @@ pub fn hash_bytes(data: &[u8]) -> String {
     format!("{:032x}", xxh3_128(data))
 }
 
+#[allow(dead_code)]
 pub fn hash_file(path: &Path) -> Result<String, std::io::Error> {
     let data = std::fs::read(path)?;
     Ok(hash_bytes(&data))

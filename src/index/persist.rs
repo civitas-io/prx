@@ -89,6 +89,7 @@ impl Embeddings {
     }
 
     /// Number of embedding rows (chunks).
+    #[allow(dead_code)]
     pub fn nrows(&self) -> usize {
         match self {
             Self::Mmap(m) => m.n_chunks,

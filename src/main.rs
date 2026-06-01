@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use anyhow::Result;
 use clap::Parser;
 
@@ -127,28 +125,14 @@ fn run_command(command: Commands) -> Result<serde_json::Value, output::AgError> 
     }
 }
 
-fn handle_fallback(command: &str, error: &str, plain: bool, _wall_ms: u64) {
-    // We can't access cli.command here since it was moved into run_command.
-    // For fallback without the original args, log the error and return error.
-    // Full fallback with arg access requires restructuring — for now, log the error
-    // and return an error with suggestion to use the Unix tool directly.
-    fallback::log_error(command, error, "n/a", 0);
-
-    output::write_error(
-        command,
-        &output::AgError::Internal {
-            message: format!(
-                "{error}. Fallback: use the equivalent Unix command directly (grep/cat/find)."
-            ),
-        },
-        plain,
-    );
-}
-
 fn log_telemetry(command: &str, data: &serde_json::Value, wall_ms: u64) {
+    // Baselines below are *modeled estimates*, not measurements. Each branch
+    // approximates what `grep`/`cat`/`find`/`git diff` would emit for the same
+    // information, using magic constants (e.g. ~120B per grep match) derived
+    // from typical agent-session output. They are intentionally rough — for
+    // measured numbers, run `prx bench .` on a real repo.
     let actual_bytes = serde_json::to_string(data).map(|s| s.len()).unwrap_or(0);
 
-    // Baseline: what grep+cat would cost for the same information
     let baseline_bytes = match command {
         "search" => {
             let matches = data

@@ -97,81 +97,87 @@ pub fn execute(command: &[String], _timeout_secs: u64) -> Result<RawOutput, AgEr
 }
 
 pub fn detect_tool(command: &[String]) -> &'static str {
+    // Order matters: more specific patterns (e.g. "cargo llvm-cov") must come
+    // before more general ones (e.g. "cargo test"). Coverage variants are
+    // checked before their base tool. Keep the order identical to the original
+    // if-ladder — it is load-bearing.
+    type Predicate = fn(&str) -> bool;
+    const TABLE: &[(Predicate, &str)] = &[
+        (
+            |c| c.contains("cargo llvm-cov") || c.contains("cargo-llvm-cov"),
+            "cargo_llvm_cov",
+        ),
+        (|c| c.starts_with("cargo test"), "cargo_test"),
+        (|c| c.starts_with("cargo clippy"), "cargo_clippy"),
+        (
+            |c| c.starts_with("cargo build") || c.starts_with("cargo check"),
+            "cargo_build",
+        ),
+        (
+            |c| c.contains("--coverage") || c.starts_with("c8 ") || c.starts_with("nyc "),
+            "jest_cov",
+        ),
+        (
+            |c| {
+                c.contains("--cov")
+                    || c.starts_with("coverage report")
+                    || c.starts_with("coverage run")
+            },
+            "pytest_cov",
+        ),
+        (
+            |c| c.contains("pytest") || c.contains("python -m pytest"),
+            "pytest",
+        ),
+        (
+            |c| {
+                c.contains("-cover")
+                    || c.contains("-coverprofile")
+                    || c.starts_with("go tool cover")
+            },
+            "go_cover",
+        ),
+        (|c| c.starts_with("go test"), "go_test"),
+        (|c| c.contains("vitest"), "jest"),
+        (
+            |c| c.contains("jest") || c.starts_with("npm test") || c.starts_with("npx jest"),
+            "jest",
+        ),
+        (|c| c.starts_with("tsc") || c.starts_with("npx tsc"), "tsc"),
+        (|c| c.contains("eslint"), "eslint"),
+        (
+            |c| c.contains("mypy") || c.contains("python -m mypy"),
+            "mypy",
+        ),
+        (|c| c.starts_with("git log"), "git_log"),
+        (
+            |c| c.starts_with("docker build") || c.starts_with("docker buildx"),
+            "docker_build",
+        ),
+        (|c| c.starts_with("terraform"), "terraform"),
+        (
+            |c| c.contains("kubectl logs") || c.contains("docker logs"),
+            "kubectl_logs",
+        ),
+        (|c| c.starts_with("kubectl"), "kubectl"),
+        (|c| c.starts_with("mvn") || c.contains("mvnw"), "mvn"),
+        (
+            |c| c.starts_with("gradle") || c.contains("gradlew"),
+            "gradle",
+        ),
+        (|c| c.starts_with("dotnet"), "dotnet"),
+        (
+            |c| c.starts_with("npm list") || c.starts_with("npm ls"),
+            "npm_ls",
+        ),
+    ];
+
     let cmd = command.join(" ").to_lowercase();
-
-    if cmd.contains("cargo llvm-cov") || cmd.contains("cargo-llvm-cov") {
-        return "cargo_llvm_cov";
+    for (pred, tool) in TABLE {
+        if pred(&cmd) {
+            return tool;
+        }
     }
-    if cmd.starts_with("cargo test") {
-        return "cargo_test";
-    }
-    if cmd.starts_with("cargo clippy") {
-        return "cargo_clippy";
-    }
-    if cmd.starts_with("cargo build") || cmd.starts_with("cargo check") {
-        return "cargo_build";
-    }
-    if cmd.contains("--coverage") || cmd.starts_with("c8 ") || cmd.starts_with("nyc ") {
-        return "jest_cov";
-    }
-    if cmd.contains("--cov")
-        || cmd.starts_with("coverage report")
-        || cmd.starts_with("coverage run")
-    {
-        return "pytest_cov";
-    }
-    if cmd.contains("pytest") || cmd.contains("python -m pytest") {
-        return "pytest";
-    }
-    if cmd.contains("-cover") || cmd.contains("-coverprofile") || cmd.starts_with("go tool cover") {
-        return "go_cover";
-    }
-    if cmd.starts_with("go test") {
-        return "go_test";
-    }
-    if cmd.contains("vitest") {
-        return "jest";
-    }
-    if cmd.contains("jest") || cmd.starts_with("npm test") || cmd.starts_with("npx jest") {
-        return "jest";
-    }
-    if cmd.starts_with("tsc") || cmd.starts_with("npx tsc") {
-        return "tsc";
-    }
-    if cmd.contains("eslint") {
-        return "eslint";
-    }
-    if cmd.contains("mypy") || cmd.contains("python -m mypy") {
-        return "mypy";
-    }
-    if cmd.starts_with("git log") {
-        return "git_log";
-    }
-    if cmd.starts_with("docker build") || cmd.starts_with("docker buildx") {
-        return "docker_build";
-    }
-    if cmd.starts_with("terraform") {
-        return "terraform";
-    }
-    if cmd.contains("kubectl logs") || cmd.contains("docker logs") {
-        return "kubectl_logs";
-    }
-    if cmd.starts_with("kubectl") {
-        return "kubectl";
-    }
-    if cmd.starts_with("mvn") || cmd.contains("mvnw") {
-        return "mvn";
-    }
-    if cmd.starts_with("gradle") || cmd.contains("gradlew") {
-        return "gradle";
-    }
-    if cmd.starts_with("dotnet") {
-        return "dotnet";
-    }
-    if cmd.starts_with("npm list") || cmd.starts_with("npm ls") {
-        return "npm_ls";
-    }
-
     "unknown"
 }
 

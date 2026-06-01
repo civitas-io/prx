@@ -1,4 +1,5 @@
 use ndarray::{Array1, Array2};
+use rayon::prelude::*;
 use std::collections::HashMap;
 use std::sync::OnceLock;
 
@@ -70,10 +71,10 @@ impl DenseIndex {
 
     pub fn index_chunks(&mut self, texts: &[&str]) {
         let dim = self.dim();
+        let rows: Vec<Array1<f32>> = texts.par_iter().map(|text| self.embed_text(text)).collect();
         let mut embeddings = Array2::zeros((texts.len(), dim));
-        for (i, text) in texts.iter().enumerate() {
-            let emb = self.embed_text(text);
-            embeddings.row_mut(i).assign(&emb);
+        for (i, row) in rows.into_iter().enumerate() {
+            embeddings.row_mut(i).assign(&row);
         }
         self.chunk_embeddings = embeddings;
     }
@@ -100,8 +101,14 @@ impl DenseIndex {
             .map(|(i, row)| (i, row.dot(&query_vec)))
             .collect();
 
-        scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-        scores.truncate(top_k);
+        let k = top_k.min(scores.len());
+        if k > 0 {
+            scores.select_nth_unstable_by(k - 1, |a, b| {
+                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
+            });
+            scores.truncate(k);
+            scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        }
         scores
     }
 }

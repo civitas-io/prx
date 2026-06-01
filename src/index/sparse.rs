@@ -41,15 +41,11 @@ impl SparseIndex {
         let n_terms = term_to_col.len();
         let avgdl = doc_tokens.iter().map(|d| d.len() as f32).sum::<f32>() / n_chunks as f32;
 
-        // df[term] = number of documents containing term
         let mut df: Vec<usize> = vec![0; n_terms];
         for doc in &doc_tokens {
-            let mut seen = vec![false; n_terms];
-            for &col in doc {
-                if !seen[col] {
-                    df[col] += 1;
-                    seen[col] = true;
-                }
+            let unique: std::collections::HashSet<usize> = doc.iter().copied().collect();
+            for col in unique {
+                df[col] += 1;
             }
         }
 
@@ -117,8 +113,14 @@ impl SparseIndex {
             .filter(|(_, s)| *s > 0.0)
             .collect();
 
-        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-        scored.truncate(top_k);
+        let k = top_k.min(scored.len());
+        if k > 0 {
+            scored.select_nth_unstable_by(k - 1, |a, b| {
+                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
+            });
+            scored.truncate(k);
+            scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        }
         scored
     }
 }

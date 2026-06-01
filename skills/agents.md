@@ -159,7 +159,7 @@ Errors are also JSON on stdout (never stderr):
 
 Use `--plain` for human-readable output.
 
-## Measured Token Savings
+## Estimated Token Savings
 
 | Feature | Scenario | Savings |
 |---|---|---|

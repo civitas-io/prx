@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.5.15] - 2026-06-01
+
+### Changed
+
+- **P3-1: Removed dead `handle_fallback` function** and module-level `#![allow(dead_code)]`.
+- **P3-2: Removed dead code** surfaced by removing blanket suppression — `build_envelope`,
+  `build_error_envelope`, `log_stat`, `count_exact`/`count`/`load_tokenizer` (exact tokenizer
+  path was never wired up). Added targeted `#[allow(dead_code)]` on public API items.
+- **P3-3: Refactored `detect_tool`** from 23-branch if-ladder into data-driven match table.
+- **P2-2: `output::to_json` helper** — replaced 20 copy-pasted `serde_json::to_value(...).map_err`
+  patterns across 17 command files with one shared function.
+- **P2-7: `ranking::cmp_score_desc` helper** — replaced 11 inline float comparison closures
+  with one shared comparator.
+- **P1-1: Honest savings labeling** — README and skills guide now say "Estimated savings"
+  instead of "Measured". `log_telemetry` magic constants documented as modeled estimates.
+
+### Removed
+
+- 181 lines of duplicated/dead code across 31 files.
+- `tokenizers` exact counting path (TOKENIZER static, count_exact, count, load_tokenizer).
+  Only `count_fast` (len/4) remains. Exact tokenizer can be re-added for --budget precision mode.
+
 ## [0.5.14] - 2026-06-01
 
 ### Changed

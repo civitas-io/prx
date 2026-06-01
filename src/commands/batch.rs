@@ -105,8 +105,6 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
                 structural: false,
                 top_k,
                 budget,
-                context: None,
-                exists: false,
                 continue_token: None,
                 alpha: None,
             })
@@ -137,7 +135,6 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
                     .get("budget")
                     .and_then(|v| v.as_u64())
                     .map(|v| v as usize),
-                meta: false,
                 if_changed: cmd
                     .get("if_changed")
                     .and_then(|v| v.as_str())

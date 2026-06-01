@@ -37,10 +37,6 @@ pub struct ReadArgs {
     #[arg(long)]
     pub budget: Option<usize>,
 
-    /// Include file metadata
-    #[arg(long)]
-    pub meta: bool,
-
     /// Return cached stub if file hash matches (skip content/outline)
     #[arg(long)]
     pub if_changed: Option<String>,
@@ -491,7 +487,6 @@ mod tests {
             outline: false,
             hash: false,
             budget: None,
-            meta: false,
             if_changed: None,
             mode: None,
         }

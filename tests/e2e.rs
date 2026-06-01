@@ -1176,24 +1176,6 @@ fn stats_after_search() {
     assert_eq!(json["status"], "ok");
 }
 
-// ==================== output modes (additional coverage) ====================
-
-#[test]
-fn read_meta_only() {
-    let dir = test_dir();
-    let out = ag()
-        .args([
-            "read",
-            "--meta",
-            dir.path().join("main.rs").to_str().unwrap(),
-        ])
-        .output()
-        .unwrap();
-    assert!(out.status.success());
-    let json = parse_json(&out.stdout);
-    assert!(json["data"]["meta"].is_object());
-}
-
 // ==================== prx search (new coverage) ====================
 
 #[test]

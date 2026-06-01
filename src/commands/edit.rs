@@ -5,7 +5,7 @@ use regex::Regex;
 use serde::Serialize;
 
 use crate::hash;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing;
 
 #[derive(Args)]
@@ -133,9 +133,7 @@ pub fn run(args: EditArgs) -> Result<serde_json::Value, AgError> {
         hash_after,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 struct Scope {

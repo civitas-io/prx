@@ -6,6 +6,7 @@ const BINARY_CHECK_BYTES: usize = 8192;
 pub struct WalkEntry {
     pub path: PathBuf,
     pub size: u64,
+    #[allow(dead_code)]
     pub language: Option<String>,
 }
 

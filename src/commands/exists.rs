@@ -4,7 +4,7 @@ use bloomfilter::Bloom;
 use clap::Args;
 use serde::Serialize;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::search::tokenize;
 use crate::walk::{self, WalkOpts};
 
@@ -62,9 +62,7 @@ pub fn run(args: ExistsArgs) -> Result<serde_json::Value, AgError> {
         pattern: args.pattern,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 #[cfg(test)]

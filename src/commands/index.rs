@@ -4,7 +4,7 @@ use clap::Args;
 use serde::Serialize;
 
 use crate::index::persist;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 
 #[derive(Args)]
 pub struct IndexArgs {
@@ -51,14 +51,11 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
         let valid = persist::is_valid(root);
         let index_dir = persist::index_path(root);
         let exists = index_dir.exists();
-        return serde_json::to_value(serde_json::json!({
+        return to_json(serde_json::json!({
             "path": args.path,
             "index_exists": exists,
             "valid": valid,
-        }))
-        .map_err(|e| AgError::Internal {
-            message: e.to_string(),
-        });
+        }));
     }
 
     #[cfg(feature = "watch")]
@@ -74,14 +71,11 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
     }
 
     if !args.rebuild && persist::is_valid(root) {
-        return serde_json::to_value(serde_json::json!({
+        return to_json(serde_json::json!({
             "path": args.path,
             "status": "up_to_date",
             "message": "index is current, use --rebuild to force",
-        }))
-        .map_err(|e| AgError::Internal {
-            message: e.to_string(),
-        });
+        }));
     }
 
     let start = std::time::Instant::now();
@@ -100,9 +94,7 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
         warnings: stats.warnings,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 #[cfg(feature = "watch")]

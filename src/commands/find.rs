@@ -6,7 +6,7 @@ use serde::Serialize;
 
 use crate::chunking;
 use crate::index::dense::DenseIndex;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing;
 use crate::walk::{self, WalkOpts};
 
@@ -197,9 +197,7 @@ pub fn run(args: FindArgs) -> Result<serde_json::Value, AgError> {
         stats,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 fn score_file_relevance(entries: &mut [FileEntry], root: &Path, query: &str) {

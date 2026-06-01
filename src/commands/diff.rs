@@ -4,7 +4,7 @@ use clap::Args;
 use serde::Serialize;
 use similar::ChangeTag;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing::outline;
 
 #[derive(Args)]
@@ -342,12 +342,6 @@ fn build_summary(files: usize, additions: usize, deletions: usize, functions: &[
         "{} file(s) changed, +{} -{}{func_part}",
         files, additions, deletions
     )
-}
-
-fn to_json(output: DiffOutput) -> Result<serde_json::Value, AgError> {
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
 }
 
 #[cfg(test)]

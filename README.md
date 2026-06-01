@@ -73,7 +73,7 @@ Ranked results, metadata included, under a token budget you control. The agent g
 
 ## Token savings
 
-Measured across real agent sessions on production codebases. Run the numbers on your own repo with `prx stats --compare` and `prx bench .`.
+Estimated savings based on typical grep+cat output sizes. Run `prx bench .` on your own repo for measured numbers.
 
 | Feature | Scenario | Savings |
 |---|---|---|

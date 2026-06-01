@@ -11,7 +11,7 @@ use clap::Args;
 use serde::{Deserialize, Serialize};
 
 use crate::index::persist;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 
 #[derive(Args)]
 pub struct BenchNdcgArgs {
@@ -188,9 +188,7 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
         per_query,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 /// Render the bench-ndcg JSON output as a human-readable table.

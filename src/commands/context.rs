@@ -10,7 +10,7 @@ use clap::Args;
 use serde::Serialize;
 
 use crate::index::persist;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing::{self, outline};
 use crate::search::graph::ImportGraph;
 use crate::search::symbols::SymbolIndex;
@@ -164,9 +164,7 @@ pub fn run(args: ContextArgs) -> Result<serde_json::Value, AgError> {
     }
     output.warnings = warnings;
 
-    serde_json::to_value(&output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(&output)
 }
 
 fn build_file_context(

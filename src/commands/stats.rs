@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use clap::Args;
 use serde::Serialize;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 
 #[derive(Args)]
 pub struct StatsArgs {
@@ -139,9 +139,7 @@ pub fn run(args: StatsArgs) -> Result<serde_json::Value, AgError> {
         by_command,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 pub struct StatEntry {
@@ -150,16 +148,6 @@ pub struct StatEntry {
     pub baseline_bytes: usize,
     pub baseline_strategy: String,
     pub wall_ms: u64,
-}
-
-pub fn log_stat(command: &str, tokens_saved: usize) {
-    log_stat_entry(&StatEntry {
-        command: command.to_string(),
-        actual_bytes: 0,
-        baseline_bytes: tokens_saved * 4,
-        baseline_strategy: "legacy".to_string(),
-        wall_ms: 0,
-    });
 }
 
 pub fn log_stat_entry(entry: &StatEntry) {

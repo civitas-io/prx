@@ -4,7 +4,7 @@ use std::time::Instant;
 use clap::Args;
 use serde::Serialize;
 
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 
 #[derive(Args)]
 pub struct BenchArgs {
@@ -212,7 +212,5 @@ pub fn run(args: BenchArgs) -> Result<serde_json::Value, AgError> {
         tasks: results,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }

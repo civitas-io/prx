@@ -11,7 +11,9 @@ pub struct Chunk {
     pub file_path: String,
     pub start_line: usize,
     pub end_line: usize,
+    #[allow(dead_code)]
     pub start_byte: usize,
+    #[allow(dead_code)]
     pub end_byte: usize,
     pub language: Option<String>,
 }

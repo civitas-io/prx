@@ -27,6 +27,7 @@ impl DenseIndex {
         }
     }
 
+    #[allow(dead_code)]
     pub fn without_hf_tokenizer(vocab: HashMap<String, usize>, weights: Array2<f32>) -> Self {
         let dim = weights.ncols();
         Self {
@@ -79,10 +80,12 @@ impl DenseIndex {
         self.chunk_embeddings = embeddings;
     }
 
+    #[allow(dead_code)]
     pub fn set_embeddings(&mut self, embeddings: Array2<f32>) {
         self.chunk_embeddings = embeddings;
     }
 
+    #[allow(dead_code)]
     pub fn embeddings(&self) -> &Array2<f32> {
         &self.chunk_embeddings
     }
@@ -103,11 +106,9 @@ impl DenseIndex {
 
         let k = top_k.min(scores.len());
         if k > 0 {
-            scores.select_nth_unstable_by(k - 1, |a, b| {
-                b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal)
-            });
+            scores.select_nth_unstable_by(k - 1, crate::ranking::cmp_score_desc);
             scores.truncate(k);
-            scores.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+            scores.sort_by(crate::ranking::cmp_score_desc);
         }
         scores
     }

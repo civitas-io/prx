@@ -4,7 +4,7 @@ use clap::Args;
 use serde::Serialize;
 
 use crate::commands::read::SymbolEntry;
-use crate::output::AgError;
+use crate::output::{AgError, to_json};
 use crate::parsing::{self, outline};
 
 #[derive(Args)]
@@ -58,9 +58,7 @@ pub fn run(args: OutlineArgs) -> Result<serde_json::Value, AgError> {
         symbols: entries,
     };
 
-    serde_json::to_value(output).map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
+    to_json(output)
 }
 
 fn outline_directory(root: &Path, args: &OutlineArgs) -> Result<serde_json::Value, AgError> {
@@ -110,12 +108,9 @@ fn outline_directory(root: &Path, args: &OutlineArgs) -> Result<serde_json::Valu
         }));
     }
 
-    serde_json::to_value(serde_json::json!({
+    to_json(serde_json::json!({
         "files": file_outlines,
     }))
-    .map_err(|e| AgError::Internal {
-        message: e.to_string(),
-    })
 }
 
 fn symbols_to_entries(symbols: &[outline::Symbol], kind_filter: Option<&str>) -> Vec<SymbolEntry> {

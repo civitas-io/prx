@@ -27,13 +27,13 @@ pub fn rrf_fuse(
         })
         .collect();
 
-    combined.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    combined.sort_by(crate::ranking::cmp_score_desc);
     combined
 }
 
 fn to_rrf(scores: &[(usize, f32)]) -> HashMap<usize, f32> {
     let mut sorted: Vec<(usize, f32)> = scores.to_vec();
-    sorted.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    sorted.sort_by(crate::ranking::cmp_score_desc);
 
     sorted
         .iter()

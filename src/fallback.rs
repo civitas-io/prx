@@ -188,8 +188,6 @@ mod tests {
             structural: false,
             top_k: 5,
             budget: None,
-            context: None,
-            exists: false,
             continue_token: None,
             alpha: None,
         };
@@ -209,7 +207,6 @@ mod tests {
             outline: false,
             hash: false,
             budget: None,
-            meta: false,
             if_changed: None,
             mode: None,
         };

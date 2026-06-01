@@ -47,14 +47,6 @@ pub struct SearchArgs {
     #[arg(long)]
     pub budget: Option<usize>,
 
-    /// Return enclosing structural unit
-    #[arg(long)]
-    pub context: Option<String>,
-
-    /// Bloom filter quick check
-    #[arg(long)]
-    pub exists: bool,
-
     /// Resume paginated results
     #[arg(long, name = "continue")]
     pub continue_token: Option<String>,
@@ -644,8 +636,6 @@ mod tests {
             structural: false,
             top_k: 5,
             budget: None,
-            context: None,
-            exists: false,
             continue_token: None,
             alpha: None,
         }
@@ -902,8 +892,6 @@ mod tests {
             structural: false,
             top_k: 5,
             budget: None,
-            context: None,
-            exists: false,
             continue_token: None,
             alpha: None,
         };
@@ -923,8 +911,6 @@ mod tests {
             structural: false,
             top_k: 10,
             budget: Some(10),
-            context: None,
-            exists: false,
             continue_token: None,
             alpha: None,
         };

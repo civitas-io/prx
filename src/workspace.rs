@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 /// Compute relative path from `target` to `base`, normalized with forward slashes.
 pub fn relative_path(target: &Path, base: &Path) -> Option<String> {
@@ -29,4 +29,27 @@ pub fn is_test_file(rel_str: &str) -> bool {
         return true;
     }
     false
+}
+
+/// Walk upward from `target` to find the project root directory.
+/// Checks for `.git`, `.prx`, or `Cargo.toml` markers.
+pub fn find_workspace_root(target: &Path) -> Option<PathBuf> {
+    let abs = std::fs::canonicalize(target).ok()?;
+    let mut current = if abs.is_file() {
+        abs.parent()?.to_path_buf()
+    } else {
+        abs
+    };
+    for _ in 0..32 {
+        if current.join(".git").exists()
+            || current.join(".prx").exists()
+            || current.join("Cargo.toml").exists()
+        {
+            return Some(current);
+        }
+        if !current.pop() {
+            return None;
+        }
+    }
+    None
 }

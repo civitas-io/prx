@@ -485,22 +485,7 @@ fn extract_first_doc_comment(content: &str) -> Option<String> {
 }
 
 fn find_workspace_root(target: &Path) -> Option<PathBuf> {
-    let abs = std::fs::canonicalize(target).ok()?;
-    let mut current = if abs.is_file() {
-        abs.parent()?.to_path_buf()
-    } else {
-        abs
-    };
-    for _ in 0..32 {
-        let index_dir = current.join(".prx").join("index");
-        if index_dir.join("symbols.bin").exists() || index_dir.join("imports.bin").exists() {
-            return Some(current);
-        }
-        if !current.pop() {
-            return None;
-        }
-    }
-    None
+    crate::workspace::find_workspace_root(target)
 }
 
 fn compute_edges(graph: &ImportGraph, target_prefix: &str, target_is_file: bool) -> Edges {

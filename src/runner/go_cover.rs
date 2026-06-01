@@ -46,7 +46,7 @@ pub fn parse(output: &str) -> ParsedResult {
         let avg_coverage: f32 = coverages.iter().sum::<f32>() / coverages.len() as f32;
         let pkg_count = coverages.len();
         format!(
-            "{:.1}% coverage across {} packages",
+            "{:.1}% average coverage across {} packages (unweighted)",
             avg_coverage, pkg_count
         )
     } else if !single_coverage.is_empty() {
@@ -77,7 +77,16 @@ FAIL    github.com/user/pkg/broken  0.001s  coverage: 0.0% of statements
 ";
         let result = parse(output);
         assert!(result.summary.contains("coverage"));
-        assert!(result.summary.contains("3 packages"));
+        assert!(
+            result.summary.contains("3 packages"),
+            "summary: {}",
+            result.summary
+        );
+        assert!(
+            result.summary.contains("unweighted"),
+            "summary: {}",
+            result.summary
+        );
         assert_eq!(result.failed, 1);
     }
 

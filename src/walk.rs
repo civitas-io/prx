@@ -77,31 +77,10 @@ fn is_binary(path: &Path) -> bool {
 
 fn detect_language(path: &Path) -> Option<String> {
     let ext = path.extension()?.to_str()?;
+    if let Some(name) = crate::parsing::languages::language_name_for_extension(ext) {
+        return Some(name.to_string());
+    }
     let lang = match ext {
-        "rs" => "rust",
-        "py" | "pyi" => "python",
-        "js" | "mjs" | "cjs" => "javascript",
-        "ts" | "mts" | "cts" => "typescript",
-        "tsx" => "tsx",
-        "jsx" => "jsx",
-        "go" => "go",
-        "java" => "java",
-        "c" | "h" => "c",
-        "cpp" | "cc" | "cxx" | "hpp" | "hxx" | "hh" => "cpp",
-        "rb" => "ruby",
-        "sh" | "bash" | "zsh" => "bash",
-        "json" => "json",
-        "toml" => "toml",
-        "yaml" | "yml" => "yaml",
-        "html" | "htm" => "html",
-        "css" => "css",
-        "md" | "markdown" => "markdown",
-        "sql" => "sql",
-        "kt" | "kts" => "kotlin",
-        "swift" => "swift",
-        "cs" => "csharp",
-        "php" => "php",
-        "ex" | "exs" => "elixir",
         "erl" | "hrl" => "erlang",
         "hs" => "haskell",
         "lua" => "lua",

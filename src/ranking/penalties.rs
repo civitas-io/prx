@@ -88,29 +88,25 @@ pub fn apply_saturation_decay(
     file_paths: &[String],
     top_k: usize,
 ) -> Vec<(usize, f32)> {
-    let mut selected = Vec::new();
     let mut file_count: HashMap<&str, usize> = HashMap::new();
+    let mut decayed: Vec<(usize, f32)> = ranked
+        .iter()
+        .map(|&(chunk_id, score)| {
+            let path = file_paths.get(chunk_id).map(|s| s.as_str()).unwrap_or("");
+            let count = file_count.entry(path).or_insert(0);
+            let effective_score = if *count > 0 {
+                score * FILE_SATURATION_DECAY.powi(*count as i32)
+            } else {
+                score
+            };
+            *count += 1;
+            (chunk_id, effective_score)
+        })
+        .collect();
 
-    for &(chunk_id, score) in ranked {
-        if selected.len() >= top_k {
-            break;
-        }
-
-        let path = file_paths.get(chunk_id).map(|s| s.as_str()).unwrap_or("");
-
-        let count = file_count.entry(path).or_insert(0);
-        let effective_score = if *count > 0 {
-            score * FILE_SATURATION_DECAY.powi(*count as i32)
-        } else {
-            score
-        };
-        *count += 1;
-
-        selected.push((chunk_id, effective_score));
-    }
-
-    selected.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
-    selected
+    decayed.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+    decayed.truncate(top_k);
+    decayed
 }
 
 #[cfg(test)]
@@ -199,6 +195,30 @@ mod tests {
         let paths: Vec<String> = (0..10).map(|i| format!("file{i}.rs")).collect();
         let result = apply_saturation_decay(&ranked, &paths, 3);
         assert_eq!(result.len(), 3);
+    }
+
+    #[test]
+    fn saturation_decay_promotes_diverse_files() {
+        // 3 chunks from file_a (scores 1.0, 0.9, 0.8) and 1 chunk from file_b (score 0.7)
+        // With top_k=2, old code picked chunks 0,1 (both file_a) before seeing file_b.
+        // Fixed code decays all first: chunk0=1.0, chunk1=0.45, chunk2=0.2, chunk3=0.7
+        // Then sorts: chunk0(1.0), chunk3(0.7), chunk1(0.45), chunk2(0.2)
+        // top_k=2 → [chunk0, chunk3] — file_b now included.
+        let ranked = vec![(0, 1.0), (1, 0.9), (2, 0.8), (3, 0.7)];
+        let paths = vec![
+            "file_a.rs".to_string(),
+            "file_a.rs".to_string(),
+            "file_a.rs".to_string(),
+            "file_b.rs".to_string(),
+        ];
+        let result = apply_saturation_decay(&ranked, &paths, 2);
+        assert_eq!(result.len(), 2);
+        let ids: Vec<usize> = result.iter().map(|(id, _)| *id).collect();
+        assert!(ids.contains(&0), "should include top chunk from file_a");
+        assert!(
+            ids.contains(&3),
+            "should include file_b chunk (was evicted before fix)"
+        );
     }
 
     #[test]

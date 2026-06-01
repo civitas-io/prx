@@ -286,6 +286,25 @@ All new grammars target tree-sitter 0.26.x via the `LanguageFn` API. Compatible 
 
 Windows CI fix: resolved grammar compilation failure on `windows-latest` GitHub Actions runner. Homebrew formula updated to v0.5.11.
 
+## v0.5.12 — Documentation Sweep [DONE]
+
+Updated all docs (roadmap, architecture, search, platforms, dependencies, SVGs) to reflect 27 languages, tree-sitter 0.26, 20 import families.
+
+## v0.5.13 — Correctness Fixes
+
+P0 bugs from code review. Each fix is independently testable.
+
+| ID | Type | Effort | Description | Status |
+|---|---|---|---|---|
+| C1 | bug | S | `saturation_decay` truncates by pre-decay rank, evicting higher un-selected chunks | |
+| C2 | bug | S | `diff` changed-function attribution off-by-N — ignores `Delete` tags | |
+| C3 | bug | M | Three divergent extension→language tables (`languages.rs` × 2, `walk.rs`) | |
+| C4 | bug | S | Dead CLI flags silently accepted: `search --context`, `search --exists`, `read --meta` | |
+| C5 | bug | M | Two different `find_workspace_root` semantics in `context` vs `impact` | |
+| C6 | bug | S | `mmap` size check can integer-overflow on corrupt meta → panic | |
+| C7 | bug | S | `go_cover` reports unweighted mean across packages | |
+| C8 | bug | S | JS/TS outline floods with noise — every top-level `const` emitted | |
+
 ---
 
 ## v0.6.0 — Model Tiering

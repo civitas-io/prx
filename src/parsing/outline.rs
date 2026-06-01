@@ -250,7 +250,7 @@ fn classify_node(kind: &str) -> Option<SymbolKind> {
 
         "type_alias_declaration" | "type_item" => Some(SymbolKind::Type),
 
-        "const_item" | "lexical_declaration" => Some(SymbolKind::Const),
+        "const_item" => Some(SymbolKind::Const),
 
         "mod_item" | "module" => Some(SymbolKind::Module),
 

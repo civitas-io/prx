@@ -140,8 +140,6 @@ impl AgMcpServer {
             structural: false,
             top_k: p.top_k.unwrap_or(5),
             budget: None,
-            context: None,
-            exists: false,
             continue_token: None,
             alpha: None,
         };
@@ -165,7 +163,6 @@ impl AgMcpServer {
             outline: p.outline,
             hash: p.hash,
             budget: None,
-            meta: false,
             if_changed: p.if_changed,
             mode: p.mode,
         };

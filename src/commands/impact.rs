@@ -390,24 +390,7 @@ fn reverse_bfs(graph: &ImportGraph, seed: u32, max_hops: u8) -> HashMap<u32, u8>
 }
 
 fn find_workspace_root(target: &Path) -> Option<PathBuf> {
-    let abs = std::fs::canonicalize(target).ok()?;
-    let mut current = if abs.is_file() {
-        abs.parent()?.to_path_buf()
-    } else {
-        abs
-    };
-    for _ in 0..32 {
-        if current.join(".git").exists()
-            || current.join(".prx").exists()
-            || current.join("Cargo.toml").exists()
-        {
-            return Some(current);
-        }
-        if !current.pop() {
-            return None;
-        }
-    }
-    None
+    crate::workspace::find_workspace_root(target)
 }
 
 use crate::workspace::{is_test_file, relative_path};

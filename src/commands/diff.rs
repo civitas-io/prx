@@ -270,13 +270,11 @@ fn find_changed_functions(old: &str, new: &str, ext: &str) -> Vec<String> {
     let diff = similar::TextDiff::from_lines(old, new);
     let mut changed_lines: Vec<usize> = Vec::new();
 
-    let mut line_num = 0;
     for change in diff.iter_all_changes() {
-        if change.tag() == ChangeTag::Equal {
-            line_num += 1;
-        } else if change.tag() == ChangeTag::Insert {
-            line_num += 1;
-            changed_lines.push(line_num);
+        if change.tag() == ChangeTag::Insert {
+            if let Some(idx) = change.new_index() {
+                changed_lines.push(idx + 1);
+            }
         }
     }
 

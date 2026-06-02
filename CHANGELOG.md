@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2026-06-02
+
+### Added
+
+- **P4-1: Persistent `exists`** — `prx exists` now uses the persisted BM25
+  index when available, checking `term_to_col` directly instead of rebuilding
+  a bloom filter from scratch. Falls back to bloom scan when no index exists.
+- **P4-2: `--no-fallback` flag** — global CLI flag that disables fallback to
+  grep/cat/find. Agents that depend on structured output get an error instead
+  of silently degraded plain-text results.
+- **P4-6: Git-aware context budgeting** — `prx context` now prioritizes
+  recently-changed files (uncommitted modifications) when ordering file entries.
+  When budget trims files, unchanged files are dropped first.
+- **P4-5: NDCG regression gate in CI** — benchmark.yml now runs on pushes to
+  main and PRs (not just release tags). Baselines updated to v0.6.0 95% CI
+  lower bounds for conservative regression detection.
+- `SparseIndex::contains_term()` for O(1) vocabulary checks.
+- `git::uncommitted_files()` for working tree change detection.
+
+### Note
+
+- **P4-7** (surface fallback flag) was already implemented — the JSON envelope
+  includes `"fallback": true` when a fallback occurs. No changes needed.
+
 ## [0.6.0] - 2026-06-02
 
 ### Added

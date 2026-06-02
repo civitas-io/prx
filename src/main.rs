@@ -33,7 +33,8 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let command_name = cli.command.name();
     let plain = cli.plain;
-    let can_fb = fallback::can_fallback(&command_name);
+    let no_fallback = cli.no_fallback;
+    let can_fb = !no_fallback && fallback::can_fallback(&command_name);
     let fb_spec = if can_fb {
         fallback::fallback_spec(&command_name, &cli.command)
     } else {

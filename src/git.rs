@@ -32,3 +32,23 @@ pub fn changed_files(root: &Path, git_ref: &str) -> Option<Vec<String>> {
             .collect(),
     )
 }
+
+/// Return files with uncommitted changes (staged + working tree).
+pub fn uncommitted_files(root: &Path) -> Option<Vec<String>> {
+    let output = std::process::Command::new("git")
+        .args(["diff", "--name-only", "HEAD"])
+        .current_dir(root)
+        .output()
+        .ok()?;
+    if !output.status.success() {
+        return None;
+    }
+    let stdout = String::from_utf8_lossy(&output.stdout);
+    Some(
+        stdout
+            .lines()
+            .filter(|l| !l.is_empty())
+            .map(String::from)
+            .collect(),
+    )
+}

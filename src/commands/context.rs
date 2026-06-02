@@ -285,10 +285,22 @@ fn build_directory_context(
         });
     }
 
+    let changed_set: HashSet<String> = crate::git::uncommitted_files(root)
+        .unwrap_or_default()
+        .into_iter()
+        .map(|p| root.join(&p).to_string_lossy().replace('\\', "/"))
+        .collect();
+
     file_entries.sort_by(|a, b| {
-        let da = a.path.matches('/').count();
-        let db = b.path.matches('/').count();
-        da.cmp(&db)
+        let a_changed = changed_set.contains(&a.path);
+        let b_changed = changed_set.contains(&b.path);
+        b_changed
+            .cmp(&a_changed)
+            .then_with(|| {
+                let da = a.path.matches('/').count();
+                let db = b.path.matches('/').count();
+                da.cmp(&db)
+            })
             .then_with(|| b.symbols.len().cmp(&a.symbols.len()))
     });
 

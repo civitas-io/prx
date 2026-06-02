@@ -21,12 +21,11 @@ MODELS = {
         "pca_dims": 256,
         "output": "models/codesage-m2v-256",
     },
-    # Uncomment to also distill the large tier:
-    # "large": {
-    #     "source": "jinaai/jina-embeddings-v3",
-    #     "pca_dims": 512,
-    #     "output": "models/jina-code-m2v-512",
-    # },
+    "large": {
+        "source": "jinaai/jina-embeddings-v3",
+        "pca_dims": 512,
+        "output": "models/jina-code-m2v-512",
+    },
 }
 
 if __name__ == "__main__":
@@ -44,6 +43,7 @@ if __name__ == "__main__":
         print()
 
     print("Done. Next steps:")
-    print("  1. Check model.safetensors size (should be ~8 MB for standard)")
+    print("  1. Check model sizes (standard ~8 MB, large ~30 MB)")
     print("  2. Run: prx bench-ndcg --model-path models/codesage-m2v-256/")
-    print("  3. Compare NDCG@10 against builtin baseline")
+    print("  3. Run: prx bench-ndcg --model-path models/jina-code-m2v-512/")
+    print("  4. Compare NDCG@10 against builtin baseline")

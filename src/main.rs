@@ -1,9 +1,11 @@
 use anyhow::Result;
 use clap::Parser;
 
+mod budget;
 mod chunking;
 mod commands;
 mod fallback;
+mod git;
 mod hash;
 mod index;
 mod output;

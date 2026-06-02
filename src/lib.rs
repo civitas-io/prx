@@ -1,6 +1,8 @@
+pub mod budget;
 pub mod chunking;
 pub mod commands;
 pub mod fallback;
+pub mod git;
 pub mod hash;
 pub mod index;
 pub mod output;

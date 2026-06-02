@@ -1,7 +1,6 @@
 {
   "repo": "microsoft/vscode",
   "sha": "183159e2b33b",
-  "root": "benchmarks/checkouts/vscode",
   "queries": [
     {
       "query": "TextModel",

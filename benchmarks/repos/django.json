@@ -1,7 +1,6 @@
 {
   "repo": "django/django",
   "sha": "032549216074",
-  "root": "benchmarks/checkouts/django",
   "queries": [
     {
       "query": "QuerySet",

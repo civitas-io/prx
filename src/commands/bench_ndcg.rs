@@ -103,7 +103,11 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
             message: format!("failed to parse dataset JSON: {e}"),
         })?;
 
-    let root = dataset.root.clone().unwrap_or_else(|| args.root.clone());
+    let root = if args.root != "." {
+        args.root.clone()
+    } else {
+        dataset.root.clone().unwrap_or_else(|| args.root.clone())
+    };
 
     let root_path = Path::new(&root);
     if !root_path.exists() {

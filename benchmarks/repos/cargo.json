@@ -1,7 +1,6 @@
 {
   "repo": "rust-lang/cargo",
   "sha": "03cb632e2473",
-  "root": "benchmarks/checkouts/cargo",
   "queries": [
     {
       "query": "Workspace",

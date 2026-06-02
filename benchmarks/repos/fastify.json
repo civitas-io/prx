@@ -1,7 +1,6 @@
 {
   "repo": "fastify/fastify",
   "sha": "3e04cff92753",
-  "root": "benchmarks/checkouts/fastify",
   "queries": [
     {
       "query": "Reply",

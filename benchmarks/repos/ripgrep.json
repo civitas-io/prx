@@ -1,7 +1,6 @@
 {
   "repo": "BurntSushi/ripgrep",
   "sha": "f0cec341ab95",
-  "root": "benchmarks/checkouts/ripgrep",
   "queries": [
     {
       "query": "SearchWorkerBuilder",

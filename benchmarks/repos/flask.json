@@ -1,7 +1,6 @@
 {
   "repo": "pallets/flask",
   "sha": "954f5684e484",
-  "root": "benchmarks/checkouts/flask",
   "queries": [
     {
       "query": "Flask",

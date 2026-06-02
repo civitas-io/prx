@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - Unreleased
+
+### Changed
+
+- **P2-6: Default derives** — `SearchArgs`, `ReadArgs`, `FindArgs` implement Default.
+  Struct constructions in batch.rs, mcp.rs, fallback.rs use `..Default::default()`.
+- **P2-5: Git utils module** — `src/git.rs` with `show_file()` and `changed_files()`,
+  replacing 3 inline git invocations across diff.rs, read.rs, find.rs.
+- **P2-1: Budget helper** — `src/budget.rs` with `retain_within()`, replacing 4
+  identical retain patterns in search.rs (3x) and find.rs.
+- **P2-4: Symbol flattener** — `outline::Symbol::flatten()` replaces 4 recursive
+  flatteners. Fixes latent bug where context/impact only flattened one level.
+- **P2-3: Diagnostic summary** — `ParsedResult::diagnostic_summary()` replaces
+  hand-rolled error/warning format strings in 6 runner parsers.
+
 ## [0.5.15] - 2026-06-01
 
 ### Changed

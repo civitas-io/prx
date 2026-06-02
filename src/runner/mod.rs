@@ -307,6 +307,17 @@ impl ParsedResult {
     }
 }
 
+/// Try to parse trimmed output as a JSON value.
+/// Returns `Some(value)` if the output starts with `{` or `[` and parses successfully.
+pub fn try_parse_json(output: &str) -> Option<serde_json::Value> {
+    let trimmed = output.trim();
+    if trimmed.starts_with('{') || trimmed.starts_with('[') {
+        serde_json::from_str(trimmed).ok()
+    } else {
+        None
+    }
+}
+
 /// Declare a `static LazyLock<Regex>` in one line.
 macro_rules! define_regex {
     ($name:ident, $pattern:expr) => {

@@ -1,7 +1,7 @@
 {
   "repo": "apache/kafka",
   "sha": "fa097fa593a2",
-  "root": null,
+  "root": "benchmarks/checkouts/kafka",
   "queries": [
     {
       "query": "KafkaProducer",

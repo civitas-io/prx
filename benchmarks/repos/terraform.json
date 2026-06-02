@@ -1,7 +1,7 @@
 {
   "repo": "hashicorp/terraform",
   "sha": "a2ad11c4f14c",
-  "root": null,
+  "root": "benchmarks/checkouts/terraform",
   "queries": [
     {
       "query": "Context",

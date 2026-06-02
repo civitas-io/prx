@@ -72,11 +72,8 @@ fn parse_json(json: &serde_json::Value) -> ParsedResult {
 }
 
 pub fn parse(output: &str) -> ParsedResult {
-    let trimmed = output.trim();
-    if trimmed.starts_with('[') {
-        if let Ok(json) = serde_json::from_str::<serde_json::Value>(trimmed) {
-            return parse_json(&json);
-        }
+    if let Some(json) = super::try_parse_json(output) {
+        return parse_json(&json);
     }
 
     let mut failures = Vec::new();

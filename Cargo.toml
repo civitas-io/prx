@@ -1,6 +1,6 @@
 [package]
 name = "prx"
-version = "0.6.1"
+version = "0.6.2"
 edition = "2024"
 rust-version = "1.85"
 description = "Praxis — agent-native Unix tools. Single binary replacing grep, cat, find, sed, diff for AI coding agents."

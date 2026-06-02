@@ -293,15 +293,148 @@ Total: 4-6 weeks for a production-quality symbol graph.
 
 ---
 
-## Realistic ceiling
+## v0.6.0 Model Evaluation (June 2026)
 
-| Scope | Expected NDCG@10 (external codebase) | Status |
+### Methodology
+
+Distilled 4 candidate code embedding models to Model2Vec static format
+(256d) and benchmarked against the builtin potion-retrieval-32M (64d)
+across 8 repos, 280 queries. Each model re-embeds all chunks at bench
+time via `prx bench-ndcg --model-path`.
+
+### Results
+
+| Model | Source | Type | cargo | django | fastify | flask | kafka | ripgrep | terraform | vscode | **MEAN** |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| **builtin** (64d) | potion-retrieval-32M | Embedded | 0.366 | 0.261 | 0.440 | 0.712 | 0.314 | 0.511 | 0.268 | 0.201 | **0.384** |
+| potion-code-16M (256d) | minishlab | M2V download | 0.328 | 0.251 | 0.431 | 0.738 | 0.273 | 0.542 | 0.250 | 0.204 | 0.377 |
+| codexembed-400m (256d) | Salesforce | Distilled | 0.329 | 0.252 | 0.355 | 0.711 | 0.264 | 0.505 | 0.279 | 0.201 | 0.362 |
+| codexembed-2b (256d) | Salesforce | Distilled | 0.325 | 0.265 | 0.373 | 0.721 | 0.261 | 0.502 | 0.231 | 0.199 | 0.360 |
+| jina-code-v2 (256d) | Jina AI | Distilled | 0.305 | 0.237 | 0.355 | 0.708 | 0.252 | 0.526 | 0.239 | 0.196 | 0.352 |
+
+Per-category breakdown:
+
+| Model | symbol | semantic | architecture |
+|---|---|---|---|
+| builtin | 0.647 | 0.303 | 0.261 |
+| potion-code-16M | 0.658 | 0.290 | 0.242 |
+| codexembed-400m | 0.656 | 0.269 | 0.234 |
+| codexembed-2b | 0.675 | 0.266 | 0.193 |
+| jina-code-v2 | 0.661 | 0.250 | 0.248 |
+
+### Key findings
+
+1. **Builtin wins overall.** The 64d general-retrieval model beats all 256d
+   code-specific alternatives after Model2Vec distillation.
+
+2. **Training distribution > specialization.** MS-MARCO-style retrieval
+   training (builtin) generalizes to mixed prx queries better than narrow
+   docstring→code training (CornStack, CodeXEmbed).
+
+3. **Distillation destroys the SOTA advantage.** CodeXEmbed-2B achieves
+   0.67 NDCG@10 on CoIR as a full transformer but drops to 0.360 after
+   distillation — a 46% loss. Model2Vec mean-pooling cannot preserve
+   attention-based reasoning.
+
+4. **The reranking pipeline compensates.** All models cluster within 8%.
+   The 6-stage reranker already encodes code-specific structure, making
+   the embedding's code awareness redundant.
+
+5. **The bottleneck is recall + fusion, not embedding quality.** Semantic
+   and architecture categories score 0.25-0.30 regardless of model. The
+   same queries miss across all models.
+
+### Decision
+
+**Keep builtin. Stop swapping off-the-shelf embeddings.** Improvement
+leverage is in the pipeline: fusion weights, candidate recall, chunking,
+and query understanding.
+
+CodeRankEmbed (nomic-ai/CodeRankEmbed) was not testable — its custom
+NomicBert architecture is incompatible with model2vec distillation.
+potion-code-32M does not exist on HuggingFace.
+
+Full results: `benchmarks/model_eval_results.json`
+Scripts: `scripts/distill_eval_models.py`, `scripts/run_model_eval.py`
+
+---
+
+## Improvement Plan — Phase 2 (post-model-eval)
+
+The original Tiers 1-4 are complete. This section defines the next phase
+based on the model evaluation findings.
+
+### Tier 5: Benchmark hardening (2-3 days, prerequisite for all below)
+
+280 queries across 8 repos gives ±0.04 standard error. A 3% lift is
+indistinguishable from noise. Must fix measurement before claiming gains.
+
+| # | Item | Effort | Expected gain |
+|---|---|---|---|
+| 1 | Bootstrap confidence intervals on mean NDCG@10 | S | Measurement |
+| 2 | Expand to 40-50 queries per repo (280→360+) | M | Measurement |
+| 3 | Add per-language and per-category breakdown to CI gate | S | Measurement |
+| 4 | Add hard-negative queries (should retrieve nothing) | S | Catches over-retrieval |
+
+### Tier 6: Learned-to-rank fusion (3-5 days, target +3-7%)
+
+Replace hand-tuned reranker weights with a model trained directly on NDCG.
+
+| # | Item | Effort | Expected gain |
+|---|---|---|---|
+| 5 | Extract reranker features per query-chunk pair | M | Foundation |
+| 6 | Train LightGBM/XGBoost with LambdaMART objective | M | +3-7% |
+| 7 | Ship as ~100KB JSON, pure-Rust forest eval at query time | M | Zero new deps |
+
+Features: BM25 score, RRF rank, semantic cosine, definition_match,
+stem_match, coherence, proximity, identifier_presence, is_symbol_query,
+chunk_length, language_match, file_depth, import_distance.
+
+### Tier 7: Multi-field BM25 + dual vectors (5-7 days, target +3-5%)
+
+Current `enrich_for_bm25` concatenates everything into one field, diluting
+identifier IDF with path/directory tokens. Split into weighted fields.
+
+| # | Item | Effort | Expected gain |
+|---|---|---|---|
+| 8 | BM25F: separate fields for identifiers, path, signatures, body, comments | L | +2-3% |
+| 9 | Dual dense vectors per chunk: signature+header vs body | M | +1-2% |
+| 10 | AST-extract function/class signatures as separate indexed mini-chunks | M | Compounds with #8 |
+
+### Tier 8: Task-specific static embeddings (1-2 weeks, target +2-7%)
+
+Skip transformer distillation. Train Model2Vec directly on retrieval pairs
+matching actual prx query distribution.
+
+| # | Item | Effort | Expected gain |
+|---|---|---|---|
+| 11 | Mine training pairs: docstrings, commit messages, file names → chunks | L | Data |
+| 12 | Train via Model2Vec tokenlearn on (query, code) pairs + hard negatives | L | +2-7% |
+| 13 | Validate on held-out human-labeled queries (never train on eval set) | M | Guard |
+
+### Tier 9: Cross-encoder reranker (1-2 weeks, target +5-10%)
+
+Highest single-step gain. Download-on-demand to keep binary at 49MB.
+
+| # | Item | Effort | Expected gain |
+|---|---|---|---|
+| 14 | Integrate ~30M cross-encoder (e.g. jina-reranker-v1-turbo-en) | L | +5-10% |
+| 15 | Score top-20 candidates only. Latency budget: 20-80ms | M | Latency |
+| 16 | Download-on-first-use to `~/.prx/models/reranker/` | M | Binary size |
+
+---
+
+## Realistic ceiling (updated)
+
+| Scope | Expected NDCG@10 (8-repo benchmark) | Status |
 |---|---|---|
-| Tiers 1-3 (v0.3.0) | 0.451 | Done |
-| + Tier 4 (symbol index) | 0.494 | Done |
-| + Full symbol graph | 0.55-0.65 | Planned |
-| + Cross-encoder reranker | 0.70+ | Planned |
+| Tiers 1-4 (v0.3.0-v0.5.x) | 0.384 (280 queries, 8 repos) | Done |
+| + Tier 5 (benchmark hardening) | 0.384 (measurement, not lift) | Planned |
+| + Tier 6 (learned-to-rank) | 0.40-0.42 | Planned |
+| + Tier 7 (multi-field BM25 + dual vectors) | 0.43-0.45 | Planned |
+| + Tier 8 (task-specific embeddings) | 0.45-0.50 | Planned |
+| + Tier 9 (cross-encoder reranker) | 0.55-0.60 | Planned |
 
-Breaking 0.70 on unfamiliar large codebases likely requires a cross-encoder
-reranker (~25M params, scores query+chunk jointly over top-50 candidates).
-This adds 20-80ms latency and a second model to the binary.
+Breaking 0.60 on diverse large codebases likely requires Tier 9
+(cross-encoder). Breaking 0.70 may require a full symbol graph
+(see analysis above) combined with cross-encoder reranking.

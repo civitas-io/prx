@@ -24,8 +24,13 @@ target/coverage/
 **/.prx/
 **/.ag/
 
-# NDCG benchmark results (generated, not source)
+# NDCG benchmark results and repo checkouts (generated, not source)
 benchmarks/ndcg_results*.json
+benchmarks/model_eval_results.json
+benchmarks/checkouts/
+
+# Python virtualenv
+.venv/
 
 # Handoff files
 HANDOFF.md

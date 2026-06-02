@@ -32,6 +32,10 @@ pub struct Cli {
     /// Suppress non-essential output
     #[arg(short, long, global = true)]
     pub quiet: bool,
+
+    /// Fail with an error instead of falling back to grep/cat/find
+    #[arg(long, global = true)]
+    pub no_fallback: bool,
 }
 
 #[derive(Subcommand)]

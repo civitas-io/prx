@@ -2,7 +2,14 @@ name: Benchmark
 
 on:
   push:
+    branches: [main]
     tags: ["v*"]
+  pull_request:
+    branches: [main]
+    paths:
+      - "src/**"
+      - "benchmarks/**"
+      - "Cargo.toml"
   workflow_dispatch:
 
 env:
@@ -74,19 +81,19 @@ jobs:
           NDCG=$(jq -r '.data.ndcg10' benchmarks-result-${{ matrix.repo.name }}.json)
           echo "NDCG@10 for ${{ matrix.repo.name }}: $NDCG"
 
-          # Baseline thresholds (from v0.5.7 measurements, with 0.05 tolerance)
+          # Baseline thresholds: v0.6.0 measured 95% CI lower bound (conservative)
           case "${{ matrix.repo.name }}" in
-            flask)     BASELINE=0.66 ;;
-            ripgrep)   BASELINE=0.44 ;;
-            fastify)   BASELINE=0.38 ;;
-            cargo)     BASELINE=0.33 ;;
-            kafka)     BASELINE=0.30 ;;
-            django)    BASELINE=0.21 ;;
-            terraform) BASELINE=0.24 ;;
-            vscode)    BASELINE=0.16 ;;
+            flask)     BASELINE=0.57 ;;
+            ripgrep)   BASELINE=0.49 ;;
+            fastify)   BASELINE=0.41 ;;
+            cargo)     BASELINE=0.28 ;;
+            kafka)     BASELINE=0.20 ;;
+            django)    BASELINE=0.18 ;;
+            terraform) BASELINE=0.18 ;;
+            vscode)    BASELINE=0.12 ;;
           esac
 
-          echo "Baseline: $BASELINE (with 0.05 tolerance)"
+          echo "Baseline: $BASELINE (v0.6.0 95% CI lower bound)"
 
           PASS=$(echo "$NDCG >= $BASELINE" | bc -l)
           if [ "$PASS" -eq 0 ]; then

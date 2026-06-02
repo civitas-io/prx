@@ -121,6 +121,11 @@ impl SparseIndex {
         }
         scored
     }
+
+    /// Check if a term exists in the index vocabulary.
+    pub fn contains_term(&self, term: &str) -> bool {
+        self.term_to_col.contains_key(term)
+    }
 }
 
 pub fn enrich_for_bm25(content: &str, file_path: &str) -> String {

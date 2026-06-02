@@ -295,6 +295,27 @@ impl ParsedResult {
             tail: None,
         }
     }
+
+    /// Build a summary string like "3 error(s), 2 warning(s)" from diagnostic counts.
+    pub fn diagnostic_summary(errors: usize, warnings: usize) -> String {
+        match (errors, warnings) {
+            (0, 0) => "clean".to_string(),
+            (e, 0) => format!("{e} error(s)"),
+            (0, w) => format!("{w} warning(s)"),
+            (e, w) => format!("{e} error(s), {w} warning(s)"),
+        }
+    }
+}
+
+/// Try to parse trimmed output as a JSON value.
+/// Returns `Some(value)` if the output starts with `{` or `[` and parses successfully.
+pub fn try_parse_json(output: &str) -> Option<serde_json::Value> {
+    let trimmed = output.trim();
+    if trimmed.starts_with('{') || trimmed.starts_with('[') {
+        serde_json::from_str(trimmed).ok()
+    } else {
+        None
+    }
 }
 
 /// Declare a `static LazyLock<Regex>` in one line.

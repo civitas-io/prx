@@ -5,6 +5,45 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.0] - 2026-06-02
+
+### Added
+
+- **Model evaluation infrastructure** — `bench-ndcg --model-path` loads external
+  Model2Vec models and re-embeds chunks at bench time for A/B comparison.
+- **Bootstrap 95% CIs** on all NDCG@10 metrics (overall + per-category) via
+  2000-resample bootstrap with fixed-seed LCG.
+- **Hard-negative queries** — `"negative": true` in benchmark datasets. Empty
+  results score 1.0 (perfect), any results score 0.0.
+- **`prx bench --plain`** — human-readable savings table with measured numbers.
+- **`try_parse_json()`** helper in runner/mod.rs, used by eslint, kubectl, npm_ls.
+- **Eval scripts** — `scripts/distill_eval_models.py` (distill 5 candidate models),
+  `scripts/run_model_eval.py` (run bench-ndcg across all models × repos).
+- **v0.7.0 Search Quality milestone** in roadmap with Tiers 5-9.
+
+### Changed
+
+- **Benchmark expansion** — 280 → 360 queries (all 8 repos at 45 each).
+  cargo, fastify, flask, ripgrep expanded with 20 queries per repo.
+- **README savings table** sourced from `prx bench .` measurements with provenance.
+- **README search quality table** updated to 360 queries with 95% CIs.
+- **Model tiering evaluated and deferred** — 5-model shootout (potion-code-16M,
+  CodeXEmbed-400M/2B, jina-code-v2) showed builtin wins by 1.8–8.3%. Infrastructure
+  (--model flag, download, ModelTier) in place but no model to ship.
+- **P2-6: Default derives** — `SearchArgs`, `ReadArgs`, `FindArgs` implement Default.
+  Struct constructions in batch.rs, mcp.rs, fallback.rs use `..Default::default()`.
+- **P2-5: Git utils module** — `src/git.rs` with `show_file()` and `changed_files()`,
+  replacing 3 inline git invocations across diff.rs, read.rs, find.rs.
+- **P2-1: Budget helper** — `src/budget.rs` with `retain_within()`, replacing 4
+  identical retain patterns in search.rs (3x) and find.rs.
+- **P2-4: Symbol flattener** — `outline::Symbol::flatten()` replaces 4 recursive
+  flatteners. Fixes latent bug where context/impact only flattened one level.
+- **P2-3: Runner parser helpers** — `ParsedResult::diagnostic_summary()` (6 parsers),
+  `try_parse_json()` (3 parsers).
+- **`prx bench` fixed** — removed hanging semantic search task, fixed duplicate names,
+  scoped searches to src/ directory.
+- **Broken README link** — `docs/design/SEARCH-QUALITY.md` → book URL.
+
 ## [0.5.15] - 2026-06-01
 
 ### Changed

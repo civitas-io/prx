@@ -56,6 +56,22 @@ pub struct SearchArgs {
     pub alpha: Option<f32>,
 }
 
+impl Default for SearchArgs {
+    fn default() -> Self {
+        Self {
+            query: String::new(),
+            path: String::new(),
+            literal: false,
+            semantic: false,
+            structural: false,
+            top_k: 5,
+            budget: None,
+            continue_token: None,
+            alpha: None,
+        }
+    }
+}
+
 #[derive(Serialize, serde::Deserialize)]
 pub struct SearchOutput {
     pub matches: Vec<SearchMatch>,
@@ -202,16 +218,7 @@ fn literal_search(
     }
 
     if let Some(budget) = budget {
-        let mut used = 0;
-        all_matches.retain(|m| {
-            let cost = m.snippet.len() / 4;
-            if used + cost <= budget {
-                used += cost;
-                true
-            } else {
-                false
-            }
-        });
+        crate::budget::retain_within(&mut all_matches, budget, |m| m.snippet.len() / 4);
     }
 
     all_matches.truncate(top_k);
@@ -367,16 +374,7 @@ pub fn hybrid_search_with_preloaded(
     }
 
     if let Some(budget) = budget {
-        let mut used = 0;
-        matches.retain(|m| {
-            let cost = m.snippet.len() / 4;
-            if used + cost <= budget {
-                used += cost;
-                true
-            } else {
-                false
-            }
-        });
+        crate::budget::retain_within(&mut matches, budget, |m| m.snippet.len() / 4);
     }
 
     matches.truncate(top_k);
@@ -572,16 +570,7 @@ fn structural_search_cmd(
     let total_matches = matches.len();
 
     if let Some(budget) = budget {
-        let mut used = 0;
-        matches.retain(|m| {
-            let cost = m.snippet.len() / 4;
-            if used + cost <= budget {
-                used += cost;
-                true
-            } else {
-                false
-            }
-        });
+        crate::budget::retain_within(&mut matches, budget, |m| m.snippet.len() / 4);
     }
 
     matches.truncate(top_k);
@@ -630,12 +619,7 @@ mod tests {
             query: query.to_string(),
             path: path.to_string(),
             literal: true,
-            semantic: false,
-            structural: false,
-            top_k: 5,
-            budget: None,
-            continue_token: None,
-            alpha: None,
+            ..Default::default()
         }
     }
 
@@ -885,13 +869,9 @@ mod tests {
         let a = SearchArgs {
             query: "authenticate user password".to_string(),
             path: dir.path().to_string_lossy().to_string(),
-            literal: false,
             semantic: true,
-            structural: false,
             top_k: 5,
-            budget: None,
-            continue_token: None,
-            alpha: None,
+            ..Default::default()
         };
         let result = run(a).unwrap();
         let data: SearchOutput = serde_json::from_value(result).unwrap();
@@ -904,13 +884,10 @@ mod tests {
         let a = SearchArgs {
             query: "authenticate user password".to_string(),
             path: dir.path().to_string_lossy().to_string(),
-            literal: false,
             semantic: true,
-            structural: false,
             top_k: 10,
             budget: Some(10),
-            continue_token: None,
-            alpha: None,
+            ..Default::default()
         };
         let result = run(a).unwrap();
         let data: SearchOutput = serde_json::from_value(result).unwrap();

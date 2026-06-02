@@ -135,13 +135,8 @@ impl AgMcpServer {
         let args = super::search::SearchArgs {
             query: p.query,
             path: p.path,
-            literal: false,
-            semantic: false,
-            structural: false,
             top_k: p.top_k.unwrap_or(5),
-            budget: None,
-            continue_token: None,
-            alpha: None,
+            ..Default::default()
         };
         match super::search::run(args) {
             Ok(v) => serde_json::to_string(&v).unwrap_or_else(|e| format!("error: {e}")),
@@ -157,14 +152,12 @@ impl AgMcpServer {
         let p = params.0;
         let args = super::read::ReadArgs {
             file: p.file,
-            lines: None,
-            snap: None,
             skeleton: p.skeleton,
             outline: p.outline,
             hash: p.hash,
-            budget: None,
             if_changed: p.if_changed,
             mode: p.mode,
+            ..Default::default()
         };
         match super::read::run(args) {
             Ok(v) => serde_json::to_string(&v).unwrap_or_else(|e| format!("error: {e}")),
@@ -179,12 +172,7 @@ impl AgMcpServer {
             path: p.path,
             pattern: p.pattern,
             depth: p.depth,
-            related_to: None,
-            changed_since: None,
-            outline: false,
-            tree: false,
-            flat: false,
-            budget: None,
+            ..Default::default()
         };
         match super::find::run(args) {
             Ok(v) => serde_json::to_string(&v).unwrap_or_else(|e| format!("error: {e}")),

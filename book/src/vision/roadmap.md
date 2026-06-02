@@ -311,40 +311,99 @@ Parallel embedding indexing via rayon. O(n) top-k selection replacing O(n log n)
 
 ---
 
-## v0.6.0 — Model Tiering + Codebase Health
+## v0.6.0 — Codebase Health + Benchmark Infrastructure
 
-The headline feature: tiered embedding models that scale to large repos. Bundled with remaining codebase simplification (P2) that reduces drift risk before the model infrastructure lands.
+### Model Tiering — Evaluated, Deferred
 
-### Model Tiering
+Benchmark data (v0.5.7) showed the builtin model degrades on large repos.
+We hypothesized code-specific models would help. A comprehensive evaluation
+(June 2026) tested 5 candidate models distilled to Model2Vec against the
+builtin across 8 repos / 280 queries:
 
-Benchmark data (v0.5.7) shows the 32M general-purpose model works for small codebases (NDCG@10 0.5-0.7) but degrades on medium (0.3-0.4) and large (0.2-0.3). Code-specific models distilled via Model2Vec can close this gap while keeping pure-Rust inference.
+| Model | Dim | MEAN NDCG@10 | vs builtin |
+|---|---|---|---|
+| **builtin** (potion-retrieval-32M) | 64 | **0.384** | baseline |
+| potion-code-16M | 256 | 0.377 | -1.8% |
+| codexembed-400m (Salesforce) | 256 | 0.362 | -5.8% |
+| codexembed-2b (Salesforce) | 256 | 0.360 | -6.4% |
+| jina-code-v2 (Jina AI) | 256 | 0.352 | -8.3% |
 
-| Item | Priority | Description |
-|---|---|---|
-| Expand benchmark to 40-50 queries per repo | **High** | 25 queries gives ±0.05-0.08 noise — need tighter baselines before evaluating new models. |
-| Distill code-specific Model2Vec models | **High** | CodeSage-v2-Base (356M) and/or all-mpnet-base-v2 (109M) → Model2Vec (256d, f16). ~30s distillation, ~8 MB. |
-| `prx index --model` flag | **High** | `--model builtin` (default), `--model standard`, `--model large`. Download on first use to `~/.prx/models/`. |
-| Repo analysis + model recommendation | High | After `prx index`, hint if repo >3K files: "try `prx index --model standard`". |
-| Model download infrastructure | High | SHA-256 pinned downloads. Offline via `PRX_MODELS_DIR`. Progress bar. |
-| Measured savings baselines (P1-1) | Medium | Wire `prx bench` as the source for the README savings table instead of modeled estimates. |
+**Result: builtin wins. No candidate cleared the 5% lift threshold.**
+The general-retrieval training distribution (MS-MARCO) generalizes better
+to mixed prx queries than narrow code-specific training. The 6-stage
+reranking pipeline already encodes code structure, making code-aware
+embeddings redundant. Model tiering infrastructure (--model flag, download,
+ModelTier registry) is in place but models are deferred pending Tier 8
+(task-specific training) in v0.7.0.
 
-**Model tiers:**
+Full analysis: `docs/internal/SEARCH-QUALITY.md`
 
-| Tier | Model | Size | Target | NDCG@10 (expected) |
-|---|---|---|---|---|
-| `builtin` | potion-retrieval-32M (current) | 32 MB embedded | <3K files | 0.5-0.7 |
-| `standard` | CodeSage-Base-M2V-256 | ~8 MB download | 3K-10K files | 0.5-0.6 (est.) |
-| `large` | Jina-Code-v3-M2V-512 | ~30-60 MB download | 10K+ files | 0.4-0.5 (est.) |
+### Benchmark Infrastructure
+
+| Item | Priority | Status | Description |
+|---|---|---|---|
+| `bench-ndcg --model-path` | **High** | Done | Load external Model2Vec model and re-embed chunks at bench time. |
+| Expand benchmark to 45 queries per repo | **High** | Done | All 8 repos at 45 queries each. 360 total. Bootstrap 95% CIs. Hard-negative support. |
+| Model evaluation scripts | **High** | Done | `scripts/distill_eval_models.py`, `scripts/run_model_eval.py`. |
+| Measured savings baselines (P1-1) | Medium | Done | `prx bench --plain` produces measured table. README savings sourced from real runs. |
 
 ### Codebase Simplification (remaining P2)
 
-| Item | Effort | Description |
-|---|---|---|
-| P2-1: Budget helper | M | `budget::retain_within()` — budget enforcement reimplemented ~6× with magic constants. |
-| P2-3: Runner parser helpers | M | Extract `ParsedResult::diagnostics()` and `try_json()` from 11 parsers. |
-| P2-4: Symbol-tree flattener | M | Unify 4 recursive flatteners into one shared helper. |
-| P2-5: Git utils module | S | `git show` + path-relativization reimplemented 3×. |
-| P2-6: Default derives | S | `..Default::default()` on Args structs in batch.rs/mcp.rs. |
+| Item | Effort | Status | Description |
+|---|---|---|---|
+| P2-1: Budget helper | M | Done | `budget::retain_within()` — unified budget enforcement. |
+| P2-3: Runner parser helpers | M | Done | Extract `ParsedResult::diagnostics()` and `try_json()`. |
+| P2-4: Symbol-tree flattener | M | Done | Unify 4 recursive flatteners into one shared helper. |
+| P2-5: Git utils module | S | Done | `git show` + path-relativization unified. |
+| P2-6: Default derives | S | Done | `..Default::default()` on Args structs. |
+
+---
+
+## v0.7.0 — Search Quality
+
+Target: +15-25% NDCG@10 lift (0.384 → 0.45-0.50) through pipeline improvements. The v0.6.0 model evaluation proved that off-the-shelf embedding swaps yield <2% gain — the leverage is in fusion, recall, chunking, and query understanding.
+
+### Tier 5: Benchmark Hardening (prerequisite)
+
+| Item | Priority | Effort | Description |
+|---|---|---|---|
+| Bootstrap CIs on mean NDCG@10 | **High** | S | Quantify noise so we can detect real lifts vs statistical artifacts. |
+| Expand to 40-50 queries per repo | **High** | M | 280→360+ queries. Narrow standard error from ±0.04 to ±0.03. |
+| Per-language / per-category CI gate | **High** | S | Prevent silent regressions in specific query types or languages. |
+| Hard-negative queries | Medium | S | Queries that should retrieve nothing — catches over-retrieval. |
+
+### Tier 6: Learned-to-Rank Fusion
+
+| Item | Priority | Effort | Description |
+|---|---|---|---|
+| Extract reranker features per query-chunk pair | **High** | M | BM25 score, cosine, def_match, stem_match, coherence, proximity, is_symbol, chunk_length, language, file_depth, import_distance. |
+| Train LightGBM with LambdaMART (NDCG objective) | **High** | M | Replace hand-tuned weights with learned fusion. Cross-validated on benchmark. |
+| Ship as ~100KB JSON, pure-Rust forest eval | **High** | M | Zero new runtime deps. Tree evaluation in `ranking/`. |
+
+### Tier 7: Multi-Field BM25 + Dual Vectors
+
+| Item | Priority | Effort | Description |
+|---|---|---|---|
+| BM25F: weighted fields (identifiers, path, signatures, body, comments) | **High** | L | Stop diluting identifier IDF with path tokens. |
+| Dual dense vectors per chunk (signature vs body) | Medium | M | Recover signal lost when mean-pooling 1500-char chunks. Score = max(sig_cos, body_cos). |
+| AST-extract signatures as separate mini-chunks | Medium | M | Compounds with BM25F — high-IDF function/class names get their own index entries. |
+
+### Tier 8: Task-Specific Static Embeddings
+
+| Item | Priority | Effort | Description |
+|---|---|---|---|
+| Mine training pairs from indexed corpora | Medium | L | Docstrings, commit messages, file names → chunk pairs. |
+| Train Model2Vec via tokenlearn on (query, code) pairs | Medium | L | Skip transformer distillation. Train directly for prx query distribution. |
+| Validate on held-out human-labeled queries | Medium | M | Never train on eval set. Guard against synthetic overfitting. |
+
+### Tier 9: Cross-Encoder Reranker
+
+| Item | Priority | Effort | Description |
+|---|---|---|---|
+| Integrate ~30M cross-encoder for top-20 reranking | Low | L | Highest single-step gain (+5-10%) but adds download-on-demand model. |
+| Download-on-first-use to `~/.prx/models/reranker/` | Low | M | Keep binary at 49MB. |
+
+**Ceiling:** Tiers 5-7 target 0.45-0.50. Tier 8 may reach 0.50-0.55. Tier 9 needed for 0.55-0.60.
 
 ---
 
@@ -354,11 +413,11 @@ New commands and modes that reduce multi-step agent workflows to single calls.
 
 | Item | Effort | Description |
 |---|---|---|
-| P4-1: Persistent `exists` | M | Wire bloom filter to persisted index instead of rebuilding from scratch every call. |
-| P4-2: `--no-fallback` strict mode | M | Retrieval-sensitive agents fail loud instead of silently degrading to plain matching. |
-| P4-7: Surface fallback flag | S | Make it obvious in output when a fallback occurred (pairs with P4-2). |
-| P4-6: `prx context` git-aware budgeting | S | Prioritize recently-changed files in the module package. |
-| P4-5: NDCG regression gate in CI | M | Search quality can't silently regress between releases. Tighten threshold from 0.05 to 0.02. |
+| Persistent `exists` | M | Wire bloom filter to persisted index instead of rebuilding from scratch every call. |
+| `--no-fallback` strict mode | M | Retrieval-sensitive agents fail loud instead of silently degrading to plain matching. |
+| Surface fallback flag | S | Make it obvious in output when a fallback occurred. |
+| `prx context` git-aware budgeting | S | Prioritize recently-changed files in the module package. |
+| NDCG regression gate in CI | M | Search quality can't silently regress between releases. Tighten threshold from 0.05 to 0.02. |
 
 ---
 
@@ -368,8 +427,8 @@ Higher-level primitives that compose existing infrastructure into new capabiliti
 
 | Item | Effort | Description |
 |---|---|---|
-| P4-3: `prx explain <symbol>` | L | One call for definition + callers + tests. Agents currently stitch search→read→impact. |
-| P4-4: Cross-file rename | L | Multi-edit transaction built on import graph. AST-validated, multi-file. |
+| `prx explain <symbol>` | L | One call for definition + callers + tests. Agents currently stitch search→read→impact. |
+| Cross-file rename | L | Multi-edit transaction built on import graph. AST-validated, multi-file. |
 
 ---
 

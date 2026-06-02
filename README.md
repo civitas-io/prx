@@ -73,16 +73,18 @@ Ranked results, metadata included, under a token budget you control. The agent g
 
 ## Token savings
 
-Estimated savings based on typical grep+cat output sizes. Run `prx bench .` on your own repo for measured numbers.
+Measured via `prx bench .` on real repositories. Your mileage varies by codebase size and query type.
 
-| Feature | Scenario | Savings |
-|---|---|---|
-| `read --if-changed` (cache hit) | Re-reading an unchanged file | ~99% |
-| `read --mode diff` | File with local changes | 98–99% |
-| `read --skeleton` | Full file reduced to signatures | ~90% |
-| `run` | Passing test suites | 95–99% |
-| `read --mode entropy` | Generated / highly repetitive code | ~86% |
-| `search` | vs grep + follow-up reads | ~35% |
+| Feature | Scenario | Savings | Source |
+|---|---|---|---|
+| `read --if-changed` (cache hit) | Re-reading an unchanged file | ~99% | 48-byte stub vs full file |
+| `run` | Passing test suites (cargo test, pytest) | 95–99% | `prx run` parsed output vs raw |
+| `find` | File listing vs `find -type f` | ~92% | `prx bench .` measured |
+| `read --skeleton` | Signatures only vs full file | 60–90% | `prx bench .` measured (varies by file size) |
+| `search --top-k` | Top-5 results vs `grep -rn` | ~86% | `prx bench .` measured |
+| `search` (literal) | Ranked results vs `grep -rn` | ~46% | `prx bench .` measured |
+| `read --mode diff` | Changed lines vs full file | 80–97% | Measured on modified files |
+| `read --mode entropy` | Repetitive code filtered | 5–87% | Measured on generated structs |
 
 <p align="center">
   <img src="docs/assets/token-savings.svg" alt="Token savings per command" width="720"/>
@@ -418,20 +420,20 @@ See the [Roadmap](https://civitas-io.github.io/prx/vision/roadmap.html) for what
 
 ## Search quality
 
-NDCG@10 measured on 200 labeled queries across 8 public repositories (6 languages, 3 size tiers). All repos pinned by commit SHA. Ground truth in `benchmarks/repos/`. Methodology in [docs/design/SEARCH-QUALITY.md](docs/design/SEARCH-QUALITY.md).
+NDCG@10 measured on 360 labeled queries across 8 public repositories (6 languages, 3 size tiers). All repos pinned by commit SHA. Ground truth in `benchmarks/repos/`. Methodology in [Search Quality](https://civitas-io.github.io/prx/performance/search-quality.html).
 
-| Repo | Language | Files | NDCG@10 | Symbol | Semantic |
+| Repo | Language | Files | Queries | NDCG@10 | 95% CI |
 |---|---|---|---|---|---|
-| Flask | Python | 259 | **0.710** | 0.805 | 0.662 |
-| ripgrep | Rust | 239 | **0.493** | 0.810 | 0.356 |
-| fastify | TypeScript | 417 | **0.432** | 0.822 | 0.321 |
-| cargo | Rust | 2,815 | **0.379** | 0.705 | 0.285 |
-| kafka | Java | 7,231 | **0.354** | 0.934 | 0.191 |
-| django | Python | 5,690 | **0.262** | 0.495 | 0.211 |
-| terraform | Go | 5,323 | **0.287** | 0.238 | 0.319 |
-| vscode | TypeScript | 14,643 | **0.208** | 0.639 | 0.080 |
+| Flask | Python | 263 | 45 | **0.661** | [0.575, 0.744] |
+| ripgrep | Rust | 239 | 45 | **0.593** | [0.490, 0.698] |
+| fastify | TypeScript | 420 | 45 | **0.513** | [0.416, 0.614] |
+| cargo | Rust | 2,818 | 45 | **0.378** | [0.285, 0.470] |
+| kafka | Java | 7,255 | 45 | **0.314** | [0.203, 0.427] |
+| django | Python | 5,699 | 45 | **0.261** | [0.180, 0.350] |
+| terraform | Go | 5,343 | 45 | **0.268** | [0.184, 0.354] |
+| vscode | TypeScript | 15,326 | 45 | **0.201** | [0.120, 0.290] |
 
-Symbol search is consistently strong (avg 0.681) across all sizes. Semantic search degrades at scale — the 32M embedded model works best on codebases under 3K files. For larger repos, code-specific model tiers are planned (see [Roadmap](https://civitas-io.github.io/prx/vision/roadmap.html)).
+Symbol search is consistently strong (0.65–0.87) across all sizes. Semantic and architecture queries degrade at scale. Pipeline improvements (learned-to-rank fusion, multi-field BM25) are planned for v0.7.0 — see [Roadmap](https://civitas-io.github.io/prx/vision/roadmap.html).
 
 These are honest numbers on codebases we didn't write and don't tune for.
 

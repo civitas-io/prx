@@ -1,213 +1,664 @@
 {
   "repo": "fastify/fastify",
   "sha": "3e04cff92753",
-  "root": null,
+  "root": "benchmarks/checkouts/fastify",
   "queries": [
     {
       "query": "Reply",
       "category": "symbol",
       "relevant": [
-        {"file": "lib/reply.js", "relevance": 3}
+        {
+          "file": "lib/reply.js",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "Request",
       "category": "symbol",
       "relevant": [
-        {"file": "lib/request.js", "relevance": 3}
+        {
+          "file": "lib/request.js",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "ContentTypeParser",
       "category": "symbol",
       "relevant": [
-        {"file": "lib/content-type-parser.js", "relevance": 3},
-        {"file": "lib/content-type.js", "relevance": 2}
+        {
+          "file": "lib/content-type-parser.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/content-type.js",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "FindMyWay",
       "category": "symbol",
       "relevant": [
-        {"file": "lib/route.js", "relevance": 3},
-        {"file": "lib/four-oh-four.js", "relevance": 2}
+        {
+          "file": "lib/route.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/four-oh-four.js",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "FST_ERR_HOOK_TIMEOUT",
       "category": "symbol",
       "relevant": [
-        {"file": "lib/errors.js", "relevance": 3},
-        {"file": "lib/hooks.js", "relevance": 2}
+        {
+          "file": "lib/errors.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/hooks.js",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "decorate",
       "category": "symbol",
       "relevant": [
-        {"file": "lib/decorate.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 1}
+        {
+          "file": "lib/decorate.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify register and match routes",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/route.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 2},
-        {"file": "lib/handle-request.js", "relevance": 1}
+        {
+          "file": "lib/route.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify send HTTP responses",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/reply.js", "relevance": 3},
-        {"file": "lib/error-serializer.js", "relevance": 1}
+        {
+          "file": "lib/reply.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/error-serializer.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify parse request body and content types",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/content-type-parser.js", "relevance": 3},
-        {"file": "lib/content-type.js", "relevance": 2},
-        {"file": "lib/handle-request.js", "relevance": 1}
+        {
+          "file": "lib/content-type-parser.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/content-type.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify validate request schemas",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/validation.js", "relevance": 3},
-        {"file": "lib/schemas.js", "relevance": 2},
-        {"file": "lib/schema-controller.js", "relevance": 2}
+        {
+          "file": "lib/validation.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/schemas.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/schema-controller.js",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does the fastify hook lifecycle work",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/hooks.js", "relevance": 3},
-        {"file": "lib/handle-request.js", "relevance": 2},
-        {"file": "lib/route.js", "relevance": 1}
+        {
+          "file": "lib/hooks.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/route.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify handle errors and set status codes",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/error-handler.js", "relevance": 3},
-        {"file": "lib/errors.js", "relevance": 3},
-        {"file": "lib/reply.js", "relevance": 1}
+        {
+          "file": "lib/error-handler.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/errors.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/reply.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify handle 404 not found responses",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/four-oh-four.js", "relevance": 3},
-        {"file": "lib/error-handler.js", "relevance": 1}
+        {
+          "file": "lib/four-oh-four.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/error-handler.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify register plugins",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/plugin-utils.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 2}
+        {
+          "file": "lib/plugin-utils.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does fastify configure logging and child loggers",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/logger-factory.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 1}
+        {
+          "file": "lib/logger-factory.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify start and listen on a port",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/server.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 2}
+        {
+          "file": "lib/server.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does fastify serialize response JSON schemas",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/config-validator.js", "relevance": 2},
-        {"file": "lib/schemas.js", "relevance": 3},
-        {"file": "lib/reply.js", "relevance": 1}
+        {
+          "file": "lib/config-validator.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/schemas.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/reply.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify handle the full request lifecycle",
       "category": "architecture",
       "relevant": [
-        {"file": "lib/handle-request.js", "relevance": 3},
-        {"file": "lib/hooks.js", "relevance": 3},
-        {"file": "lib/reply.js", "relevance": 2},
-        {"file": "lib/route.js", "relevance": 1}
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/hooks.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/reply.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/route.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what is the architecture of fastify's plugin system",
       "category": "architecture",
       "relevant": [
-        {"file": "fastify.js", "relevance": 3},
-        {"file": "lib/plugin-utils.js", "relevance": 3},
-        {"file": "lib/decorate.js", "relevance": 1}
+        {
+          "file": "fastify.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/plugin-utils.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/decorate.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify handle HTTP/2 and TLS",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/server.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 1}
+        {
+          "file": "lib/server.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify inject test requests without a network",
       "category": "semantic",
       "relevant": [
-        {"file": "fastify.js", "relevance": 3}
+        {
+          "file": "fastify.js",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "what are all the error codes fastify defines",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/errors.js", "relevance": 3}
+        {
+          "file": "lib/errors.js",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does fastify handle request context and encapsulation",
       "category": "architecture",
       "relevant": [
-        {"file": "lib/context.js", "relevance": 3},
-        {"file": "lib/route.js", "relevance": 2},
-        {"file": "fastify.js", "relevance": 1}
+        {
+          "file": "lib/context.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/route.js",
+          "relevance": 2
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify decorate instances with custom properties",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/decorate.js", "relevance": 3},
-        {"file": "fastify.js", "relevance": 1}
+        {
+          "file": "lib/decorate.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does fastify handle request timeout and abort",
       "category": "semantic",
       "relevant": [
-        {"file": "lib/hooks.js", "relevance": 3},
-        {"file": "lib/handle-request.js", "relevance": 2},
-        {"file": "lib/route.js", "relevance": 1}
+        {
+          "file": "lib/hooks.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/route.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "wrapThenable",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "lib/wrap-thenable.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "setErrorStatusCode",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "lib/error-status.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/error-handler.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "SchemaController",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "lib/schema-controller.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "reqIdGenFactory",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "lib/req-id-gen-factory.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does fastify handle async route handlers that return a thenable",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/wrap-thenable.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/handle-request.js",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does fastify generate unique request ids per incoming request",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/req-id-gen-factory.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does fastify encapsulate plugins inside child instances",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/plugin-override.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/plugin-utils.js",
+          "relevance": 2
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does fastify handle the response body for HEAD requests",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/head-route.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/route.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does fastify protect against prototype pollution in JSON body parsing",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/content-type-parser.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/errors.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does fastify resolve client IP addresses behind trusted proxies",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/request.js",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does fastify run the onSend hooks before flushing a response",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/hooks.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/reply.js",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does fastify validate the server options object passed to its constructor",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/initial-config-validation.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/config-validator.js",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does fastify configure a pino logger instance",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/logger-pino.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/logger-factory.js",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does fastify track open keep-alive connections for graceful shutdown",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/server.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/noop-set.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does fastify emit deprecation and security warnings to users",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/warnings.js",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does fastify check plugin version dependencies and conflicts",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/plugin-utils.js",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does fastify normalize and clone route schemas before compilation",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "lib/schemas.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/route.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how is fastify's internal state organized using private symbol keys",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "lib/symbols.js",
+          "relevance": 3
+        },
+        {
+          "file": "fastify.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "what is the boot sequence from instance creation through plugin loading to ready state",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "fastify.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/hooks.js",
+          "relevance": 1
+        },
+        {
+          "file": "lib/plugin-utils.js",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of fastify's pluggable schema controller for validators and serializers",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "lib/schema-controller.js",
+          "relevance": 3
+        },
+        {
+          "file": "lib/schemas.js",
+          "relevance": 2
+        },
+        {
+          "file": "lib/validation.js",
+          "relevance": 1
+        }
       ]
     }
   ]

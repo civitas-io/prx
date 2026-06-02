@@ -47,7 +47,7 @@ pub fn parse(output: &str) -> ParsedResult {
     let summary = if failures.is_empty() && warnings.is_empty() {
         "build succeeded".to_string()
     } else {
-        format!("{} error(s), {} warning(s)", failures.len(), warnings.len())
+        ParsedResult::diagnostic_summary(failures.len(), warnings.len())
     };
 
     ParsedResult {

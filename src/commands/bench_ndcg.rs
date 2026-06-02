@@ -21,6 +21,12 @@ pub struct BenchNdcgArgs {
     /// Root path to search (overrides dataset root)
     #[arg(default_value = ".")]
     pub root: String,
+
+    /// Path to a Model2Vec model directory (model.safetensors + tokenizer.json).
+    /// When set, loads this model instead of the builtin and re-embeds chunks
+    /// on the fly. Useful for comparing candidate models.
+    #[arg(long)]
+    pub model_path: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -35,6 +41,8 @@ struct DatasetQuery {
     query: String,
     category: String,
     relevant: Vec<RelevantFile>,
+    #[serde(default)]
+    negative: bool,
 }
 
 #[derive(Deserialize)]
@@ -47,9 +55,12 @@ struct RelevantFile {
 struct BenchNdcgOutput {
     dataset: String,
     root: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    model_path: Option<String>,
     queries_evaluated: usize,
     ndcg5: f64,
     ndcg10: f64,
+    ndcg10_ci95: [f64; 2],
     by_category: HashMap<String, CategoryStats>,
     misses: Vec<String>,
     per_query: Vec<PerQueryResult>,
@@ -58,6 +69,7 @@ struct BenchNdcgOutput {
 #[derive(Serialize)]
 struct CategoryStats {
     ndcg10: f64,
+    ndcg10_ci95: [f64; 2],
     count: usize,
 }
 
@@ -101,8 +113,25 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
     let (chunks, bm25_index) = persist::load(root_path)?;
     let chunk_texts: Vec<String> = chunks.iter().map(|c| c.content.clone()).collect();
     let chunk_file_paths: Vec<String> = chunks.iter().map(|c| c.file_path.clone()).collect();
-    let embeddings = persist::load_embeddings(root_path);
-    let model = crate::index::dense::load_model();
+    let mut model = if let Some(ref mp) = args.model_path {
+        crate::index::dense::load_model_from_path(std::path::Path::new(mp))
+    } else {
+        crate::index::dense::load_model()
+    };
+
+    // When using an external model, re-embed all chunks on the fly so we
+    // measure that model's quality rather than whatever was persisted.
+    let owned_embeddings = if args.model_path.is_some() {
+        model.as_mut().map(|m| {
+            let texts: Vec<&str> = chunk_texts.iter().map(|s| s.as_str()).collect();
+            m.index_chunks(&texts);
+            persist::Embeddings::Owned(m.embeddings().clone())
+        })
+    } else {
+        persist::load_embeddings(root_path)
+    };
+    let embeddings = owned_embeddings.as_ref();
+
     let import_graph = crate::search::graph::ImportGraph::load(&root_path.join(".prx/index")).ok();
     let symbols = persist::load_symbols(root_path);
 
@@ -120,7 +149,7 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
             &chunk_texts,
             &chunk_file_paths,
             &bm25_index,
-            embeddings.as_ref(),
+            embeddings,
             model.as_ref(),
             import_graph.as_ref(),
             symbols.as_ref(),
@@ -134,11 +163,16 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
         };
 
         let matched_files = extract_unique_files(&result);
-        let relevances = score_results(&matched_files, &q.relevant);
 
-        let ideal: Vec<f64> = q.relevant.iter().map(|r| r.relevance as f64).collect();
-        let n5 = ndcg(&relevances, &ideal, 5);
-        let n10 = ndcg(&relevances, &ideal, 10);
+        let (n5, n10) = if q.negative {
+            // Hard negative: perfect score if nothing relevant was returned.
+            let score = if matched_files.is_empty() { 1.0 } else { 0.0 };
+            (score, score)
+        } else {
+            let relevances = score_results(&matched_files, &q.relevant);
+            let ideal: Vec<f64> = q.relevant.iter().map(|r| r.relevance as f64).collect();
+            (ndcg(&relevances, &ideal, 5), ndcg(&relevances, &ideal, 10))
+        };
 
         all_ndcg5.push(n5);
         all_ndcg10.push(n10);
@@ -167,22 +201,28 @@ pub fn run(args: BenchNdcgArgs) -> Result<serde_json::Value, AgError> {
         .into_iter()
         .map(|(cat, scores)| {
             let count = scores.len();
+            let ci = bootstrap_ci95(&scores);
             (
                 cat,
                 CategoryStats {
                     ndcg10: round4(mean(&scores)),
+                    ndcg10_ci95: ci,
                     count,
                 },
             )
         })
         .collect();
 
+    let ndcg10_ci95 = bootstrap_ci95(&all_ndcg10);
+
     let output = BenchNdcgOutput {
         dataset: args.dataset,
         root,
+        model_path: args.model_path,
         queries_evaluated: all_ndcg10.len(),
         ndcg5: round4(mean_ndcg5),
         ndcg10: round4(mean_ndcg10),
+        ndcg10_ci95,
         by_category,
         misses,
         per_query,
@@ -209,27 +249,51 @@ pub fn render_plain(data: &serde_json::Value) {
         .map(|a| a.len())
         .unwrap_or(0);
 
-    let _ = writeln!(
-        stdout,
-        "NDCG@5:  {ndcg5:.3}    NDCG@10: {ndcg10:.3}\nQueries: {queries:<8} Misses:  {misses}\n"
-    );
+    let ci = data
+        .get("ndcg10_ci95")
+        .and_then(|v| v.as_array())
+        .and_then(|a| {
+            let lo = a.first()?.as_f64()?;
+            let hi = a.get(1)?.as_f64()?;
+            Some((lo, hi))
+        });
+
+    if let Some((lo, hi)) = ci {
+        let _ = writeln!(
+            stdout,
+            "NDCG@5:  {ndcg5:.3}    NDCG@10: {ndcg10:.3}  [{lo:.3}, {hi:.3}] 95% CI\nQueries: {queries:<8} Misses:  {misses}\n"
+        );
+    } else {
+        let _ = writeln!(
+            stdout,
+            "NDCG@5:  {ndcg5:.3}    NDCG@10: {ndcg10:.3}\nQueries: {queries:<8} Misses:  {misses}\n"
+        );
+    }
 
     if let Some(by_cat) = data.get("by_category").and_then(|v| v.as_object()) {
-        let _ = writeln!(stdout, "Category          NDCG@10  Count");
-        let _ = writeln!(stdout, "─────────────────────────────────");
+        let _ = writeln!(stdout, "Category          NDCG@10  95% CI          Count");
+        let _ = writeln!(stdout, "────────────────────────────────────────────────");
 
-        let mut rows: Vec<(&String, f64, u64)> = by_cat
-            .iter()
-            .map(|(k, v)| {
-                let n = v.get("ndcg10").and_then(|x| x.as_f64()).unwrap_or(0.0);
-                let c = v.get("count").and_then(|x| x.as_u64()).unwrap_or(0);
-                (k, n, c)
-            })
-            .collect();
-        rows.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap_or(std::cmp::Ordering::Equal));
+        let mut rows: Vec<_> = by_cat.iter().collect();
+        rows.sort_by(|a, b| {
+            let na = a.1.get("ndcg10").and_then(|x| x.as_f64()).unwrap_or(0.0);
+            let nb = b.1.get("ndcg10").and_then(|x| x.as_f64()).unwrap_or(0.0);
+            nb.partial_cmp(&na).unwrap_or(std::cmp::Ordering::Equal)
+        });
 
-        for (cat, ndcg, count) in rows {
-            let _ = writeln!(stdout, "{cat:<17} {ndcg:<7.3}  {count}");
+        for (cat, v) in rows {
+            let n = v.get("ndcg10").and_then(|x| x.as_f64()).unwrap_or(0.0);
+            let c = v.get("count").and_then(|x| x.as_u64()).unwrap_or(0);
+            let ci_str = v
+                .get("ndcg10_ci95")
+                .and_then(|a| a.as_array())
+                .and_then(|a| {
+                    let lo = a.first()?.as_f64()?;
+                    let hi = a.get(1)?.as_f64()?;
+                    Some(format!("[{lo:.3}, {hi:.3}]"))
+                })
+                .unwrap_or_default();
+            let _ = writeln!(stdout, "{cat:<17} {n:<7.3}  {ci_str:<15} {c}");
         }
         let _ = writeln!(stdout);
     }
@@ -313,6 +377,34 @@ fn round4(x: f64) -> f64 {
     (x * 10_000.0).round() / 10_000.0
 }
 
+/// Bootstrap 95% confidence interval for the mean.
+/// Uses 2000 resamples with a simple LCG PRNG (no external deps).
+fn bootstrap_ci95(values: &[f64]) -> [f64; 2] {
+    if values.len() < 3 {
+        let m = mean(values);
+        return [round4(m), round4(m)];
+    }
+    const N_RESAMPLES: usize = 2000;
+    let n = values.len();
+    let mut means = Vec::with_capacity(N_RESAMPLES);
+    let mut rng: u64 = 0x517c_c1b7_2722_0a95; // fixed seed for reproducibility
+    for _ in 0..N_RESAMPLES {
+        let mut sum = 0.0;
+        for _ in 0..n {
+            rng = rng
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
+            let idx = (rng >> 33) as usize % n;
+            sum += values[idx];
+        }
+        means.push(sum / n as f64);
+    }
+    means.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
+    let lo = means[N_RESAMPLES * 25 / 1000]; // 2.5th percentile
+    let hi = means[N_RESAMPLES * 975 / 1000]; // 97.5th percentile
+    [round4(lo), round4(hi)]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -378,6 +470,32 @@ mod tests {
         });
         let files = extract_unique_files(&result);
         assert_eq!(files, vec!["src/auth.rs", "src/token.rs"]);
+    }
+
+    #[test]
+    fn bootstrap_ci95_contains_mean() {
+        let values = vec![0.5, 0.6, 0.4, 0.7, 0.3, 0.55, 0.65, 0.45, 0.35, 0.5];
+        let m = mean(&values);
+        let [lo, hi] = bootstrap_ci95(&values);
+        assert!(lo <= m, "CI lower {lo} should be <= mean {m}");
+        assert!(hi >= m, "CI upper {hi} should be >= mean {m}");
+        assert!(hi - lo > 0.0, "CI width should be positive");
+        assert!(hi - lo < 0.5, "CI should not be absurdly wide");
+    }
+
+    #[test]
+    fn bootstrap_ci95_identical_values() {
+        let values = vec![0.5, 0.5, 0.5, 0.5, 0.5];
+        let [lo, hi] = bootstrap_ci95(&values);
+        assert!((lo - 0.5).abs() < 1e-9, "CI should collapse to 0.5");
+        assert!((hi - 0.5).abs() < 1e-9, "CI should collapse to 0.5");
+    }
+
+    #[test]
+    fn bootstrap_ci95_small_sample() {
+        let values = vec![0.3, 0.7];
+        let [lo, hi] = bootstrap_ci95(&values);
+        assert!(lo <= hi, "lo {lo} should be <= hi {hi}");
     }
 
     #[test]

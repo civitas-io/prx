@@ -50,7 +50,7 @@ pub fn parse(output: &str) -> ParsedResult {
     }
 
     if summary.is_empty() {
-        summary = format!("{} error(s), {} warning(s)", failures.len(), warnings.len());
+        summary = ParsedResult::diagnostic_summary(failures.len(), warnings.len());
     }
 
     ParsedResult {

@@ -1,11 +1,14 @@
 use anyhow::Result;
 use clap::Parser;
 
+mod budget;
 mod chunking;
 mod commands;
 mod fallback;
+mod git;
 mod hash;
 mod index;
+mod models;
 mod output;
 mod parsing;
 mod ranking;
@@ -49,6 +52,8 @@ fn main() -> Result<()> {
             log_telemetry(&command_name, data, wall_ms);
             if plain && command_name == "bench-ndcg" {
                 commands::bench_ndcg::render_plain(data);
+            } else if plain && command_name == "bench" {
+                commands::bench::render_plain(data);
             } else {
                 write_envelope(&command_name, data.clone(), plain);
             }
@@ -126,11 +131,8 @@ fn run_command(command: Commands) -> Result<serde_json::Value, output::AgError> 
 }
 
 fn log_telemetry(command: &str, data: &serde_json::Value, wall_ms: u64) {
-    // Baselines below are *modeled estimates*, not measurements. Each branch
-    // approximates what `grep`/`cat`/`find`/`git diff` would emit for the same
-    // information, using magic constants (e.g. ~120B per grep match) derived
-    // from typical agent-session output. They are intentionally rough — for
-    // measured numbers, run `prx bench .` on a real repo.
+    // Baselines are modeled estimates of what grep/cat/find would emit for
+    // the same query. For measured numbers, run `prx bench .`.
     let actual_bytes = serde_json::to_string(data).map(|s| s.len()).unwrap_or(0);
 
     let baseline_bytes = match command {

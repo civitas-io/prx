@@ -10,7 +10,7 @@ use crate::output::{AgError, to_json};
 use crate::parsing;
 use crate::walk::{self, WalkOpts};
 
-#[derive(Args)]
+#[derive(Args, Default)]
 pub struct FindArgs {
     /// Root path
     #[arg(default_value = ".")]
@@ -162,16 +162,7 @@ pub fn run(args: FindArgs) -> Result<serde_json::Value, AgError> {
     let total_files = file_entries.len();
 
     if let Some(budget) = args.budget {
-        let mut used = 0;
-        file_entries.retain(|e| {
-            let cost = e.path.len() / 4 + 2;
-            if used + cost <= budget {
-                used += cost;
-                true
-            } else {
-                false
-            }
-        });
+        crate::budget::retain_within(&mut file_entries, budget, |e| e.path.len() / 4 + 2);
     }
 
     let returned = file_entries.len();
@@ -313,24 +304,7 @@ fn load_model2vec_vocab(_expected_size: usize) -> Option<HashMap<String, usize>>
 }
 
 fn get_changed_files(root: &Path, git_ref: &str) -> Option<Vec<String>> {
-    let output = std::process::Command::new("git")
-        .args(["diff", "--name-only", &format!("{git_ref}..HEAD")])
-        .current_dir(root)
-        .output()
-        .ok()?;
-
-    if !output.status.success() {
-        return None;
-    }
-
-    let stdout = String::from_utf8_lossy(&output.stdout);
-    Some(
-        stdout
-            .lines()
-            .filter(|l| !l.is_empty())
-            .map(String::from)
-            .collect(),
-    )
+    crate::git::changed_files(root, git_ref)
 }
 
 fn glob_matches(pattern: &str, path: &str) -> bool {
@@ -443,14 +417,7 @@ mod tests {
     fn find_args(path: &str) -> FindArgs {
         FindArgs {
             path: path.to_string(),
-            pattern: None,
-            depth: None,
-            related_to: None,
-            changed_since: None,
-            outline: false,
-            tree: false,
-            flat: false,
-            budget: None,
+            ..Default::default()
         }
     }
 

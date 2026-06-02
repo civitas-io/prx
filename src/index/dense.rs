@@ -1,6 +1,7 @@
 use ndarray::{Array1, Array2};
 use rayon::prelude::*;
 use std::collections::HashMap;
+use std::path::Path;
 use std::sync::OnceLock;
 
 static MODEL2VEC_TOKENIZER: OnceLock<Option<tokenizers::Tokenizer>> = OnceLock::new();
@@ -167,6 +168,74 @@ pub fn load_model() -> Option<DenseIndex> {
 
     let vocab = load_model_vocab(vocab_size)?;
     Some(DenseIndex::new(vocab, weights))
+}
+
+/// Load a Model2Vec model from a directory containing `model.safetensors` and
+/// `tokenizer.json`. Used by the downloadable model tiers (see
+/// `crate::models`); the built-in tier uses [`load_model`] instead.
+pub fn load_model_from_path(dir: &Path) -> Option<DenseIndex> {
+    let safetensors_path = dir.join("model.safetensors");
+    let tokenizer_path = dir.join("tokenizer.json");
+
+    let model_bytes = std::fs::read(&safetensors_path).ok()?;
+    let tokenizer_bytes = std::fs::read(&tokenizer_path).ok()?;
+
+    let tensors = safetensors::SafeTensors::deserialize(&model_bytes).ok()?;
+
+    let embedding_tensor = tensors
+        .tensor("embeddings")
+        .or_else(|_| tensors.tensor("model.embeddings"))
+        .or_else(|_| {
+            tensors
+                .names()
+                .into_iter()
+                .find(|n| n.contains("embed"))
+                .ok_or(safetensors::SafeTensorError::InvalidOffset(
+                    "no embedding tensor".into(),
+                ))
+                .and_then(|name| tensors.tensor(name))
+        })
+        .ok()?;
+
+    let shape = embedding_tensor.shape();
+    if shape.len() != 2 {
+        return None;
+    }
+    let (vocab_size, dim) = (shape[0], shape[1]);
+
+    let data = embedding_tensor.data();
+    let weights = match embedding_tensor.dtype() {
+        safetensors::Dtype::F32 => {
+            let floats: Vec<f32> = data
+                .chunks_exact(4)
+                .map(|c| f32::from_le_bytes([c[0], c[1], c[2], c[3]]))
+                .collect();
+            ndarray::Array2::from_shape_vec((vocab_size, dim), floats).ok()?
+        }
+        safetensors::Dtype::F16 => {
+            let floats: Vec<f32> = data
+                .chunks_exact(2)
+                .map(|c| half::f16::from_le_bytes([c[0], c[1]]).to_f32())
+                .collect();
+            ndarray::Array2::from_shape_vec((vocab_size, dim), floats).ok()?
+        }
+        _ => return None,
+    };
+
+    let tokenizer = tokenizers::Tokenizer::from_bytes(&tokenizer_bytes).ok();
+
+    let vocab = if tokenizer.is_some() {
+        load_model_vocab(vocab_size).unwrap_or_default()
+    } else {
+        load_model_vocab(vocab_size)?
+    };
+
+    Some(DenseIndex {
+        vocab,
+        weights,
+        chunk_embeddings: ndarray::Array2::zeros((0, dim)),
+        use_hf_tokenizer: tokenizer.is_some(),
+    })
 }
 
 fn load_model_vocab(expected_size: usize) -> Option<HashMap<String, usize>> {

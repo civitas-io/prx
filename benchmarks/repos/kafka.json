@@ -1,206 +1,640 @@
 {
   "repo": "apache/kafka",
   "sha": "fa097fa593a2",
-  "root": null,
+  "root": "benchmarks/checkouts/kafka",
   "queries": [
     {
       "query": "KafkaProducer",
       "category": "symbol",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/ProducerConfig.java", "relevance": 1}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/ProducerConfig.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "KafkaConsumer",
       "category": "symbol",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/consumer/KafkaConsumer.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/clients/consumer/ConsumerConfig.java", "relevance": 1}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/KafkaConsumer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/ConsumerConfig.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "KafkaRaftClient",
       "category": "symbol",
       "relevant": [
-        {"file": "raft/src/main/java/org/apache/kafka/raft/KafkaRaftClient.java", "relevance": 3}
+        {
+          "file": "raft/src/main/java/org/apache/kafka/raft/KafkaRaftClient.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "KafkaStreams",
       "category": "symbol",
       "relevant": [
-        {"file": "streams/src/main/java/org/apache/kafka/streams/KafkaStreams.java", "relevance": 3},
-        {"file": "streams/src/main/java/org/apache/kafka/streams/StreamsConfig.java", "relevance": 1}
+        {
+          "file": "streams/src/main/java/org/apache/kafka/streams/KafkaStreams.java",
+          "relevance": 3
+        },
+        {
+          "file": "streams/src/main/java/org/apache/kafka/streams/StreamsConfig.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "KafkaAdminClient",
       "category": "symbol",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/admin/KafkaAdminClient.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/clients/admin/Admin.java", "relevance": 2}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/admin/KafkaAdminClient.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/admin/Admin.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "UnifiedLog",
       "category": "symbol",
       "relevant": [
-        {"file": "storage/src/main/java/org/apache/kafka/storage/internals/log/UnifiedLog.java", "relevance": 3}
+        {
+          "file": "storage/src/main/java/org/apache/kafka/storage/internals/log/UnifiedLog.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Kafka produce messages to topics",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/RecordAccumulator.java", "relevance": 2},
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/Sender.java", "relevance": 2}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/RecordAccumulator.java",
+          "relevance": 2
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/Sender.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka consumer group rebalancing work",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/consumer/internals/AsyncKafkaConsumer.java", "relevance": 3},
-        {"file": "group-coordinator/src/main/java/org/apache/kafka/coordinator/group/GroupCoordinatorService.java", "relevance": 2}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/internals/AsyncKafkaConsumer.java",
+          "relevance": 3
+        },
+        {
+          "file": "group-coordinator/src/main/java/org/apache/kafka/coordinator/group/GroupCoordinatorService.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka store and manage log segments on disk",
       "category": "semantic",
       "relevant": [
-        {"file": "storage/src/main/java/org/apache/kafka/storage/internals/log/UnifiedLog.java", "relevance": 3},
-        {"file": "storage/src/main/java/org/apache/kafka/storage/internals/log/LogSegment.java", "relevance": 3},
-        {"file": "storage/src/main/java/org/apache/kafka/storage/internals/log/LogManager.java", "relevance": 2}
+        {
+          "file": "storage/src/main/java/org/apache/kafka/storage/internals/log/UnifiedLog.java",
+          "relevance": 3
+        },
+        {
+          "file": "storage/src/main/java/org/apache/kafka/storage/internals/log/LogSegment.java",
+          "relevance": 3
+        },
+        {
+          "file": "storage/src/main/java/org/apache/kafka/storage/internals/log/LogManager.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does the Raft consensus protocol work in Kafka",
       "category": "semantic",
       "relevant": [
-        {"file": "raft/src/main/java/org/apache/kafka/raft/KafkaRaftClient.java", "relevance": 3},
-        {"file": "raft/src/main/java/org/apache/kafka/raft/LeaderState.java", "relevance": 2},
-        {"file": "raft/src/main/java/org/apache/kafka/raft/QuorumState.java", "relevance": 2}
+        {
+          "file": "raft/src/main/java/org/apache/kafka/raft/KafkaRaftClient.java",
+          "relevance": 3
+        },
+        {
+          "file": "raft/src/main/java/org/apache/kafka/raft/LeaderState.java",
+          "relevance": 2
+        },
+        {
+          "file": "raft/src/main/java/org/apache/kafka/raft/QuorumState.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka Connect manage worker tasks",
       "category": "semantic",
       "relevant": [
-        {"file": "connect/runtime/src/main/java/org/apache/kafka/connect/runtime/Worker.java", "relevance": 3},
-        {"file": "connect/runtime/src/main/java/org/apache/kafka/connect/runtime/WorkerSinkTask.java", "relevance": 2}
+        {
+          "file": "connect/runtime/src/main/java/org/apache/kafka/connect/runtime/Worker.java",
+          "relevance": 3
+        },
+        {
+          "file": "connect/runtime/src/main/java/org/apache/kafka/connect/runtime/WorkerSinkTask.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka Streams process topology and state stores",
       "category": "semantic",
       "relevant": [
-        {"file": "streams/src/main/java/org/apache/kafka/streams/KafkaStreams.java", "relevance": 3},
-        {"file": "streams/src/main/java/org/apache/kafka/streams/Topology.java", "relevance": 2}
+        {
+          "file": "streams/src/main/java/org/apache/kafka/streams/KafkaStreams.java",
+          "relevance": 3
+        },
+        {
+          "file": "streams/src/main/java/org/apache/kafka/streams/Topology.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka handle topic partitioning",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/common/PartitionInfo.java", "relevance": 1}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/DefaultPartitioner.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/PartitionInfo.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Kafka replicate data across brokers",
       "category": "semantic",
       "relevant": [
-        {"file": "server/src/main/java/org/apache/kafka/server/ReplicaManager.java", "relevance": 3},
-        {"file": "storage/src/main/java/org/apache/kafka/storage/internals/log/UnifiedLog.java", "relevance": 1}
+        {
+          "file": "server/src/main/java/org/apache/kafka/server/ReplicaManager.java",
+          "relevance": 3
+        },
+        {
+          "file": "storage/src/main/java/org/apache/kafka/storage/internals/log/UnifiedLog.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Kafka authenticate clients with SASL",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/common/security/authenticator/SaslClientAuthenticator.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/common/security/authenticator/SaslServerAuthenticator.java", "relevance": 3}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/security/authenticator/SaslClientAuthenticator.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/security/authenticator/SaslServerAuthenticator.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Kafka handle network requests and responses",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/NetworkClient.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/common/network/Selector.java", "relevance": 2}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/NetworkClient.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/network/Selector.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka manage broker lifecycle and startup",
       "category": "semantic",
       "relevant": [
-        {"file": "server/src/main/java/org/apache/kafka/server/BrokerLifecycleManager.java", "relevance": 3}
+        {
+          "file": "server/src/main/java/org/apache/kafka/server/BrokerLifecycleManager.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Kafka handle remote log storage and tiered storage",
       "category": "semantic",
       "relevant": [
-        {"file": "storage/src/main/java/org/apache/kafka/server/log/remote/storage/RemoteLogManager.java", "relevance": 3}
+        {
+          "file": "storage/src/main/java/org/apache/kafka/server/log/remote/storage/RemoteLogManager.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "what is the architecture of Kafka's client-server protocol",
       "category": "architecture",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/NetworkClient.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/common/network/Selector.java", "relevance": 2},
-        {"file": "clients/src/main/java/org/apache/kafka/common/requests/AbstractRequest.java", "relevance": 1}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/NetworkClient.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/network/Selector.java",
+          "relevance": 2
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/requests/AbstractRequest.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what is the architecture of Kafka's module structure",
       "category": "architecture",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java", "relevance": 2},
-        {"file": "clients/src/main/java/org/apache/kafka/clients/consumer/KafkaConsumer.java", "relevance": 2},
-        {"file": "server/src/main/java/org/apache/kafka/server/BrokerLifecycleManager.java", "relevance": 1}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java",
+          "relevance": 2
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/KafkaConsumer.java",
+          "relevance": 2
+        },
+        {
+          "file": "server/src/main/java/org/apache/kafka/server/BrokerLifecycleManager.java",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Kafka serialize and deserialize messages",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/common/serialization/Serializer.java", "relevance": 3},
-        {"file": "clients/src/main/java/org/apache/kafka/common/serialization/Deserializer.java", "relevance": 3}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/serialization/Serializer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/serialization/Deserializer.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Kafka handle consumer offsets",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/consumer/OffsetAndMetadata.java", "relevance": 3},
-        {"file": "group-coordinator/src/main/java/org/apache/kafka/coordinator/group/OffsetMetadataManager.java", "relevance": 2}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/OffsetAndMetadata.java",
+          "relevance": 3
+        },
+        {
+          "file": "group-coordinator/src/main/java/org/apache/kafka/coordinator/group/OffsetMetadataManager.java",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Kafka track client metrics",
       "category": "semantic",
       "relevant": [
-        {"file": "server/src/main/java/org/apache/kafka/server/ClientMetricsManager.java", "relevance": 3}
+        {
+          "file": "server/src/main/java/org/apache/kafka/server/ClientMetricsManager.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Kafka handle transaction support",
       "category": "semantic",
       "relevant": [
-        {"file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java", "relevance": 2},
-        {"file": "coordinator-common/src/main/java/org/apache/kafka/coordinator/transaction/TransactionCoordinatorService.java", "relevance": 3}
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java",
+          "relevance": 2
+        },
+        {
+          "file": "coordinator-common/src/main/java/org/apache/kafka/coordinator/transaction/TransactionCoordinatorService.java",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Kafka mirror topics across clusters",
       "category": "semantic",
       "relevant": [
-        {"file": "connect/mirror/src/main/java/org/apache/kafka/connect/mirror/MirrorSourceTask.java", "relevance": 3},
-        {"file": "connect/mirror/src/main/java/org/apache/kafka/connect/mirror/MirrorSourceConnector.java", "relevance": 2}
+        {
+          "file": "connect/mirror/src/main/java/org/apache/kafka/connect/mirror/MirrorSourceTask.java",
+          "relevance": 3
+        },
+        {
+          "file": "connect/mirror/src/main/java/org/apache/kafka/connect/mirror/MirrorSourceConnector.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "KafkaProducer",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/KafkaProducer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/Producer.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "KafkaConsumer",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/KafkaConsumer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/Consumer.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "ReplicaManager",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/server/ReplicaManager.scala",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "GroupCoordinator",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/coordinator/group/GroupCoordinator.scala",
+          "relevance": 3
+        },
+        {
+          "file": "group-coordinator/src/main/java/org/apache/kafka/coordinator/group/GroupCoordinatorService.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka handle consumer group rebalancing",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/internals/ConsumerCoordinator.java",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/coordinator/group/GroupCoordinator.scala",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement log segment compaction",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/log/LogCleaner.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/log/LogCleanerManager.scala",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka handle partition leadership election",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/controller/KafkaController.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/controller/PartitionStateMachine.scala",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement exactly-once semantics",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/producer/internals/TransactionManager.java",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/coordinator/transaction/TransactionCoordinator.scala",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement request processing and API handling",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/server/KafkaApis.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/network/RequestChannel.scala",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka handle ISR shrinking and expansion",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/cluster/Partition.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/server/ReplicaManager.scala",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement the fetch protocol",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/server/ReplicaFetcherThread.scala",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/internals/Fetcher.java",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement quota management",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/server/ClientQuotaManager.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/server/QuotaFactory.scala",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka handle topic creation and deletion",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/admin/TopicCommand.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/controller/KafkaController.scala",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka serialize and deserialize messages",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/serialization/Serializer.java",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/serialization/Deserializer.java",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of Kafka's storage layer",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/log/UnifiedLog.scala",
+          "relevance": 3
+        },
+        {
+          "file": "core/src/main/scala/kafka/log/LogSegment.scala",
+          "relevance": 3
+        },
+        {
+          "file": "storage/src/main/java/org/apache/kafka/storage/internals/log/LogSegment.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of Kafka Connect",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "connect/runtime/src/main/java/org/apache/kafka/connect/runtime/Worker.java",
+          "relevance": 3
+        },
+        {
+          "file": "connect/runtime/src/main/java/org/apache/kafka/connect/runtime/WorkerTask.java",
+          "relevance": 2
+        },
+        {
+          "file": "connect/api/src/main/java/org/apache/kafka/connect/connector/Connector.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement ACL authorization",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/security/authorizer/AclAuthorizer.scala",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/acl/AclBinding.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka handle network IO and socket server",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/network/SocketServer.scala",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/common/network/Selector.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement KRaft consensus",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "raft/src/main/java/org/apache/kafka/raft/KafkaRaftClient.java",
+          "relevance": 3
+        },
+        {
+          "file": "raft/src/main/java/org/apache/kafka/raft/LeaderState.java",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Kafka implement consumer offset management",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "core/src/main/scala/kafka/coordinator/group/GroupMetadataManager.scala",
+          "relevance": 3
+        },
+        {
+          "file": "clients/src/main/java/org/apache/kafka/clients/consumer/internals/OffsetFetcher.java",
+          "relevance": 2
+        }
       ]
     }
   ]

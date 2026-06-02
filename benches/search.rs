@@ -207,14 +207,8 @@ fn bench_literal_search(c: &mut Criterion) {
                 query: "fn ".to_string(),
                 path: dir.path().to_string_lossy().to_string(),
                 literal: true,
-                semantic: false,
-                structural: false,
                 top_k: 10,
-                budget: None,
-                context: None,
-                exists: false,
-                continue_token: None,
-                alpha: None,
+                ..Default::default()
             };
             let _ = prx::commands::search::run(args);
         })
@@ -226,18 +220,18 @@ fn bench_persistent_index_build(c: &mut Criterion) {
 
     c.bench_function("persistent_index_build", |b| {
         b.iter(|| {
-            let _ = prx::index::persist::build_and_save(dir.path());
+            let _ = prx::index::persist::build_and_save(dir.path(), "builtin");
         })
     });
 }
 
 fn bench_incremental_index_noop(c: &mut Criterion) {
     let dir = make_bench_dir();
-    prx::index::persist::build_and_save(dir.path()).unwrap();
+    prx::index::persist::build_and_save(dir.path(), "builtin").unwrap();
 
     c.bench_function("incremental_index_noop", |b| {
         b.iter(|| {
-            let _ = prx::index::persist::build_and_save(dir.path());
+            let _ = prx::index::persist::build_and_save(dir.path(), "builtin");
         })
     });
 }

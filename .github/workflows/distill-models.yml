@@ -1,0 +1,56 @@
+name: Distill Models
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag for model assets (e.g., models-v1)'
+        required: true
+        default: 'models-v1'
+
+permissions:
+  contents: write
+
+jobs:
+  distill:
+    name: Distill and Upload Models
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install model2vec
+        run: pip install model2vec
+
+      - name: Distill models (standard + large)
+        run: python scripts/distill_model.py
+
+      - name: Package models
+        run: |
+          cd models
+          for dir in */; do
+            name="${dir%/}"
+            tar czf "${name}.tar.gz" -C "$name" .
+            echo "=== $name ==="
+            sha256sum "${name}.tar.gz"
+            sha256sum "${name}/model.safetensors"
+            sha256sum "${name}/tokenizer.json"
+          done
+
+      - name: Create model release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.inputs.tag }}
+          name: "Embedding Models ${{ github.event.inputs.tag }}"
+          body: |
+            Distilled embedding models for prx.
+
+            | Tier | Model | Size | Command |
+            |---|---|---|---|
+            | standard | CodeSage-M2V-256 | ~8 MB | `prx index --model standard` |
+            | large | Jina-Code-M2V-512 | ~30 MB | `prx index --model large` |
+          files: models/*.tar.gz

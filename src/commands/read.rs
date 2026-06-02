@@ -8,7 +8,7 @@ use crate::output::{AgError, to_json};
 use crate::parsing::{self, outline, snap, strip};
 use crate::tokens;
 
-#[derive(Args)]
+#[derive(Args, Default)]
 pub struct ReadArgs {
     /// File path
     pub file: String,
@@ -279,20 +279,9 @@ fn apply_read_mode(
 }
 
 fn diff_against_git(current: &str, file_path: &str) -> Result<String, AgError> {
-    let parent = std::path::Path::new(file_path)
-        .parent()
-        .unwrap_or(std::path::Path::new("."));
-
-    let git_content = std::process::Command::new("git")
-        .args(["show", &format!("HEAD:{}", git_relative_path(file_path))])
-        .current_dir(parent)
-        .output();
-
-    let old = match git_content {
-        Ok(output) if output.status.success() => {
-            String::from_utf8_lossy(&output.stdout).to_string()
-        }
-        _ => return Ok(current.to_string()),
+    let old = match crate::git::show_file(&git_relative_path(file_path), "HEAD") {
+        Some(content) => content,
+        None => return Ok(current.to_string()),
     };
 
     if old == current {
@@ -446,12 +435,13 @@ fn truncate_to_budget(text: &str, budget: usize) -> String {
 fn symbols_to_entries(symbols: &[outline::Symbol]) -> Vec<SymbolEntry> {
     symbols
         .iter()
-        .map(|s| SymbolEntry {
-            name: s.name.clone(),
-            kind: s.kind.to_string(),
-            lines: (s.start_line, s.end_line),
-            signature: s.signature.clone(),
-            children: symbols_to_entries(&s.children),
+        .flat_map(|s| s.flatten())
+        .map(|f| SymbolEntry {
+            name: f.name,
+            kind: f.kind,
+            lines: (f.start_line, f.end_line),
+            signature: f.signature,
+            children: Vec::new(),
         })
         .collect()
 }
@@ -475,14 +465,7 @@ mod tests {
     fn read_args(file: &str) -> ReadArgs {
         ReadArgs {
             file: file.to_string(),
-            lines: None,
-            snap: None,
-            skeleton: false,
-            outline: false,
-            hash: false,
-            budget: None,
-            if_changed: None,
-            mode: None,
+            ..Default::default()
         }
     }
 

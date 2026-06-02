@@ -116,20 +116,14 @@ fn outline_directory(root: &Path, args: &OutlineArgs) -> Result<serde_json::Valu
 fn symbols_to_entries(symbols: &[outline::Symbol], kind_filter: Option<&str>) -> Vec<SymbolEntry> {
     symbols
         .iter()
-        .filter_map(|s| {
-            let kind_str = s.kind.to_string();
-            if let Some(filter) = kind_filter {
-                if kind_str != filter {
-                    return None;
-                }
-            }
-            Some(SymbolEntry {
-                name: s.name.clone(),
-                kind: kind_str,
-                lines: (s.start_line, s.end_line),
-                signature: s.signature.clone(),
-                children: symbols_to_entries(&s.children, kind_filter),
-            })
+        .flat_map(|s| s.flatten())
+        .filter(|f| kind_filter.is_none_or(|k| f.kind == k))
+        .map(|f| SymbolEntry {
+            name: f.name,
+            kind: f.kind,
+            lines: (f.start_line, f.end_line),
+            signature: f.signature,
+            children: Vec::new(),
         })
         .collect()
 }

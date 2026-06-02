@@ -1,199 +1,612 @@
 {
   "repo": "microsoft/vscode",
   "sha": "183159e2b33b",
-  "root": null,
+  "root": "benchmarks/checkouts/vscode",
   "queries": [
     {
       "query": "TextModel",
       "category": "symbol",
       "relevant": [
-        {"file": "src/vs/editor/common/model/textModel.ts", "relevance": 3}
+        {
+          "file": "src/vs/editor/common/model/textModel.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "ICommandService",
       "category": "symbol",
       "relevant": [
-        {"file": "src/vs/platform/commands/common/commands.ts", "relevance": 3}
+        {
+          "file": "src/vs/platform/commands/common/commands.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "EditorGroupModel",
       "category": "symbol",
       "relevant": [
-        {"file": "src/vs/workbench/common/editor/editorGroupModel.ts", "relevance": 3}
+        {
+          "file": "src/vs/workbench/common/editor/editorGroupModel.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "ConfigurationRegistry",
       "category": "symbol",
       "relevant": [
-        {"file": "src/vs/platform/configuration/common/configurationRegistry.ts", "relevance": 3}
+        {
+          "file": "src/vs/platform/configuration/common/configurationRegistry.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "ExtensionService",
       "category": "symbol",
       "relevant": [
-        {"file": "src/vs/workbench/services/extensions/common/abstractExtensionService.ts", "relevance": 3},
-        {"file": "src/vs/workbench/services/extensions/common/extensionsRegistry.ts", "relevance": 2}
+        {
+          "file": "src/vs/workbench/services/extensions/common/abstractExtensionService.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/services/extensions/common/extensionsRegistry.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "Event",
       "category": "symbol",
       "relevant": [
-        {"file": "src/vs/base/common/event.ts", "relevance": 3}
+        {
+          "file": "src/vs/base/common/event.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does vscode handle text model editing and undo",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/common/model/textModel.ts", "relevance": 3},
-        {"file": "src/vs/editor/common/commands/replaceCommand.ts", "relevance": 1}
+        {
+          "file": "src/vs/editor/common/model/textModel.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/common/commands/replaceCommand.ts",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does vscode manage editor tabs and groups",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/workbench/common/editor/editorGroupModel.ts", "relevance": 3},
-        {"file": "src/vs/workbench/common/editor/editorInput.ts", "relevance": 2}
+        {
+          "file": "src/vs/workbench/common/editor/editorGroupModel.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/common/editor/editorInput.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode load and activate extensions",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/workbench/services/extensions/common/abstractExtensionService.ts", "relevance": 3},
-        {"file": "src/vs/platform/extensions/common/extensions.ts", "relevance": 2},
-        {"file": "src/vs/platform/extensions/common/extensionValidator.ts", "relevance": 1}
+        {
+          "file": "src/vs/workbench/services/extensions/common/abstractExtensionService.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/extensions/common/extensions.ts",
+          "relevance": 2
+        },
+        {
+          "file": "src/vs/platform/extensions/common/extensionValidator.ts",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does vscode handle configuration settings",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/platform/configuration/common/configurationModels.ts", "relevance": 3},
-        {"file": "src/vs/platform/configuration/common/configurationRegistry.ts", "relevance": 2},
-        {"file": "src/vs/platform/configuration/common/configuration.ts", "relevance": 1}
+        {
+          "file": "src/vs/platform/configuration/common/configurationModels.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/configuration/common/configurationRegistry.ts",
+          "relevance": 2
+        },
+        {
+          "file": "src/vs/platform/configuration/common/configuration.ts",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does vscode implement the command palette",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/platform/commands/common/commands.ts", "relevance": 3}
+        {
+          "file": "src/vs/platform/commands/common/commands.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does vscode handle keyboard shortcuts and keybindings",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/platform/keybinding/common/keybindingResolver.ts", "relevance": 3},
-        {"file": "src/vs/platform/keybinding/common/keybinding.ts", "relevance": 2}
+        {
+          "file": "src/vs/platform/keybinding/common/keybindingResolver.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/keybinding/common/keybinding.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode communicate between extension host and main process",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/workbench/services/extensions/common/rpcProtocol.ts", "relevance": 3},
-        {"file": "src/vs/workbench/services/extensions/common/abstractExtensionService.ts", "relevance": 1}
+        {
+          "file": "src/vs/workbench/services/extensions/common/rpcProtocol.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/services/extensions/common/abstractExtensionService.ts",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does vscode implement code folding",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/folding/browser/folding.ts", "relevance": 3},
-        {"file": "src/vs/editor/contrib/folding/browser/foldingModel.ts", "relevance": 2}
+        {
+          "file": "src/vs/editor/contrib/folding/browser/folding.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/contrib/folding/browser/foldingModel.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode implement autocomplete and suggestions",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/suggest/browser/suggestModel.ts", "relevance": 3},
-        {"file": "src/vs/editor/contrib/suggest/browser/suggestWidget.ts", "relevance": 2}
+        {
+          "file": "src/vs/editor/contrib/suggest/browser/suggestModel.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/contrib/suggest/browser/suggestWidget.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode handle file system operations",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/platform/files/common/fileService.ts", "relevance": 3},
-        {"file": "src/vs/platform/files/common/files.ts", "relevance": 2}
+        {
+          "file": "src/vs/platform/files/common/fileService.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/files/common/files.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode render syntax highlighting and tokenization",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/common/tokens/tokenizationRegistry.ts", "relevance": 3},
-        {"file": "src/vs/editor/common/languages/language.ts", "relevance": 2}
+        {
+          "file": "src/vs/editor/common/tokens/tokenizationRegistry.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/common/languages/language.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode implement the event system and disposables",
       "category": "architecture",
       "relevant": [
-        {"file": "src/vs/base/common/event.ts", "relevance": 3},
-        {"file": "src/vs/base/common/lifecycle.ts", "relevance": 3}
+        {
+          "file": "src/vs/base/common/event.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/base/common/lifecycle.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "what is the dependency injection architecture in vscode",
       "category": "architecture",
       "relevant": [
-        {"file": "src/vs/platform/instantiation/common/instantiation.ts", "relevance": 3},
-        {"file": "src/vs/platform/instantiation/common/instantiationService.ts", "relevance": 3}
+        {
+          "file": "src/vs/platform/instantiation/common/instantiation.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/instantiation/common/instantiationService.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does vscode handle async operations and cancellation",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/base/common/async.ts", "relevance": 3},
-        {"file": "src/vs/base/common/cancellation.ts", "relevance": 2}
+        {
+          "file": "src/vs/base/common/async.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/base/common/cancellation.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode implement find and replace in the editor",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/find/browser/findController.ts", "relevance": 3},
-        {"file": "src/vs/editor/contrib/find/browser/findModel.ts", "relevance": 2}
+        {
+          "file": "src/vs/editor/contrib/find/browser/findController.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/contrib/find/browser/findModel.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode handle inline completions and ghost text",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/inlineCompletions/browser/model/inlineCompletionsModel.ts", "relevance": 3}
+        {
+          "file": "src/vs/editor/contrib/inlineCompletions/browser/model/inlineCompletionsModel.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does vscode implement hover information",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/hover/browser/contentHoverController.ts", "relevance": 3}
+        {
+          "file": "src/vs/editor/contrib/hover/browser/contentHoverController.ts",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does vscode implement code actions and quick fixes",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/codeAction/browser/codeAction.ts", "relevance": 3},
-        {"file": "src/vs/editor/contrib/codeAction/browser/codeActionModel.ts", "relevance": 2}
+        {
+          "file": "src/vs/editor/contrib/codeAction/browser/codeAction.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/contrib/codeAction/browser/codeActionModel.ts",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does vscode implement rename symbol",
       "category": "semantic",
       "relevant": [
-        {"file": "src/vs/editor/contrib/rename/browser/rename.ts", "relevance": 3}
+        {
+          "file": "src/vs/editor/contrib/rename/browser/rename.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "ITextModel",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/vs/editor/common/model.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/common/model/textModel.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "WorkbenchLayout",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/browser/layout.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "IFileService",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/vs/platform/files/common/files.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/files/common/fileService.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "QuickInputService",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/vs/platform/quickinput/common/quickInput.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/quickinput/browser/quickInputService.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "NotebookEditor",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/contrib/notebook/browser/notebookEditor.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/contrib/notebook/common/notebookCommon.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement the terminal",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/contrib/terminal/browser/terminal.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/contrib/terminal/browser/terminalService.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does vscode handle workspace trust",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/platform/workspace/common/workspaceTrust.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/services/workspaces/common/workspaceTrust.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement source control and git",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/contrib/scm/browser/scmViewPane.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/contrib/scm/common/scm.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement debug adapter protocol",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/contrib/debug/common/debug.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/contrib/debug/browser/debugService.ts",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does vscode handle window lifecycle and state",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/platform/lifecycle/common/lifecycle.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/services/lifecycle/common/lifecycle.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement the problems panel",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/contrib/markers/browser/markersView.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/markers/common/markers.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement diff editor",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/editor/browser/widget/diffEditor/diffEditorWidget.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/common/diff/defaultLinesDiffComputer/defaultLinesDiffComputer.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode handle theme and color customization",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/services/themes/common/workbenchThemeService.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/theme/common/themeService.ts",
+          "relevance": 2
+        },
+        {
+          "file": "src/vs/platform/theme/common/colorRegistry.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement breadcrumbs navigation",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/browser/parts/editor/breadcrumbsControl.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/browser/parts/editor/breadcrumbsModel.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement multi-cursor editing",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/editor/common/cursor/cursor.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/editor/common/cursorCommon.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of vscode's workbench contributions",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/common/contributions.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/instantiation/common/instantiation.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement tree view and data providers",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "src/vs/base/browser/ui/tree/abstractTree.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/base/browser/ui/tree/dataTree.ts",
+          "relevance": 2
+        },
+        {
+          "file": "src/vs/base/browser/ui/tree/tree.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement the output channel",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/services/output/common/output.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/contrib/output/browser/outputView.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode handle file watching and change detection",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/platform/files/node/watcher/watcherService.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/platform/files/common/watcher.ts",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does vscode implement search across files",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/vs/workbench/services/search/common/search.ts",
+          "relevance": 3
+        },
+        {
+          "file": "src/vs/workbench/contrib/search/browser/searchView.ts",
+          "relevance": 2
+        }
       ]
     }
   ]

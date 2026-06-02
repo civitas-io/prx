@@ -1,216 +1,656 @@
 {
   "repo": "pallets/flask",
   "sha": "954f5684e484",
-  "root": null,
+  "root": "benchmarks/checkouts/flask",
   "queries": [
     {
       "query": "Flask",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/app.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 2},
-        {"file": "src/flask/__init__.py", "relevance": 1}
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/__init__.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "Blueprint",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/blueprints.py", "relevance": 3},
-        {"file": "src/flask/sansio/blueprints.py", "relevance": 3},
-        {"file": "src/flask/sansio/scaffold.py", "relevance": 1}
+        {
+          "file": "src/flask/blueprints.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "SecureCookieSession",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/sessions.py", "relevance": 3}
+        {
+          "file": "src/flask/sessions.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "FlaskClient",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/testing.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 1}
+        {
+          "file": "src/flask/testing.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "Config",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/config.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 1}
+        {
+          "file": "src/flask/config.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "MethodView",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/views.py", "relevance": 3}
+        {
+          "file": "src/flask/views.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Flask route HTTP requests to view functions",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/sansio/app.py", "relevance": 3},
-        {"file": "src/flask/sansio/scaffold.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 2}
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how are sessions stored and loaded in Flask",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/sessions.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 1}
+        {
+          "file": "src/flask/sessions.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask render Jinja2 templates",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/templating.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 1}
+        {
+          "file": "src/flask/templating.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask handle exceptions and HTTP errors",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/app.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 2},
-        {"file": "src/flask/debughelpers.py", "relevance": 1}
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/debughelpers.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask load configuration from files and environment",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/config.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 1}
+        {
+          "file": "src/flask/config.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does the Flask request context work",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/ctx.py", "relevance": 3},
-        {"file": "src/flask/globals.py", "relevance": 2},
-        {"file": "src/flask/app.py", "relevance": 1}
+        {
+          "file": "src/flask/ctx.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/globals.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask handle static files and send_file",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/helpers.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 2},
-        {"file": "src/flask/sansio/scaffold.py", "relevance": 1}
+        {
+          "file": "src/flask/helpers.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask's test client simulate requests",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/testing.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 1}
+        {
+          "file": "src/flask/testing.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask register blueprints and merge routes",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/sansio/blueprints.py", "relevance": 3},
-        {"file": "src/flask/blueprints.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 2}
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/blueprints.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Flask serialize JSON responses",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/json/provider.py", "relevance": 3},
-        {"file": "src/flask/json/__init__.py", "relevance": 2},
-        {"file": "src/flask/json/tag.py", "relevance": 1}
+        {
+          "file": "src/flask/json/provider.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/json/__init__.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/json/tag.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what happens during Flask app startup and initialization",
       "category": "architecture",
       "relevant": [
-        {"file": "src/flask/app.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 3},
-        {"file": "src/flask/cli.py", "relevance": 1}
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/cli.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what is the request-response lifecycle in Flask",
       "category": "architecture",
       "relevant": [
-        {"file": "src/flask/app.py", "relevance": 3},
-        {"file": "src/flask/ctx.py", "relevance": 2},
-        {"file": "src/flask/wrappers.py", "relevance": 1}
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/wrappers.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what is the relationship between Flask and its sansio layer",
       "category": "architecture",
       "relevant": [
-        {"file": "src/flask/sansio/app.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 3},
-        {"file": "src/flask/sansio/scaffold.py", "relevance": 2}
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Flask's CLI work with click",
       "category": "architecture",
       "relevant": [
-        {"file": "src/flask/cli.py", "relevance": 3},
-        {"file": "src/flask/app.py", "relevance": 1}
+        {
+          "file": "src/flask/cli.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask implement the flash message system",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/helpers.py", "relevance": 3},
-        {"file": "src/flask/sessions.py", "relevance": 1}
+        {
+          "file": "src/flask/helpers.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sessions.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "url_for",
       "category": "symbol",
       "relevant": [
-        {"file": "src/flask/helpers.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 2},
-        {"file": "src/flask/app.py", "relevance": 1}
+        {
+          "file": "src/flask/helpers.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask handle signals and event hooks",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/signals.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 1}
+        {
+          "file": "src/flask/signals.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask's logging work",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/logging.py", "relevance": 3},
-        {"file": "src/flask/sansio/app.py", "relevance": 1}
+        {
+          "file": "src/flask/logging.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Flask implement class-based views",
       "category": "semantic",
       "relevant": [
-        {"file": "src/flask/views.py", "relevance": 3},
-        {"file": "src/flask/sansio/scaffold.py", "relevance": 1}
+        {
+          "file": "src/flask/views.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "JSONProvider",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/flask/json/provider.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "Scaffold",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "AppContext",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/flask/ctx.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/globals.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "FlaskGroup",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "src/flask/cli.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Flask discover the app instance for CLI commands from FLASK_APP",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/cli.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Flask support async coroutine view functions",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Flask invoke before_request and after_request hooks during dispatch",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Flask run teardown functions at the end of a request and context",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Flask resolve which error handler to call for a raised exception",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Flask convert view return values into HTTP Response objects",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how is Flask invoked as a WSGI application callable",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/app.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Flask limit request body size and parse multipart form data",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/wrappers.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Flask serialize Python types like bytes and datetime inside session cookies",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/json/tag.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sessions.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Flask register custom Jinja template filters tests and globals",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Flask stream responses incrementally while preserving the request context",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/helpers.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/templating.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Flask load .env files when starting the development server",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/cli.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/helpers.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Flask prevent route registration after the first request is handled",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "what is the Scaffold base class and how do App and Blueprint inherit from it",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "src/flask/sansio/scaffold.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/sansio/app.py",
+          "relevance": 2
+        },
+        {
+          "file": "src/flask/sansio/blueprints.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Flask expose request session g and current_app as thread-local proxies",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "src/flask/globals.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/ctx.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "what types and protocols does Flask define for view callables and HTTP responses",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "src/flask/typing.py",
+          "relevance": 3
+        },
+        {
+          "file": "src/flask/wrappers.py",
+          "relevance": 1
+        }
       ]
     }
   ]

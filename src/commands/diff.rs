@@ -253,16 +253,7 @@ fn get_git_diff(args: &DiffArgs) -> Result<Vec<FileDiff>, AgError> {
 }
 
 fn get_git_file_content(path: &str, git_ref: &str) -> Option<String> {
-    let output = std::process::Command::new("git")
-        .args(["show", &format!("{git_ref}:{path}")])
-        .output()
-        .ok()?;
-
-    if output.status.success() {
-        Some(String::from_utf8_lossy(&output.stdout).to_string())
-    } else {
-        None
-    }
+    crate::git::show_file(path, git_ref)
 }
 
 fn find_changed_functions(old: &str, new: &str, ext: &str) -> Vec<String> {

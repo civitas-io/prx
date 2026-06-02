@@ -55,7 +55,7 @@ pub fn parse(output: &str) -> ParsedResult {
         _ if passed + failed + skipped > 0 => {
             format!("{passed} passed, {failed} failed, {skipped} skipped")
         }
-        _ => format!("{} error(s), {} warning(s)", failures.len(), warnings.len()),
+        _ => ParsedResult::diagnostic_summary(failures.len(), warnings.len()),
     };
 
     ParsedResult {

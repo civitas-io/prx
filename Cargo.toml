@@ -78,6 +78,9 @@ postcard = { version = "1", features = ["alloc"] }
 # f16 support for loading float16 model weights
 half = "2"
 
+# SHA-256 verification of downloaded model tier archives (also a build-dep for embedded model)
+sha2 = "0.10"
+
 # Continuation token encoding for paginated search
 base64 = "0.22"
 

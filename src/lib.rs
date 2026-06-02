@@ -5,6 +5,7 @@ pub mod fallback;
 pub mod git;
 pub mod hash;
 pub mod index;
+pub mod models;
 pub mod output;
 pub mod parsing;
 pub mod ranking;

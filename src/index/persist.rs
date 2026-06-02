@@ -179,8 +179,15 @@ fn load_existing_index(root: &Path) -> Option<(IndexMeta, Vec<SerializedChunk>)>
     Some((meta, chunks))
 }
 
-pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
+pub fn build_and_save(root: &Path, model_name: &str) -> Result<IndexStats, AgError> {
     let entries = walk::walk(root, &WalkOpts::default());
+    let file_count = entries.len();
+
+    if file_count > 3000 && model_name == "builtin" {
+        eprintln!(
+            "Hint: For better semantic search on large repos, try: prx index --model standard"
+        );
+    }
 
     let existing = load_existing_index(root);
 
@@ -284,7 +291,7 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
 
     let mut warnings: Vec<String> = Vec::new();
     let (embeddings_dim, emb_warning) =
-        compute_and_save_embeddings(&enriched_texts, &root.join(INDEX_DIR));
+        compute_and_save_embeddings(&enriched_texts, &root.join(INDEX_DIR), model_name)?;
     if let Some(w) = emb_warning {
         warnings.push(w);
     }
@@ -359,15 +366,29 @@ pub fn build_and_save(root: &Path) -> Result<IndexStats, AgError> {
 fn compute_and_save_embeddings(
     enriched_texts: &[String],
     index_dir: &Path,
-) -> (usize, Option<String>) {
-    let Some(model) = crate::index::dense::load_model() else {
-        return (
+    model_name: &str,
+) -> Result<(usize, Option<String>), AgError> {
+    let model = if model_name == "builtin" {
+        crate::index::dense::load_model()
+    } else {
+        let tier = crate::models::get_tier(model_name).ok_or_else(|| AgError::InvalidArgument {
+            flag: "--model".to_string(),
+            message: format!("unknown tier `{model_name}`. Use: builtin, standard, large"),
+        })?;
+        let dir = crate::models::ensure_model(tier).map_err(|e| AgError::Internal {
+            message: format!("failed to fetch model tier `{model_name}`: {e}"),
+        })?;
+        crate::index::dense::load_model_from_path(&dir)
+    };
+
+    let Some(model) = model else {
+        return Ok((
             0,
             Some(
                 "embedding model failed to load; search will use BM25 only (no semantic search)"
                     .to_string(),
             ),
-        );
+        ));
     };
 
     let dim = model.dim();
@@ -424,7 +445,7 @@ fn compute_and_save_embeddings(
         );
     }
 
-    (dim, None)
+    Ok((dim, None))
 }
 
 fn load_embedding_cache(
@@ -619,7 +640,7 @@ mod tests {
     #[test]
     fn build_and_load_roundtrip() {
         let dir = make_test_dir();
-        let stats = build_and_save(dir.path()).unwrap();
+        let stats = build_and_save(dir.path(), "builtin").unwrap();
         assert!(stats.files >= 2);
         assert!(stats.chunks >= 2);
 
@@ -633,14 +654,14 @@ mod tests {
     #[test]
     fn is_valid_after_build() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
         assert!(is_valid(dir.path()));
     }
 
     #[test]
     fn is_invalid_after_file_change() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         std::fs::write(dir.path().join("main.rs"), "fn main() { changed() }").unwrap();
         assert!(!is_valid(dir.path()));
@@ -655,7 +676,7 @@ mod tests {
     #[test]
     fn stats_has_languages() {
         let dir = make_test_dir();
-        let stats = build_and_save(dir.path()).unwrap();
+        let stats = build_and_save(dir.path(), "builtin").unwrap();
         assert!(stats.languages.contains_key("rust"));
         assert!(stats.languages.contains_key("python"));
     }
@@ -663,11 +684,11 @@ mod tests {
     #[test]
     fn incremental_skips_unchanged_files() {
         let dir = make_test_dir();
-        let stats1 = build_and_save(dir.path()).unwrap();
+        let stats1 = build_and_save(dir.path(), "builtin").unwrap();
         assert!(stats1.files_changed >= 2);
         assert_eq!(stats1.files_unchanged, 0);
 
-        let stats2 = build_and_save(dir.path()).unwrap();
+        let stats2 = build_and_save(dir.path(), "builtin").unwrap();
         assert_eq!(stats2.files_unchanged, stats1.files);
         assert_eq!(stats2.files_changed, 0);
         assert_eq!(stats2.chunks, stats1.chunks);
@@ -676,7 +697,7 @@ mod tests {
     #[test]
     fn incremental_rechunks_changed_file() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         std::fs::write(
             dir.path().join("main.rs"),
@@ -684,7 +705,7 @@ mod tests {
         )
         .unwrap();
 
-        let stats = build_and_save(dir.path()).unwrap();
+        let stats = build_and_save(dir.path(), "builtin").unwrap();
         assert_eq!(stats.files_changed, 1);
         assert_eq!(stats.files_unchanged, 1);
     }
@@ -692,11 +713,11 @@ mod tests {
     #[test]
     fn incremental_handles_new_file() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         std::fs::write(dir.path().join("new.rs"), "fn new_fn() {}\n").unwrap();
 
-        let stats = build_and_save(dir.path()).unwrap();
+        let stats = build_and_save(dir.path(), "builtin").unwrap();
         assert_eq!(stats.files_changed, 1);
         assert_eq!(stats.files_unchanged, 2);
         assert_eq!(stats.files, 3);
@@ -705,11 +726,11 @@ mod tests {
     #[test]
     fn incremental_handles_deleted_file() {
         let dir = make_test_dir();
-        let stats1 = build_and_save(dir.path()).unwrap();
+        let stats1 = build_and_save(dir.path(), "builtin").unwrap();
 
         std::fs::remove_file(dir.path().join("lib.py")).unwrap();
 
-        let stats2 = build_and_save(dir.path()).unwrap();
+        let stats2 = build_and_save(dir.path(), "builtin").unwrap();
         assert_eq!(stats2.files, stats1.files - 1);
         assert!(stats2.chunks < stats1.chunks);
     }
@@ -717,7 +738,7 @@ mod tests {
     #[test]
     fn incremental_search_works_after_update() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         std::fs::write(
             dir.path().join("main.rs"),
@@ -725,7 +746,7 @@ mod tests {
         )
         .unwrap();
 
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
         let (chunks, bm25) = load(dir.path()).unwrap();
 
         let has_new_content = chunks
@@ -740,7 +761,7 @@ mod tests {
     #[test]
     fn is_invalid_after_new_file_added() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
         assert!(is_valid(dir.path()));
 
         std::fs::write(dir.path().join("new.rs"), "fn new_fn() {}\n").unwrap();
@@ -750,7 +771,7 @@ mod tests {
     #[test]
     fn is_invalid_after_file_deleted() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
         assert!(is_valid(dir.path()));
 
         std::fs::remove_file(dir.path().join("lib.py")).unwrap();
@@ -760,7 +781,7 @@ mod tests {
     #[test]
     fn is_invalid_after_file_swapped() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
         assert!(is_valid(dir.path()));
 
         std::fs::remove_file(dir.path().join("lib.py")).unwrap();
@@ -771,7 +792,7 @@ mod tests {
     #[test]
     fn incremental_embeddings_reuse_cache() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         let index_dir = dir.path().join(".prx").join("index");
         let hashes_before: Vec<String> =
@@ -782,7 +803,7 @@ mod tests {
         assert!(!hashes_before.is_empty());
         assert!(!emb_before.is_empty());
 
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         let hashes_after: Vec<String> =
             postcard::from_bytes(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())
@@ -796,7 +817,7 @@ mod tests {
     #[test]
     fn incremental_embeddings_update_on_change() {
         let dir = make_test_dir();
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         let index_dir = dir.path().join(".prx").join("index");
         let hashes_before: Vec<String> =
@@ -809,7 +830,7 @@ mod tests {
         )
         .unwrap();
 
-        build_and_save(dir.path()).unwrap();
+        build_and_save(dir.path(), "builtin").unwrap();
 
         let hashes_after: Vec<String> =
             postcard::from_bytes(&std::fs::read(index_dir.join("embedding_hashes.bin")).unwrap())

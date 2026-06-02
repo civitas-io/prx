@@ -8,6 +8,7 @@ mod fallback;
 mod git;
 mod hash;
 mod index;
+mod models;
 mod output;
 mod parsing;
 mod ranking;

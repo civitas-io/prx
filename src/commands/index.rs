@@ -23,6 +23,10 @@ pub struct IndexArgs {
     /// Print index statistics
     #[arg(long)]
     pub stats: bool,
+
+    /// Embedding model tier: builtin (default), standard, large
+    #[arg(long, default_value = "builtin")]
+    pub model: String,
 }
 
 #[derive(Serialize)]
@@ -60,7 +64,7 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
 
     #[cfg(feature = "watch")]
     if args.watch {
-        return watch_and_reindex(root, &args.path);
+        return watch_and_reindex(root, &args.path, &args.model);
     }
 
     #[cfg(not(feature = "watch"))]
@@ -79,7 +83,7 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
     }
 
     let start = std::time::Instant::now();
-    let stats = persist::build_and_save(root)?;
+    let stats = persist::build_and_save(root, &args.model)?;
     let duration_ms = start.elapsed().as_millis() as u64;
 
     let output = IndexOutput {
@@ -98,12 +102,16 @@ pub fn run(args: IndexArgs) -> Result<serde_json::Value, AgError> {
 }
 
 #[cfg(feature = "watch")]
-fn watch_and_reindex(root: &Path, _path_str: &str) -> Result<serde_json::Value, AgError> {
+fn watch_and_reindex(
+    root: &Path,
+    _path_str: &str,
+    model_name: &str,
+) -> Result<serde_json::Value, AgError> {
     use notify::{RecursiveMode, Watcher};
     use std::sync::mpsc;
 
     let start = std::time::Instant::now();
-    let stats = persist::build_and_save(root)?;
+    let stats = persist::build_and_save(root, model_name)?;
     eprintln!(
         "indexed {} files ({} chunks) in {}ms, watching for changes...",
         stats.files,
@@ -134,7 +142,7 @@ fn watch_and_reindex(root: &Path, _path_str: &str) -> Result<serde_json::Value, 
         while rx.try_recv().is_ok() {}
 
         let reindex_start = std::time::Instant::now();
-        match persist::build_and_save(root) {
+        match persist::build_and_save(root, model_name) {
             Ok(s) => {
                 eprintln!(
                     "re-indexed {} files ({} chunks) in {}ms",
@@ -157,18 +165,22 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
 
+    fn test_args(dir: &TempDir, rebuild: bool, stats: bool) -> IndexArgs {
+        IndexArgs {
+            path: dir.path().to_string_lossy().to_string(),
+            watch: false,
+            rebuild,
+            stats,
+            model: "builtin".to_string(),
+        }
+    }
+
     #[test]
     fn build_index() {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("test.rs"), "fn main() {}").unwrap();
 
-        let args = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: false,
-            stats: false,
-        };
-        let result = run(args).unwrap();
+        let result = run(test_args(&dir, false, false)).unwrap();
         assert!(result["files_indexed"].as_u64().unwrap() >= 1);
         assert!(result["valid"].as_bool().unwrap());
     }
@@ -178,21 +190,9 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("test.rs"), "fn main() {}").unwrap();
 
-        let args1 = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: false,
-            stats: false,
-        };
-        run(args1).unwrap();
+        run(test_args(&dir, false, false)).unwrap();
 
-        let args2 = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: false,
-            stats: false,
-        };
-        let result = run(args2).unwrap();
+        let result = run(test_args(&dir, false, false)).unwrap();
         assert_eq!(result["status"], "up_to_date");
     }
 
@@ -201,21 +201,9 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("test.rs"), "fn main() {}").unwrap();
 
-        let args1 = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: false,
-            stats: false,
-        };
-        run(args1).unwrap();
+        run(test_args(&dir, false, false)).unwrap();
 
-        let args2 = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: true,
-            stats: false,
-        };
-        let result = run(args2).unwrap();
+        let result = run(test_args(&dir, true, false)).unwrap();
         assert!(result["files_indexed"].as_u64().unwrap() >= 1);
     }
 
@@ -224,21 +212,9 @@ mod tests {
         let dir = TempDir::new().unwrap();
         std::fs::write(dir.path().join("test.rs"), "fn main() {}").unwrap();
 
-        let build_args = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: false,
-            stats: false,
-        };
-        run(build_args).unwrap();
+        run(test_args(&dir, false, false)).unwrap();
 
-        let stats_args = IndexArgs {
-            path: dir.path().to_string_lossy().to_string(),
-            watch: false,
-            rebuild: false,
-            stats: true,
-        };
-        let result = run(stats_args).unwrap();
+        let result = run(test_args(&dir, false, true)).unwrap();
         assert!(result["valid"].as_bool().unwrap());
         assert!(result["index_exists"].as_bool().unwrap());
     }

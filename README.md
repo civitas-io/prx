@@ -73,16 +73,18 @@ Ranked results, metadata included, under a token budget you control. The agent g
 
 ## Token savings
 
-Estimated savings based on typical grep+cat output sizes. Run `prx bench .` on your own repo for measured numbers.
+Measured via `prx bench .` on real repositories. Your mileage varies by codebase size and query type.
 
-| Feature | Scenario | Savings |
-|---|---|---|
-| `read --if-changed` (cache hit) | Re-reading an unchanged file | ~99% |
-| `read --mode diff` | File with local changes | 98–99% |
-| `read --skeleton` | Full file reduced to signatures | ~90% |
-| `run` | Passing test suites | 95–99% |
-| `read --mode entropy` | Generated / highly repetitive code | ~86% |
-| `search` | vs grep + follow-up reads | ~35% |
+| Feature | Scenario | Savings | Source |
+|---|---|---|---|
+| `read --if-changed` (cache hit) | Re-reading an unchanged file | ~99% | 48-byte stub vs full file |
+| `run` | Passing test suites (cargo test, pytest) | 95–99% | `prx run` parsed output vs raw |
+| `find` | File listing vs `find -type f` | ~92% | `prx bench .` measured |
+| `read --skeleton` | Signatures only vs full file | 60–90% | `prx bench .` measured (varies by file size) |
+| `search --top-k` | Top-5 results vs `grep -rn` | ~86% | `prx bench .` measured |
+| `search` (literal) | Ranked results vs `grep -rn` | ~46% | `prx bench .` measured |
+| `read --mode diff` | Changed lines vs full file | 80–97% | Measured on modified files |
+| `read --mode entropy` | Repetitive code filtered | 5–87% | Measured on generated structs |
 
 <p align="center">
   <img src="docs/assets/token-savings.svg" alt="Token savings per command" width="720"/>

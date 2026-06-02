@@ -5,6 +5,7 @@ use clap::Args;
 use serde::Serialize;
 
 use crate::output::{AgError, to_json};
+use crate::walk;
 
 #[derive(Args)]
 pub struct BenchArgs {
@@ -52,74 +53,80 @@ struct Task {
 }
 
 fn tasks(root: &str) -> Vec<Task> {
-    let r = root.to_string();
+    let src = format!("{root}/src");
+    let src_dir = if std::path::Path::new(&src).is_dir() {
+        src
+    } else {
+        root.to_string()
+    };
+
+    let main_file = format!("{root}/src/main.rs");
+    let main_exists = std::path::Path::new(&main_file).exists();
+    let read_file = if main_exists {
+        main_file
+    } else {
+        walk::walk(std::path::Path::new(root), &walk::WalkOpts::default())
+            .into_iter()
+            .next()
+            .map(|e| e.path.to_string_lossy().to_string())
+            .unwrap_or_else(|| format!("{root}/README.md"))
+    };
+
     vec![
         Task {
-            name: "literal_search",
+            name: "search_literal",
             query: "fn main",
             prx_args: vec![
                 "search".into(),
                 "--literal".into(),
                 "fn main".into(),
-                r.clone(),
+                src_dir.clone(),
             ],
-            baseline_cmd: vec!["grep".into(), "-rn".into(), "fn main".into(), r.clone()],
-        },
-        Task {
-            name: "semantic_search",
-            query: "hash content bytes",
-            prx_args: vec![
-                "search".into(),
-                "hash content bytes".into(),
-                r.clone(),
-                "--top-k".into(),
-                "5".into(),
+            baseline_cmd: vec![
+                "grep".into(),
+                "-rn".into(),
+                "fn main".into(),
+                src_dir.clone(),
             ],
-            baseline_cmd: vec!["grep".into(), "-rn".into(), "hash".into(), r.clone()],
         },
         Task {
-            name: "read_skeleton",
-            query: "main.rs skeleton",
-            prx_args: vec![
-                "read".into(),
-                format!("{r}/src/main.rs"),
-                "--skeleton".into(),
-            ],
-            baseline_cmd: vec!["cat".into(), format!("{r}/src/main.rs")],
-        },
-        Task {
-            name: "read_full_file",
-            query: "search.rs",
-            prx_args: vec!["read".into(), format!("{r}/src/commands/search.rs")],
-            baseline_cmd: vec!["cat".into(), format!("{r}/src/commands/search.rs")],
-        },
-        Task {
-            name: "find_rust_files",
-            query: "*.rs files",
-            prx_args: vec!["find".into(), r.clone(), "--pattern".into(), "*.rs".into()],
-            baseline_cmd: vec!["find".into(), r.clone(), "-name".into(), "*.rs".into()],
-        },
-        Task {
-            name: "semantic_search",
-            query: "hash content bytes",
+            name: "search_top_k",
+            query: "hash",
             prx_args: vec![
                 "search".into(),
                 "--literal".into(),
                 "hash".into(),
-                r.clone(),
+                src_dir.clone(),
                 "--top-k".into(),
                 "5".into(),
             ],
-            baseline_cmd: vec!["grep".into(), "-rn".into(), "hash".into(), r.clone()],
+            baseline_cmd: vec!["grep".into(), "-rn".into(), "hash".into(), src_dir.clone()],
         },
         Task {
-            name: "outline_file",
-            query: "hash.rs symbols",
-            prx_args: vec!["outline".into(), format!("{r}/src/hash.rs")],
-            baseline_cmd: vec!["cat".into(), format!("{r}/src/hash.rs")],
+            name: "read_skeleton",
+            query: "skeleton",
+            prx_args: vec!["read".into(), read_file.clone(), "--skeleton".into()],
+            baseline_cmd: vec!["cat".into(), read_file.clone()],
         },
         Task {
-            name: "run_echo",
+            name: "read_full_file",
+            query: "full file",
+            prx_args: vec!["read".into(), read_file.clone()],
+            baseline_cmd: vec!["cat".into(), read_file],
+        },
+        Task {
+            name: "find_files",
+            query: "source files",
+            prx_args: vec![
+                "find".into(),
+                src_dir.clone(),
+                "--pattern".into(),
+                "*".into(),
+            ],
+            baseline_cmd: vec!["find".into(), src_dir, "-type".into(), "f".into()],
+        },
+        Task {
+            name: "run_parsed",
             query: "test output parsing",
             prx_args: vec![
                 "run".into(),
@@ -213,4 +220,55 @@ pub fn run(args: BenchArgs) -> Result<serde_json::Value, AgError> {
     };
 
     to_json(output)
+}
+
+/// Render bench output as a human-readable table.
+pub fn render_plain(data: &serde_json::Value) {
+    use std::io::Write;
+    let mut stdout = std::io::stdout().lock();
+
+    if let Some(tasks) = data.get("tasks").and_then(|t| t.as_array()) {
+        let _ = writeln!(
+            stdout,
+            "{:<20} {:>10} {:>10} {:>8}",
+            "Task", "prx (tok)", "baseline", "savings"
+        );
+        let _ = writeln!(stdout, "{}", "─".repeat(52));
+
+        for task in tasks {
+            let name = task.get("name").and_then(|n| n.as_str()).unwrap_or("?");
+            let prx = task.get("prx_tokens").and_then(|v| v.as_u64()).unwrap_or(0);
+            let base = task
+                .get("baseline_tokens")
+                .and_then(|v| v.as_u64())
+                .unwrap_or(0);
+            let pct = task
+                .get("savings_pct")
+                .and_then(|v| v.as_f64())
+                .unwrap_or(0.0);
+            let _ = writeln!(stdout, "{name:<20} {prx:>10} {base:>10} {pct:>7.1}%");
+        }
+
+        let _ = writeln!(stdout, "{}", "─".repeat(52));
+    }
+
+    if let Some(summary) = data.get("summary") {
+        let avg = summary
+            .get("avg_savings_pct")
+            .and_then(|v| v.as_f64())
+            .unwrap_or(0.0);
+        let total_prx = summary
+            .get("total_prx_tokens")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0);
+        let total_base = summary
+            .get("total_baseline_tokens")
+            .and_then(|v| v.as_u64())
+            .unwrap_or(0);
+        let _ = writeln!(
+            stdout,
+            "{:<20} {:>10} {:>10} {:>7.1}%",
+            "TOTAL", total_prx, total_base, avg
+        );
+    }
 }

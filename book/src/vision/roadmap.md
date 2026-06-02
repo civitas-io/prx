@@ -343,9 +343,9 @@ Full analysis: `docs/internal/SEARCH-QUALITY.md`
 | Item | Priority | Status | Description |
 |---|---|---|---|
 | `bench-ndcg --model-path` | **High** | Done | Load external Model2Vec model and re-embed chunks at bench time. |
-| Expand benchmark to 45 queries for large repos | **High** | Done | django, kafka, terraform, vscode expanded to 45 queries each. 280 total. |
+| Expand benchmark to 45 queries per repo | **High** | Done | All 8 repos at 45 queries each. 360 total. Bootstrap 95% CIs. Hard-negative support. |
 | Model evaluation scripts | **High** | Done | `scripts/distill_eval_models.py`, `scripts/run_model_eval.py`. |
-| Measured savings baselines (P1-1) | Medium | Planned | Wire `prx bench` as the source for the README savings table. |
+| Measured savings baselines (P1-1) | Medium | Done | `prx bench --plain` produces measured table. README savings sourced from real runs. |
 
 ### Codebase Simplification (remaining P2)
 

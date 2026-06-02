@@ -7,207 +7,702 @@
       "query": "QuerySet",
       "category": "symbol",
       "relevant": [
-        {"file": "django/db/models/query.py", "relevance": 3},
-        {"file": "django/db/models/manager.py", "relevance": 1}
+        {
+          "file": "django/db/models/query.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/manager.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "Model",
       "category": "symbol",
       "relevant": [
-        {"file": "django/db/models/base.py", "relevance": 3}
+        {
+          "file": "django/db/models/base.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "HttpRequest",
       "category": "symbol",
       "relevant": [
-        {"file": "django/http/request.py", "relevance": 3}
+        {
+          "file": "django/http/request.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "HttpResponse",
       "category": "symbol",
       "relevant": [
-        {"file": "django/http/response.py", "relevance": 3}
+        {
+          "file": "django/http/response.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "URLResolver",
       "category": "symbol",
       "relevant": [
-        {"file": "django/urls/resolvers.py", "relevance": 3}
+        {
+          "file": "django/urls/resolvers.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "CsrfViewMiddleware",
       "category": "symbol",
       "relevant": [
-        {"file": "django/middleware/csrf.py", "relevance": 3}
+        {
+          "file": "django/middleware/csrf.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Django resolve URLs to view functions",
       "category": "semantic",
       "relevant": [
-        {"file": "django/urls/resolvers.py", "relevance": 3},
-        {"file": "django/urls/base.py", "relevance": 2},
-        {"file": "django/urls/conf.py", "relevance": 1}
+        {
+          "file": "django/urls/resolvers.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/urls/base.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/urls/conf.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django's ORM build SQL queries",
       "category": "semantic",
       "relevant": [
-        {"file": "django/db/models/query.py", "relevance": 3},
-        {"file": "django/db/models/sql/query.py", "relevance": 3},
-        {"file": "django/db/models/sql/compiler.py", "relevance": 2}
+        {
+          "file": "django/db/models/query.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/sql/query.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/sql/compiler.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Django handle database migrations",
       "category": "semantic",
       "relevant": [
-        {"file": "django/db/migrations/executor.py", "relevance": 3},
-        {"file": "django/db/migrations/autodetector.py", "relevance": 2},
-        {"file": "django/db/migrations/state.py", "relevance": 1}
+        {
+          "file": "django/db/migrations/executor.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/migrations/autodetector.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/db/migrations/state.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django authenticate users and check passwords",
       "category": "semantic",
       "relevant": [
-        {"file": "django/contrib/auth/hashers.py", "relevance": 3},
-        {"file": "django/contrib/auth/backends.py", "relevance": 3},
-        {"file": "django/contrib/auth/models.py", "relevance": 2}
+        {
+          "file": "django/contrib/auth/hashers.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/auth/backends.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/auth/models.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Django handle CSRF protection",
       "category": "semantic",
       "relevant": [
-        {"file": "django/middleware/csrf.py", "relevance": 3},
-        {"file": "django/template/defaulttags.py", "relevance": 1}
+        {
+          "file": "django/middleware/csrf.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/template/defaulttags.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django render templates",
       "category": "semantic",
       "relevant": [
-        {"file": "django/template/base.py", "relevance": 3},
-        {"file": "django/template/loader.py", "relevance": 2},
-        {"file": "django/template/context.py", "relevance": 1}
+        {
+          "file": "django/template/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/template/loader.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/template/context.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django handle file uploads",
       "category": "semantic",
       "relevant": [
-        {"file": "django/http/multipartparser.py", "relevance": 3},
-        {"file": "django/core/files/uploadhandler.py", "relevance": 2},
-        {"file": "django/core/files/storage.py", "relevance": 1}
+        {
+          "file": "django/http/multipartparser.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/files/uploadhandler.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/core/files/storage.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django's middleware pipeline process requests",
       "category": "semantic",
       "relevant": [
-        {"file": "django/core/handlers/base.py", "relevance": 3},
-        {"file": "django/middleware/common.py", "relevance": 2},
-        {"file": "django/utils/deprecation.py", "relevance": 1}
+        {
+          "file": "django/core/handlers/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/middleware/common.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/utils/deprecation.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django manage database transactions",
       "category": "semantic",
       "relevant": [
-        {"file": "django/db/transaction.py", "relevance": 3},
-        {"file": "django/db/backends/base/base.py", "relevance": 2}
+        {
+          "file": "django/db/transaction.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/backends/base/base.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Django validate form fields",
       "category": "semantic",
       "relevant": [
-        {"file": "django/forms/fields.py", "relevance": 3},
-        {"file": "django/core/validators.py", "relevance": 3},
-        {"file": "django/forms/forms.py", "relevance": 1}
+        {
+          "file": "django/forms/fields.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/validators.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/forms/forms.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django handle sessions",
       "category": "semantic",
       "relevant": [
-        {"file": "django/contrib/sessions/backends/base.py", "relevance": 3},
-        {"file": "django/contrib/sessions/middleware.py", "relevance": 2}
+        {
+          "file": "django/contrib/sessions/backends/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/sessions/middleware.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Django send emails",
       "category": "semantic",
       "relevant": [
-        {"file": "django/core/mail/message.py", "relevance": 3},
-        {"file": "django/core/mail/backends/smtp.py", "relevance": 2}
+        {
+          "file": "django/core/mail/message.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/mail/backends/smtp.py",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does Django cache views and data",
       "category": "semantic",
       "relevant": [
-        {"file": "django/core/cache/backends/base.py", "relevance": 3},
-        {"file": "django/middleware/cache.py", "relevance": 2},
-        {"file": "django/views/decorators/cache.py", "relevance": 1}
+        {
+          "file": "django/core/cache/backends/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/middleware/cache.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/views/decorators/cache.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django implement pagination",
       "category": "semantic",
       "relevant": [
-        {"file": "django/core/paginator.py", "relevance": 3}
+        {
+          "file": "django/core/paginator.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "what is the request-response lifecycle in Django",
       "category": "architecture",
       "relevant": [
-        {"file": "django/core/handlers/base.py", "relevance": 3},
-        {"file": "django/core/handlers/wsgi.py", "relevance": 2},
-        {"file": "django/http/request.py", "relevance": 1},
-        {"file": "django/http/response.py", "relevance": 1}
+        {
+          "file": "django/core/handlers/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/handlers/wsgi.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/http/request.py",
+          "relevance": 1
+        },
+        {
+          "file": "django/http/response.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what is the architecture of Django's model layer",
       "category": "architecture",
       "relevant": [
-        {"file": "django/db/models/base.py", "relevance": 3},
-        {"file": "django/db/models/fields/__init__.py", "relevance": 2},
-        {"file": "django/db/models/options.py", "relevance": 2},
-        {"file": "django/db/models/query.py", "relevance": 1}
+        {
+          "file": "django/db/models/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/fields/__init__.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/db/models/options.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/db/models/query.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django dispatch signals",
       "category": "semantic",
       "relevant": [
-        {"file": "django/dispatch/dispatcher.py", "relevance": 3}
+        {
+          "file": "django/dispatch/dispatcher.py",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does Django handle static files",
       "category": "semantic",
       "relevant": [
-        {"file": "django/contrib/staticfiles/storage.py", "relevance": 3},
-        {"file": "django/contrib/staticfiles/finders.py", "relevance": 2},
-        {"file": "django/contrib/staticfiles/views.py", "relevance": 1}
+        {
+          "file": "django/contrib/staticfiles/storage.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/staticfiles/finders.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/contrib/staticfiles/views.py",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does Django management commands work",
       "category": "semantic",
       "relevant": [
-        {"file": "django/core/management/base.py", "relevance": 3},
-        {"file": "django/core/management/__init__.py", "relevance": 2}
+        {
+          "file": "django/core/management/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/management/__init__.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "ModelForm",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "django/forms/models.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/forms/fields.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "ForeignKey",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "django/db/models/fields/related.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/fields/__init__.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "Permission",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "django/contrib/auth/models.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/auth/backends.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "Paginator",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "django/core/paginator.py",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "BaseCommand",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "django/core/management/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/management/__init__.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django serialize querysets to JSON",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/core/serializers/json.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/serializers/base.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/core/serializers/__init__.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Django run database schema migrations",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/db/migrations/executor.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/migrations/migration.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/db/migrations/operations/models.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django handle password hashing",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/contrib/auth/hashers.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/auth/models.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django implement generic class based views",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/views/generic/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/views/generic/detail.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/views/generic/list.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/views/generic/edit.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django handle timezone aware datetimes",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/utils/timezone.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/utils/dateformat.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Django implement database connection pooling",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/db/backends/base/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/utils.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/db/__init__.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Django handle internationalization and translation",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/utils/translation/__init__.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/utils/translation/trans_real.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/middleware/locale.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django's admin site register models",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/contrib/admin/sites.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/admin/options.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/admin/__init__.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Django handle content type framework",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/contrib/contenttypes/models.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/contrib/contenttypes/fields.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django implement test client and request factory",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/test/client.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/test/utils.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django compile and optimize ORM queries",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "django/db/models/sql/compiler.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/sql/query.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/models/sql/where.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/db/models/lookups.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of Django's template engine",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "django/template/engine.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/template/base.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/template/loader.py",
+          "relevance": 2
+        },
+        {
+          "file": "django/template/context.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django's settings module loading work",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "django/conf/__init__.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/conf/global_settings.py",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Django implement model field validation",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/db/models/fields/__init__.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/validators.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/core/exceptions.py",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "how does Django handle database router and multi-db",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "django/db/utils.py",
+          "relevance": 3
+        },
+        {
+          "file": "django/db/backends/base/base.py",
+          "relevance": 2
+        }
       ]
     }
   ]

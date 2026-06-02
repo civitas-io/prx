@@ -7,204 +7,678 @@
       "query": "Context",
       "category": "symbol",
       "relevant": [
-        {"file": "internal/terraform/context.go", "relevance": 3}
+        {
+          "file": "internal/terraform/context.go",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "Plan",
       "category": "symbol",
       "relevant": [
-        {"file": "internal/plans/plan.go", "relevance": 3},
-        {"file": "internal/plans/changes.go", "relevance": 2}
+        {
+          "file": "internal/plans/plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/plans/changes.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "State",
       "category": "symbol",
       "relevant": [
-        {"file": "internal/states/state.go", "relevance": 3},
-        {"file": "internal/states/module.go", "relevance": 2}
+        {
+          "file": "internal/states/state.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/states/module.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "Config",
       "category": "symbol",
       "relevant": [
-        {"file": "internal/configs/config.go", "relevance": 3},
-        {"file": "internal/configs/module.go", "relevance": 2}
+        {
+          "file": "internal/configs/config.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/configs/module.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "Provider",
       "category": "symbol",
       "relevant": [
-        {"file": "internal/providers/provider.go", "relevance": 3}
+        {
+          "file": "internal/providers/provider.go",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "Resource",
       "category": "symbol",
       "relevant": [
-        {"file": "internal/addrs/resource.go", "relevance": 3},
-        {"file": "internal/configs/resource.go", "relevance": 3}
+        {
+          "file": "internal/addrs/resource.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/configs/resource.go",
+          "relevance": 3
+        }
       ]
     },
     {
       "query": "how does terraform plan infrastructure changes",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/terraform/context_plan.go", "relevance": 3},
-        {"file": "internal/plans/changes.go", "relevance": 2},
-        {"file": "internal/plans/plan.go", "relevance": 1}
+        {
+          "file": "internal/terraform/context_plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/plans/changes.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/plans/plan.go",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does terraform apply changes to infrastructure",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/terraform/context_apply.go", "relevance": 3},
-        {"file": "internal/terraform/node_resource_apply.go", "relevance": 2}
+        {
+          "file": "internal/terraform/context_apply.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/node_resource_apply.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform manage state files",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/states/state.go", "relevance": 3},
-        {"file": "internal/states/sync.go", "relevance": 2},
-        {"file": "internal/states/statefile/version4.go", "relevance": 1}
+        {
+          "file": "internal/states/state.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/states/sync.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/states/statefile/version4.go",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does terraform init set up a working directory",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/command/init.go", "relevance": 3},
-        {"file": "internal/command/meta_backend.go", "relevance": 2}
+        {
+          "file": "internal/command/init.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/meta_backend.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform parse HCL configuration files",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/configs/config.go", "relevance": 3},
-        {"file": "internal/configs/module.go", "relevance": 2},
-        {"file": "internal/configs/parser_config.go", "relevance": 2}
+        {
+          "file": "internal/configs/config.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/configs/module.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/configs/parser_config.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform handle resource dependencies and ordering",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/terraform/node_resource_abstract_instance.go", "relevance": 3},
-        {"file": "internal/terraform/graph_builder_plan.go", "relevance": 2}
+        {
+          "file": "internal/terraform/node_resource_abstract_instance.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/graph_builder_plan.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform interact with providers via plugins",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/providers/provider.go", "relevance": 3},
-        {"file": "internal/command/meta_providers.go", "relevance": 2}
+        {
+          "file": "internal/providers/provider.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/meta_providers.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform handle backend configuration and state storage",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/command/meta_backend.go", "relevance": 3},
-        {"file": "internal/backend/backend.go", "relevance": 2}
+        {
+          "file": "internal/command/meta_backend.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/backend/backend.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform evaluate expressions and variables",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/terraform/evaluate.go", "relevance": 3},
-        {"file": "internal/terraform/variables.go", "relevance": 2}
+        {
+          "file": "internal/terraform/evaluate.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/variables.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform migrate state between backends",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/command/meta_backend_migrate.go", "relevance": 3},
-        {"file": "internal/command/meta_backend.go", "relevance": 1}
+        {
+          "file": "internal/command/meta_backend_migrate.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/meta_backend.go",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does terraform handle resource addressing and references",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/addrs/resource.go", "relevance": 3},
-        {"file": "internal/addrs/parse_ref.go", "relevance": 3},
-        {"file": "internal/addrs/partial_expanded.go", "relevance": 1}
+        {
+          "file": "internal/addrs/resource.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/addrs/parse_ref.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/addrs/partial_expanded.go",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does terraform handle the dependency graph for execution",
       "category": "architecture",
       "relevant": [
-        {"file": "internal/terraform/graph_builder_plan.go", "relevance": 3},
-        {"file": "internal/terraform/graph.go", "relevance": 2},
-        {"file": "internal/terraform/node_resource_abstract_instance.go", "relevance": 1}
+        {
+          "file": "internal/terraform/graph_builder_plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/graph.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/terraform/node_resource_abstract_instance.go",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "what is the relationship between terraform commands and the core engine",
       "category": "architecture",
       "relevant": [
-        {"file": "internal/command/meta.go", "relevance": 3},
-        {"file": "internal/terraform/context.go", "relevance": 3},
-        {"file": "internal/command/init.go", "relevance": 1}
+        {
+          "file": "internal/command/meta.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/context.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/init.go",
+          "relevance": 1
+        }
       ]
     },
     {
       "query": "how does terraform handle import of existing resources",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/terraform/context_import.go", "relevance": 3},
-        {"file": "internal/command/import.go", "relevance": 2}
+        {
+          "file": "internal/terraform/context_import.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/import.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform handle moved blocks and refactoring",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/addrs/move_endpoint_module.go", "relevance": 3},
-        {"file": "internal/terraform/transform_moved.go", "relevance": 2}
+        {
+          "file": "internal/addrs/move_endpoint_module.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/transform_moved.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform run tests with terraform test",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/configs/test_file.go", "relevance": 3},
-        {"file": "internal/command/test.go", "relevance": 2}
+        {
+          "file": "internal/configs/test_file.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/test.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform validate configuration",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/terraform/context_validate.go", "relevance": 3},
-        {"file": "internal/command/validate.go", "relevance": 2}
+        {
+          "file": "internal/terraform/context_validate.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/validate.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform handle workspaces",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/command/workspace_new.go", "relevance": 3},
-        {"file": "internal/command/workspace_select.go", "relevance": 2}
+        {
+          "file": "internal/command/workspace_new.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/workspace_select.go",
+          "relevance": 2
+        }
       ]
     },
     {
       "query": "how does terraform handle ephemeral resources",
       "category": "semantic",
       "relevant": [
-        {"file": "internal/providers/ephemeral.go", "relevance": 3},
-        {"file": "internal/terraform/node_resource_abstract_instance.go", "relevance": 1}
+        {
+          "file": "internal/providers/ephemeral.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/node_resource_abstract_instance.go",
+          "relevance": 1
+        }
+      ]
+    },
+    {
+      "query": "Context",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "internal/terraform/context.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/context_plan.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "ResourceInstanceObject",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "internal/states/instance_object.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/states/statefile/version4.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "Provider",
+      "category": "symbol",
+      "relevant": [
+        {
+          "file": "internal/providers/provider.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/providercache/installer.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform resolve provider dependencies",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/providercache/installer.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/getproviders/registry_client.go",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform implement the plan phase",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/context_plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/node_resource_plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/plans/plan.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform apply changes to infrastructure",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/context_apply.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/node_resource_apply.go",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform manage state locking",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/states/statemgr/locker.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/backend/local/backend_local.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform evaluate HCL expressions",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/evaluate.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/eval_context.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform handle module sources and registry",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/initwd/module_install.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/registry/client.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform implement resource graph and dependencies",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/graph_builder.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/transform_reference.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/dag/dag.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform serialize and deserialize state",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/states/statefile/version4.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/states/statefile/read.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/states/statefile/write.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform implement remote backends",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/backend/remote/backend.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/cloud/backend.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform handle data sources",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/node_resource_plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/eval_read_data.go",
+          "relevance": 3
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform implement import of existing resources",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/context_import.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/command/import.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform implement workspace management",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/command/workspace_command.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/backend/local/backend.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of Terraform's execution graph",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "internal/terraform/graph.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/graph_walk.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/dag/dag.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/terraform/transform_reference.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "what is the architecture of Terraform's provider plugin system",
+      "category": "architecture",
+      "relevant": [
+        {
+          "file": "internal/plugin/serve.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/plugin6/serve.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/providers/provider.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform handle variable and output declarations",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/node_root_variable.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/node_output.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/configs/named_values.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform implement the refresh operation",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/terraform/node_resource_plan.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/terraform/context_plan.go",
+          "relevance": 2
+        }
+      ]
+    },
+    {
+      "query": "how does Terraform parse and validate configuration files",
+      "category": "semantic",
+      "relevant": [
+        {
+          "file": "internal/configs/parser_config.go",
+          "relevance": 3
+        },
+        {
+          "file": "internal/configs/config.go",
+          "relevance": 2
+        },
+        {
+          "file": "internal/terraform/context_validate.go",
+          "relevance": 2
+        }
       ]
     }
   ]

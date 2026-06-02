@@ -203,22 +203,15 @@ pub fn run(args: ImpactArgs) -> Result<serde_json::Value, AgError> {
 }
 
 fn flat_exports(symbols: &[outline::Symbol]) -> Vec<Export> {
-    let mut out = Vec::new();
-    for s in symbols {
-        out.push(Export {
-            name: s.name.clone(),
-            kind: s.kind.to_string(),
-            line: s.start_line,
-        });
-        for child in &s.children {
-            out.push(Export {
-                name: child.name.clone(),
-                kind: child.kind.to_string(),
-                line: child.start_line,
-            });
-        }
-    }
-    out
+    symbols
+        .iter()
+        .flat_map(|s| s.flatten())
+        .map(|f| Export {
+            name: f.name,
+            kind: f.kind,
+            line: f.start_line,
+        })
+        .collect()
 }
 
 fn load_or_build_graph(

@@ -295,6 +295,16 @@ impl ParsedResult {
             tail: None,
         }
     }
+
+    /// Build a summary string like "3 error(s), 2 warning(s)" from diagnostic counts.
+    pub fn diagnostic_summary(errors: usize, warnings: usize) -> String {
+        match (errors, warnings) {
+            (0, 0) => "clean".to_string(),
+            (e, 0) => format!("{e} error(s)"),
+            (0, w) => format!("{w} warning(s)"),
+            (e, w) => format!("{e} error(s), {w} warning(s)"),
+        }
+    }
 }
 
 /// Declare a `static LazyLock<Regex>` in one line.

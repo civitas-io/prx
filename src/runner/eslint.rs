@@ -57,7 +57,7 @@ fn parse_json(json: &serde_json::Value) -> ParsedResult {
     let summary = if failures.is_empty() && warnings.is_empty() {
         "no issues".to_string()
     } else {
-        format!("{} error(s), {} warning(s)", failures.len(), warnings.len())
+        ParsedResult::diagnostic_summary(failures.len(), warnings.len())
     };
 
     ParsedResult {
@@ -122,7 +122,7 @@ pub fn parse(output: &str) -> ParsedResult {
     let summary = if failures.is_empty() && warnings.is_empty() {
         "no issues".to_string()
     } else {
-        format!("{} error(s), {} warning(s)", failures.len(), warnings.len())
+        ParsedResult::diagnostic_summary(failures.len(), warnings.len())
     };
 
     ParsedResult {

@@ -321,24 +321,16 @@ fn build_directory_context(
 }
 
 fn flat_symbol_infos(symbols: &[outline::Symbol]) -> Vec<SymbolInfo> {
-    let mut out = Vec::new();
-    for s in symbols {
-        out.push(SymbolInfo {
-            name: s.name.clone(),
-            kind: s.kind.to_string(),
-            line: s.start_line,
-            signature: s.signature.clone(),
-        });
-        for child in &s.children {
-            out.push(SymbolInfo {
-                name: child.name.clone(),
-                kind: child.kind.to_string(),
-                line: child.start_line,
-                signature: child.signature.clone(),
-            });
-        }
-    }
-    out
+    symbols
+        .iter()
+        .flat_map(|s| s.flatten())
+        .map(|f| SymbolInfo {
+            name: f.name,
+            kind: f.kind,
+            line: f.start_line,
+            signature: f.signature,
+        })
+        .collect()
 }
 
 fn compute_entrypoints(

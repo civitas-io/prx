@@ -43,6 +43,33 @@ pub struct Symbol {
     pub children: Vec<Symbol>,
 }
 
+/// Flattened symbol with kind serialized as a string, for cross-module consumers.
+#[derive(Debug, Clone)]
+pub struct FlatSymbol {
+    pub name: String,
+    pub kind: String,
+    pub start_line: usize,
+    pub end_line: usize,
+    pub signature: String,
+}
+
+impl Symbol {
+    /// Recursively flatten this symbol and its children into a flat list.
+    pub fn flatten(&self) -> Vec<FlatSymbol> {
+        let mut out = vec![FlatSymbol {
+            name: self.name.clone(),
+            kind: self.kind.to_string(),
+            start_line: self.start_line,
+            end_line: self.end_line,
+            signature: self.signature.clone(),
+        }];
+        for child in &self.children {
+            out.extend(child.flatten());
+        }
+        out
+    }
+}
+
 pub fn extract_symbols(source: &str, ext: &str) -> Vec<Symbol> {
     let lang = match language_for_extension(ext) {
         Some(l) => l,

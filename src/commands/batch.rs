@@ -98,13 +98,9 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
             super::search::run(super::search::SearchArgs {
                 query: query.to_string(),
                 path: path.to_string(),
-                literal: false,
-                semantic: false,
-                structural: false,
                 top_k,
                 budget,
-                continue_token: None,
-                alpha: None,
+                ..Default::default()
             })
         }
         "read" => {
@@ -124,8 +120,6 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
                 .unwrap_or(false);
             super::read::run(super::read::ReadArgs {
                 file,
-                lines: None,
-                snap: None,
                 skeleton,
                 outline,
                 hash,
@@ -138,6 +132,7 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
                     .and_then(|v| v.as_str())
                     .map(String::from),
                 mode: cmd.get("mode").and_then(|v| v.as_str()).map(String::from),
+                ..Default::default()
             })
         }
         "exists" => {
@@ -169,15 +164,11 @@ fn dispatch_command(cmd: &serde_json::Value) -> Result<serde_json::Value, AgErro
                     .get("depth")
                     .and_then(|v| v.as_u64())
                     .map(|v| v as usize),
-                related_to: None,
-                changed_since: None,
-                outline: false,
-                tree: false,
-                flat: false,
                 budget: cmd
                     .get("budget")
                     .and_then(|v| v.as_u64())
                     .map(|v| v as usize),
+                ..Default::default()
             })
         }
         "outline" => {

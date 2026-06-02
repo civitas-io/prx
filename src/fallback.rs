@@ -183,13 +183,8 @@ mod tests {
         let args = crate::commands::search::SearchArgs {
             query: "test_pattern".into(),
             path: "src/".into(),
-            literal: false,
-            semantic: false,
-            structural: false,
             top_k: 5,
-            budget: None,
-            continue_token: None,
-            alpha: None,
+            ..Default::default()
         };
         let cli = Commands::Search(args);
         let (cmd, cmd_args) = fallback_spec("search", &cli).unwrap();
@@ -201,14 +196,7 @@ mod tests {
     fn fallback_read_command() {
         let args = crate::commands::read::ReadArgs {
             file: "src/main.rs".into(),
-            lines: None,
-            snap: None,
-            skeleton: false,
-            outline: false,
-            hash: false,
-            budget: None,
-            if_changed: None,
-            mode: None,
+            ..Default::default()
         };
         let cli = Commands::Read(args);
         let (cmd, cmd_args) = fallback_spec("read", &cli).unwrap();
@@ -221,13 +209,7 @@ mod tests {
         let args = crate::commands::find::FindArgs {
             path: "src/".into(),
             pattern: Some("*.rs".into()),
-            depth: None,
-            related_to: None,
-            changed_since: None,
-            outline: false,
-            tree: false,
-            flat: false,
-            budget: None,
+            ..Default::default()
         };
         let cli = Commands::Find(args);
         let (cmd, cmd_args) = fallback_spec("find", &cli).unwrap();

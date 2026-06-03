@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.3] - 2026-06-02
+
+### Added
+
+- **Auto-publish to crates.io** — `publish-crate` job in release.yml runs
+  `cargo publish` on every tag push. Requires `CARGO_REGISTRY_TOKEN` secret.
+- **Auto-update Homebrew formula** — `update-homebrew` job in release.yml
+  downloads release binaries, computes SHA256 hashes, generates and pushes
+  the updated formula to `civitas-io/homebrew-tap`. Requires `HOMEBREW_TAP_TOKEN`
+  secret.
+
 ## [0.6.2] - 2026-06-02
 
 ### Fixed

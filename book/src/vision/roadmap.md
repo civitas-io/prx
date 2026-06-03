@@ -432,13 +432,14 @@ Higher-level primitives that compose existing infrastructure into new capabiliti
 
 ---
 
-## v0.6.3 — Distribution & Infrastructure
+## v0.6.3 — Distribution Automation [DONE]
 
-| Item | Effort | Description |
-|---|---|---|
-| Homebrew SHA automation | M | Auto-update formula SHA256 on release instead of manual process. |
-| npm wrapper | M | `npx prx` for JS/TS agents. |
-| pip wrapper | M | `pip install prx` for Python agents. |
+| Item | Effort | Status | Description |
+|---|---|---|---|
+| Homebrew SHA automation | M | Done | `update-homebrew` job in release.yml auto-pushes formula to homebrew-tap. |
+| `cargo publish` automation | S | Done | `publish-crate` job in release.yml auto-publishes to crates.io. |
+| npm wrapper | M | Deferred | `npx prx` for JS/TS agents. No demand yet. |
+| pip wrapper | M | Deferred | `pip install prx` for Python agents. No demand yet. |
 
 ---
 

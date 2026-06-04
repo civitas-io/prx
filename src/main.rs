@@ -127,6 +127,7 @@ fn run_command(command: Commands) -> Result<serde_json::Value, output::AgError> 
         Commands::Context(args) => commands::context::run(args),
         Commands::Impact(args) => commands::impact::run(args),
         Commands::Explain(args) => commands::explain::run(args),
+        Commands::Rename(args) => commands::rename::run(args),
         #[cfg(feature = "mcp")]
         Commands::Mcp(args) => commands::mcp::run(args),
     }

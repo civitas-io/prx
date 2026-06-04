@@ -5,6 +5,7 @@ pub mod context;
 pub mod diff;
 pub mod edit;
 pub mod exists;
+pub mod explain;
 pub mod find;
 pub mod impact;
 pub mod index;
@@ -13,6 +14,7 @@ pub mod init;
 pub mod mcp;
 pub mod outline;
 pub mod read;
+pub mod rename;
 pub mod run;
 pub mod search;
 pub mod stats;
@@ -72,6 +74,10 @@ pub enum Commands {
     Context(context::ContextArgs),
     /// Analyze reverse dependencies for a file or symbol
     Impact(impact::ImpactArgs),
+    /// Explain a symbol: definition, references, and tests in one call
+    Explain(explain::ExplainArgs),
+    /// Rename a symbol across the codebase (dry-run by default)
+    Rename(rename::RenameArgs),
     /// Start MCP server on stdio
     #[cfg(feature = "mcp")]
     Mcp(mcp::McpArgs),
@@ -96,6 +102,8 @@ impl Commands {
             Self::BenchNdcg(_) => "bench-ndcg",
             Self::Context(_) => "context",
             Self::Impact(_) => "impact",
+            Self::Explain(_) => "explain",
+            Self::Rename(_) => "rename",
             #[cfg(feature = "mcp")]
             Self::Mcp(_) => "mcp",
         }

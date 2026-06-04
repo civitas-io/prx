@@ -407,28 +407,30 @@ Target: +15-25% NDCG@10 lift (0.384 → 0.45-0.50) through pipeline improvements
 
 ---
 
-## v0.6.1 — Agent Primitives
+## v0.6.1 — Agent Primitives [DONE]
 
-New commands and modes that reduce multi-step agent workflows to single calls.
+| Item | Effort | Status | Description |
+|---|---|---|---|
+| Persistent `exists` | M | Done | Uses persisted BM25 index, O(1) term lookup. |
+| `--no-fallback` strict mode | M | Done | Agents get errors instead of silent fallback. |
+| Surface fallback flag | S | Done | `"fallback": true` in JSON envelope (already existed). |
+| `prx context` git-aware budgeting | S | Done | Changed files sorted first in output. |
+| NDCG regression gate in CI | M | Done | benchmark.yml on push/PR with v0.6.0 CI baselines. |
 
-| Item | Effort | Description |
-|---|---|---|
-| Persistent `exists` | M | Wire bloom filter to persisted index instead of rebuilding from scratch every call. |
-| `--no-fallback` strict mode | M | Retrieval-sensitive agents fail loud instead of silently degrading to plain matching. |
-| Surface fallback flag | S | Make it obvious in output when a fallback occurred. |
-| `prx context` git-aware budgeting | S | Prioritize recently-changed files in the module package. |
-| NDCG regression gate in CI | M | Search quality can't silently regress between releases. Tighten threshold from 0.05 to 0.02. |
+## v0.6.2 — Benchmark CI Fix [DONE]
 
----
+Fixed benchmark CI root resolution (dataset root vs CLI arg).
 
-## v0.6.2 — Advanced Agent Features
+## v0.6.3 — Distribution Automation [DONE]
 
-Higher-level primitives that compose existing infrastructure into new capabilities.
+Auto-publish to crates.io and Homebrew on every tag push.
 
-| Item | Effort | Description |
-|---|---|---|
-| `prx explain <symbol>` | L | One call for definition + callers + tests. Agents currently stitch search→read→impact. |
-| Cross-file rename | L | Multi-edit transaction built on import graph. AST-validated, multi-file. |
+## v0.6.4 — Advanced Agent Features [DONE]
+
+| Item | Effort | Status | Description |
+|---|---|---|---|
+| `prx explain <symbol>` | L | Done | Definition + references + tests in one call. |
+| `prx rename <old> <new>` | L | Done | Cross-file symbol rename with dry-run preview. |
 
 ---
 

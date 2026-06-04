@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.4] - 2026-06-03
+
+### Added
+
+- **`prx explain <symbol>`** — one call for definition (with body via tree-sitter
+  snap), references, and test files. Uses persisted symbol index when available,
+  falls back to full-codebase scan. Budget support.
+- **`prx rename <old> <new>`** — cross-file symbol rename with dry-run preview.
+  Finds all files via tree-sitter outline + text scan, generates line-level
+  before/after diffs. `--apply` writes changes. `--include-tests` for test files.
+
+### Changed
+
+- Updated README with `explain` and `rename` command documentation.
+- Updated AGENTS.md quick reference with symbol intelligence commands.
+
 ## [0.6.3] - 2026-06-02
 
 ### Added

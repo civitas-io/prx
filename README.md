@@ -159,6 +159,23 @@ prx impact src/auth.ts
 
 Reverse-dependency analysis built on prx's import graph: it answers "what depends on this file?" so an agent (or a human) can scope a refactor before making it. Edges are extracted from the AST (see [How search works](#how-search-works)); when an import name is ambiguous across many files, resolution falls back to a directory-proximity heuristic and returns the most likely candidates rather than guessing blindly. Treat its output as a high-quality map, not a formal proof of completeness.
 
+### `prx explain` — understand a symbol instantly
+
+```bash
+prx explain SearchWorkerBuilder
+```
+
+One call returns the definition (with body), all references, and test files for a symbol. Agents currently stitch `search → read --snap → impact` to get this information; `explain` does it in one round-trip.
+
+### `prx rename` — rename across the codebase
+
+```bash
+prx rename AuthManager SessionManager       # dry-run preview
+prx rename AuthManager SessionManager --apply  # write changes
+```
+
+Finds every file that mentions the symbol, generates line-level before/after diffs, and optionally applies the rename. Dry-run by default (like `prx edit`). Use `--include-tests` to also rename in test files.
+
 ---
 
 ## All commands
@@ -173,6 +190,8 @@ Reverse-dependency analysis built on prx's import graph: it answers "what depend
 | `prx run` | — | Parsed test/build/lint output. 22 parsers; `--auto-json` for tools with structured output. |
 | `prx context` | — | Module context package: stats, docs, entrypoints, skeletons, import edges. |
 | `prx impact` | — | Reverse dependency analysis: what depends on a given file. |
+| `prx explain` | — | Symbol explainer: definition + references + tests in one call. |
+| `prx rename` | — | Cross-file symbol rename with dry-run preview. |
 | `prx outline` | ctags | Symbol table for a file or directory. |
 | `prx exists` | grep -q | Fast bloom-filter existence check, near-zero tokens. |
 | `prx index` | — | Parallel persistent index: 11K files in ~24s (~17x speedup via rayon). |

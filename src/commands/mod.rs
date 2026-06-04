@@ -5,6 +5,7 @@ pub mod context;
 pub mod diff;
 pub mod edit;
 pub mod exists;
+pub mod explain;
 pub mod find;
 pub mod impact;
 pub mod index;
@@ -72,6 +73,8 @@ pub enum Commands {
     Context(context::ContextArgs),
     /// Analyze reverse dependencies for a file or symbol
     Impact(impact::ImpactArgs),
+    /// Explain a symbol: definition, references, and tests in one call
+    Explain(explain::ExplainArgs),
     /// Start MCP server on stdio
     #[cfg(feature = "mcp")]
     Mcp(mcp::McpArgs),
@@ -96,6 +99,7 @@ impl Commands {
             Self::BenchNdcg(_) => "bench-ndcg",
             Self::Context(_) => "context",
             Self::Impact(_) => "impact",
+            Self::Explain(_) => "explain",
             #[cfg(feature = "mcp")]
             Self::Mcp(_) => "mcp",
         }

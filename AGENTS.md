@@ -88,6 +88,11 @@ prx run cargo build                            # parsed build errors
 prx exists "pattern" src/                      # O(1) existence check
 prx outline src/auth.ts                        # symbol outline
 prx batch < commands.jsonl                     # parallel batch execution
+
+# Symbol intelligence
+prx explain SearchWorkerBuilder                # definition + references + tests
+prx rename AuthManager SessionManager          # dry-run cross-file rename
+prx rename AuthManager SessionManager --apply  # apply rename
 ```
 
 ### Output Format
@@ -338,7 +343,9 @@ ag/
 │   │   ├── batch.rs             # prx batch
 │   │   ├── bench.rs             # prx bench (synthetic benchmarks)
 │   │   ├── context.rs           # prx context (module context package)
+│   │   ├── explain.rs           # prx explain (symbol definition + references + tests)
 │   │   ├── impact.rs            # prx impact (reverse dependency analysis)
+│   │   ├── rename.rs            # prx rename (cross-file symbol rename)
 │   │   ├── index.rs             # prx index
 │   │   ├── init.rs              # prx init
 │   │   ├── mcp.rs               # prx mcp
